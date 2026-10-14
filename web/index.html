@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ProofMesh · Investigate once. Inform everywhere.</title><link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script></head>
+<body>
+<header class="mast"><a class="brand" href="/"><span class="mark" aria-hidden="true">✳</span> ProofMesh<span class="beta">EARLY BUILD</span></a><nav><a href="/feed">Demo feed ↗</a><a href="/openapi.json">API schema</a><span id="connection" class="connection">Connecting…</span></nav></header>
+<main>
+<section class="intro"><div><p class="eyebrow">A SHARED MEMORY FOR BETTER CONTEXT</p><h1>Context changes<br><em>everything.</em></h1><p class="lede">Follow the evidence behind a claim. Keep what we know<br class="desktop"> separate from what we still need to find out.</p></div><div class="principle"><span>01 / THE PRINCIPLE</span><p>Same image.<br>Different caption.<br><strong>A different question.</strong></p><div class="rule"></div><small>Evidence can be reused.<br>Conclusions need their own context.</small></div></section>
+<section class="workspace" aria-label="Investigation workspace">
+<div class="input-column">
+<div class="section-top"><h2>Start with a claim</h2><span class="step">01</span></div>
+<form id="investigation-form">
+<label for="claim">What is this post claiming?</label><textarea id="claim" minlength="5" maxlength="3000" rows="5" required placeholder="Paste the exact caption or claim, including dates and places…"></textarea>
+<label class="upload" for="image"><span id="upload-label">＋ Add an image</span><small>PNG, JPG or WebP · up to 5 MB</small><input id="image" type="file" accept="image/png,image/jpeg,image/webp"></label>
+<div id="image-wrap" hidden><img id="image-preview" alt="Image submitted for investigation"><button id="remove-image" type="button" class="text-button">Remove image</button></div>
+<div class="field-row"><label for="corpus">Evidence collection</label><select id="corpus"><option value="live">Live investigations</option><option value="demo">Synthetic demo</option></select></div>
+<button id="match-button" type="submit" class="button primary">Check shared evidence <span>↗</span></button>
+<button id="investigate-button" type="button" class="button secondary">Start a new investigation</button>
+<p class="privacy">Matching uses the configured registry. A new live investigation sends the supplied claim and image to Google Cloud. No browsing history is collected.</p>
+</form>
+<div class="demo-box"><span class="eyebrow">TRY THE CORE IDEA</span><h3>One image. Two stories.</h3><p>Load a fictional case, find its report, then change the caption. The previous verdict won’t follow.</p><button id="demo-button" type="button" class="text-button">Load synthetic example →</button><button id="alternate-button" type="button" class="text-button" hidden>Try the alternate caption →</button></div>
+<details class="settings"><summary>Connection settings</summary><label for="token">API access token</label><input id="token" type="password" autocomplete="off" placeholder="Only if your server requires one"><button id="save-token" class="text-button" type="button">Use for this session</button></details>
+</div>
+<div class="report-column"><div class="section-top"><h2>The evidence, explained</h2><span id="report-label" class="step">02</span></div><div id="notice" role="status" aria-live="polite" hidden></div><section id="result" aria-label="Investigation result"><div class="empty"><div class="evidence-art" aria-hidden="true"><span>IMAGE</span><i>↗</i><span>CLAIM</span><i>↗</i><span>EVIDENCE</span></div><h3>A clearer picture starts<br>with better questions.</h3><p>Check for an existing investigation or explore the synthetic example. Unknown content stays unverified.</p><div class="dimensions"><div><b>Origin</b><span>How was it created?</span></div><div><b>Context</b><span>When and where?</span></div><div><b>Claims</b><span>What supports them?</span></div></div></div></section></div>
+</section>
+<section class="registry"><div class="section-top"><h2>Shared investigation registry</h2><button id="refresh-button" class="text-button" type="button">Refresh ↻</button></div><div id="registry-list"><p class="muted">Investigations will appear here.</p></div></section>
+</main><footer><span>ProofMesh</span><span>Investigate once. Inform everywhere.</span><span>Evidence over certainty.</span></footer>
+</body></html>
+

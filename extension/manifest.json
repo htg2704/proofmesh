@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "ProofMesh — Context before conclusions",
+  "version": "0.1.0",
+  "description": "Look up shared investigations for visible X posts. Matching an image never transfers a verdict to a new caption.",
+  "permissions": ["storage"],
+  "host_permissions": ["http://127.0.0.1:8000/*", "https://pbs.twimg.com/*"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_popup": "popup.html", "default_title": "ProofMesh settings"},
+  "content_scripts": [{"matches": ["https://x.com/*", "http://127.0.0.1:8000/feed*"], "js": ["content.js"], "css": ["content.css"]}]
+}
+
