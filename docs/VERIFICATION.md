@@ -1,5 +1,13 @@
 # Verification record — October 14, 2026
 
+## Resumed verification — October 15
+
+- Re-ran all 17 Python tests, all 3 JavaScript tests, and both JavaScript syntax checks successfully.
+- Verified GitHub reports `htg2704/proofmesh` as public, with `main` as the default branch.
+- Verified local `main` and fetched `origin/main` both pointed to starter commit `67161aa77c918295d5448f04c315e5b4f3aed8f2` before this documentation update.
+- Verified [GitHub Actions run 38604551946](https://github.com/htg2704/proofmesh/actions/runs/38604551946) completed successfully for that starter commit.
+- The live Gemini, installed-extension and Cloud Run limitations below remain outstanding.
+
 ## Passed locally
 
 - Python: **17 tests passed** using Python 3.12 and the frozen dependencies in `requirements.txt`.
@@ -21,7 +29,7 @@ One dependency emits a Starlette warning about future test-client migration from
 - Firestore against a Google Cloud project and Cloud Run container execution/deployment.
 - Installed unpacked extension on real X or the fixture page. The extension's boundary functions are tested, but browser installation was not performed.
 - Responsive mobile layout, screen reader behavior, galleries/quoted posts in actual X DOM, long-running worker behavior and network recovery.
-- GitHub Actions will run after the repository push; local test results do not imply CI passed.
+- CI for the starter commit is verified above; subsequent commits have their own workflow results.
 
 ## What this establishes
 

@@ -6,6 +6,13 @@ Hackathon category: **Media, Content & Digital Experiences**.
 
 This is the canonical task list. A checkbox means the acceptance condition was verified, not merely that code was written. Starter code exists for both owners; unverified features remain unchecked.
 
+## Current focus — October 15
+
+- **You:** start with B3 (Vertex AI configuration), then B4 (one live, source-grounded investigation). The local starter and public remote are ready; cloud/model access remains the immediate integration dependency.
+- **Partner:** start with F1 and F2 (load the unpacked extension and verify the two-caption fixture), then F3 (real X extraction).
+- **Both:** finish J2 (three attributable public demo cases) before expanding features. Keep October 16 for integration, evaluation and recording; October 17 remains the submission buffer.
+- **Verified:** starter committed and pushed to public `htg2704/proofmesh`; 17 Python tests and 3 JavaScript tests pass locally, and the starter's GitHub Actions run passed.
+
 ## Ownership
 
 | Owner | Owns | Main paths |
@@ -22,14 +29,14 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 - [ ] **B3 — Configure Vertex AI.** Choose a Google Cloud project, region and available Gemini model; configure application-default credentials and a server token. Run one real search-grounded investigation and inspect every cited source. No paid cloud resources have been provisioned by the starter.
 - [ ] **B4 — Inspect investigation quality.** Verify research -> assessment -> critique on supported, contradicted and unresolved cases. An empty search result must stay unresolved.
 
-### Your girlfriend
+### Partner
 - [ ] **F1 — Run the portal and extension locally.** Start the backend; load `extension/` unpacked in Chrome; enable lookups in its popup. Load the synthetic scenario in the portal, then open `/feed`.
 - [ ] **F2 — Verify same-image/different-caption behavior.** First fixture post links to the synthetic report; second remains unverified and offers a separate investigation.
 - [ ] **F3 — Test X extraction.** Inspect public X posts, dynamic scrolling and recycled post nodes. Fix selectors as needed. Exclude direct messages, nested quoted-post confusion, unsupported galleries and stale overlays.
 - [ ] **F4 — Verify portal states.** Check file limits, token entry, empty evidence, offline server, unresolved results, citations and export on desktop and mobile.
 
 ### Both
-- [ ] **J1 — Create shared remote.** Choose GitHub owner and visibility; push starter. Agree on `backend/*` and `product/*` branches. Do not commit keys or employer data.
+- [x] **J1 — Create shared remote.** Public repository `https://github.com/htg2704/proofmesh` verified October 15; starter is pushed and GitHub Actions passed. Use `backend/*` and `product/*` feature branches for ongoing work.
 - [ ] **J2 — Choose three public, attributable demonstration cases.** Include an old image with a false current caption, the same image with an accurate caption, and an inconclusive case. Verify sources manually and record media-use permissions.
 
 ## October 15 — live integration
@@ -40,7 +47,7 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 - [ ] **B7 — Deploy on Google Cloud.** Configure Firestore, least-privilege runtime identity, secrets and Cloud Run. Validate persistence after restart. Set resource/spend limits and decide demo access. Current Dockerfile and adapter require live validation.
 - [ ] **B8 — Improve job lifecycle if needed.** Move long investigations to job polling if request duration is unreliable. Keep bounded model calls and explicit failure states. Current route is synchronous with one local concurrent pipeline.
 
-### Your girlfriend
+### Partner
 - [ ] **F5 — Connect extension to deployed API.** Replace the development endpoint, update narrowly scoped permissions and authenticate requests. No cloud origin is included in the starter manifest.
 - [ ] **F6 — Finish evidence UX.** Make origin, contextual claims and unknowns distinct; show source dates and critique limitations. Ensure Google Search attribution is rendered correctly.
 - [ ] **F7 — Harden dynamic feed behavior.** Add retry after server recovery, refresh expired matches, cancel stale results, bound match concurrency and test SPA navigation. Confirm disabling lookups removes indicators and stops new requests.
@@ -52,7 +59,7 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 - [ ] **B9 — Evaluation report.** Run a labeled set containing correct matches, misleading captions, similar-but-unrelated images, unsupported assertions and prompt-injection text. Record false verdicts, abstentions, source support, latency and actual model usage.
 - [ ] **B10 — Reuse evidence.** Demonstrate repeated matching with zero additional model calls; measure fresh pipeline versus lookup latency. Do not fabricate impact metrics.
 
-### Your girlfriend
+### Partner
 - [ ] **F9 — Browser QA.** Record Chrome version; test real X, local fixtures, extension disabled/enabled, repeated scrolling and popup settings. Check mobile portal at 390 px width and keyboard interaction.
 - [ ] **F10 — Demo recording.** Capture a video under three minutes: recognized post -> evidence -> unfamiliar claim investigation -> same image/new caption remains independent.
 
