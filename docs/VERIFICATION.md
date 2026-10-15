@@ -36,12 +36,15 @@
 
 One dependency emits a Starlette warning about future test-client migration from httpx to httpx2. The tests pass; no runtime failure was observed.
 
+## Product follow-up — October 15
+
+Partner tasks F1–F4 are completed within the documented browser coverage. See [the product QA record](PRODUCT_QA.md) for the installed extension, public X extraction, upload limits, token handling, mobile layout and exports. Current suite: **20 Python + 21 JavaScript tests**.
+
 ## Not yet verified
 
 - Broad evaluation of live grounding quality, billed cost reconciliation, search attribution styling, and contradicted/unresolved cases. One successful live request is documented above.
 - Firestore against a Google Cloud project and Cloud Run container execution/deployment.
-- Installed unpacked extension on real X or the fixture page. The extension's boundary functions are tested, but browser installation was not performed.
-- Responsive mobile layout, screen reader behavior, galleries/quoted posts in actual X DOM, long-running worker behavior and network recovery.
+- Logged-in X variants, screen reader behavior, galleries/quoted posts in actual logged-in X DOM, long-running worker behavior and broader network recovery. Public X, fixture Chrome integration and 390-pixel mobile layout are verified in the product record.
 - CI for the starter commit is verified above; subsequent commits have their own workflow results.
 
 ## What this establishes

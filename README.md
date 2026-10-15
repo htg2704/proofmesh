@@ -4,7 +4,7 @@
 
 ProofMesh is a hackathon prototype for context-aware misinformation investigations. A source-linked report belongs to a particular claim and media context. Recognizing an image must never transfer a verdict to a different caption.
 
-**Status: first development slice, not a finished fact-checking service.** Local registry, synthetic demonstration, portal and tests are runnable. One live Gemini on Vertex AI investigation and zero-call repeat reuse are verified. The Chrome extension starter, real X behavior and Google Cloud deployment still require integration validation.
+**Status: working local prototype.** One live Gemini on Vertex AI investigation and zero-call repeat reuse are verified. The installed Chrome extension is tested on the synthetic feed and public X markup; portal desktop/mobile edge states are checked. Broader X compatibility, investigation accuracy and Google Cloud deployment remain work in progress.
 
 ## Start here
 
@@ -13,6 +13,7 @@ ProofMesh is a hackathon prototype for context-aware misinformation investigatio
 - [Architecture and limitations](docs/ARCHITECTURE.md).
 - [Google Cloud deployment guide](docs/DEPLOYMENT.md).
 - [Verification record](docs/VERIFICATION.md).
+- [Product QA record](docs/PRODUCT_QA.md): completed partner tasks, browser checks and remaining limits.
 
 ## Run locally
 
@@ -46,7 +47,7 @@ The bridge image is a generated geometric illustration and all associated events
 
 The development extension sends visible post text and the first supported image to the local server when enabled. It does not read cookies, history or direct messages. It does not automatically launch model investigations. Clicking **Investigate with Google Cloud** sends that post to the live pipeline. The endpoint and host permissions are deliberately limited to localhost; configure a deployed origin before distribution.
 
-The local fixture is a development aid, not proof of compatibility with X. Real X selectors, quoted posts, galleries, SPA navigation and retry behavior remain integration work.
+The local fixture is a development aid. The installed extension also passed public X extraction checks on October 15. Quoted posts, galleries, video and common English relative-time captions remain explicitly unverified. DOM regression tests cover SPA/private-route handling, recycled nodes and retry; logged-in X variants need further browser QA.
 
 ## Enable live investigations
 
@@ -74,12 +75,13 @@ If credentials, model access or evidence retrieval fail, the application returns
 
 ```bash
 .venv/bin/python -m pytest -q
-node --test tests/test_extension.mjs
+npm ci --ignore-scripts
+npm test
 node --check web/app.js
 node --check extension/content.js
 ```
 
-Python tests cover context separation, cache reuse, persistence, expiration, invalid images, citation validation, auth and cloud-storage safeguards. JavaScript tests cover permitted origins, restricted image fetching and extension permissions. They do not establish model accuracy or extension compatibility with live X.
+Python tests cover context separation, cache reuse, persistence, expiration, invalid images, citation validation, auth and cloud-storage safeguards. JavaScript tests cover DOM extraction, recycled/stale posts, retry, private routes, extension messaging, token correction and upload state. Tests do not establish model accuracy or compatibility with every X layout. See the product QA record for actual browser coverage.
 
 ## Repository map
 

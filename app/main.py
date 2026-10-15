@@ -122,6 +122,10 @@ def create_app(store=None, investigator=None):
     def archive():
         return PlainTextResponse("PROOFMESH SYNTHETIC FIXTURE\nIllustration: Riverton bridge.\nFictional archive date: 2021-06-18.\nThis is not a photograph of a real event. No external facts are asserted.\n")
 
+    @app.get("/fixtures/bridge-archive")
+    def archive_page():
+        return FileResponse(ROOT / "web/evidence.html")
+
     @app.get("/")
     def index():
         return FileResponse(ROOT / "web/index.html")

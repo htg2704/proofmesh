@@ -1,5 +1,6 @@
 .git
 .venv
+node_modules
 .env*
 data
 __pycache__
@@ -7,4 +8,3 @@ __pycache__
 tests
 docs
 extension
-

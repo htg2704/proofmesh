@@ -104,6 +104,9 @@ def test_api_demo_matching_and_disabled_live(tmp_path, monkeypatch):
     monkeypatch.setenv("PROOFMESH_ENABLE_LIVE", "false")
     client = TestClient(create_app(SQLiteStore(str(tmp_path / "api.sqlite"))))
     demo = client.post("/api/demo", json={}).json()
+    source = client.get(demo["report"]["evidence"][0]["url"])
+    assert source.status_code == 200 and "text/html" in source.headers["content-type"]
+    assert "Not real-world evidence" in source.text
     match = client.post("/api/matches", json={"claim": demo["claim"], "image_base64": demo["image_base64"], "corpus": "demo"})
     assert match.status_code == 200 and match.json()["status"] == "exact_context"
     response = client.post("/api/investigations", json={"claim": "A brand new factual claim"})
@@ -131,4 +134,3 @@ def test_cloud_refuses_ephemeral_storage(tmp_path, monkeypatch):
     monkeypatch.setenv("PROOFMESH_STORE", "sqlite")
     with pytest.raises(RuntimeError):
         create_app(SQLiteStore(str(tmp_path / "cloud.sqlite")))
-

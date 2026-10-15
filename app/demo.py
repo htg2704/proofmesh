@@ -34,9 +34,8 @@ def seed(service):
             "summary": "In this fictional scenario, the caption presents an older illustration as a current photograph.",
             "findings": [{"claim": DEMO_CLAIM, "status": "contradicted", "explanation": "The supplied demo archive explicitly describes an illustration assigned a 2021 archive date. This is a synthetic fixture, not a verified real-world event.", "evidence_ids": ["D1"]}],
             "limitations": ["Synthetic scenario for testing product behavior. No external research or AI detection was performed."]},
-        "evidence": [{"id": "D1", "title": "Fictional bridge archive — demo fixture", "url": "/fixtures/bridge-archive.txt", "excerpt": "Illustration: Riverton bridge. Fictional archive date: 2021-06-18. This is not a photograph of a real event.", "kind": "demo_fixture"}],
+        "evidence": [{"id": "D1", "title": "Fictional bridge archive — demo fixture", "url": "/fixtures/bridge-archive", "excerpt": "Illustration: Riverton bridge. Fictional archive date: 2021-06-18. This is not a photograph of a real event.", "kind": "demo_fixture"}],
         "events": [{"stage": "fixture", "detail": "Loaded a clearly labeled synthetic investigation."}, {"stage": "registry", "detail": "Stored evidence with a media-and-caption context key."}],
         "model_calls": 0, "search_attribution_html": None}, stamp)
     service.store.put(report)
     return {"claim": DEMO_CLAIM, "alternate_claim": ALTERNATE_CLAIM, "image_base64": encoded, "report": report}
-

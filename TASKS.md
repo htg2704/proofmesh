@@ -9,9 +9,9 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 ## Current focus — October 15
 
 - **You:** B3 is verified. Continue B4 with contradicted and unresolved cases, then B5 (image-source retrieval). One live, source-grounded investigation and zero-call repeat reuse have passed.
-- **Partner:** start with F1 and F2 (load the unpacked extension and verify the two-caption fixture), then F3 (real X extraction).
+- **Partner:** October 14 tasks F1–F4 are verified. Continue F5/F6 after deployment; F9 still includes logged-in X variants and broader browser/accessibility coverage.
 - **Both:** finish J2 (three attributable public demo cases) before expanding features. Keep October 16 for integration, evaluation and recording; October 17 remains the submission buffer.
-- **Verified:** starter committed and pushed to public `htg2704/proofmesh`; 17 Python tests and 3 JavaScript tests pass locally, and the starter's GitHub Actions run passed.
+- **Verified:** public repository, live Vertex AI smoke test, installed extension on the synthetic feed and public X, portal edge states, and 20 Python + 21 JavaScript tests. See `docs/PRODUCT_QA.md` for evidence and limits.
 
 ## Ownership
 
@@ -30,10 +30,10 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 - [ ] **B4 — Inspect investigation quality.** Verify research -> assessment -> critique on supported, contradicted and unresolved cases. An empty search result must stay unresolved.
 
 ### Partner
-- [ ] **F1 — Run the portal and extension locally.** Start the backend; load `extension/` unpacked in Chrome; enable lookups in its popup. Load the synthetic scenario in the portal, then open `/feed`.
-- [ ] **F2 — Verify same-image/different-caption behavior.** First fixture post links to the synthetic report; second remains unverified and offers a separate investigation.
-- [ ] **F3 — Test X extraction.** Inspect public X posts, dynamic scrolling and recycled post nodes. Fix selectors as needed. Exclude direct messages, nested quoted-post confusion, unsupported galleries and stale overlays.
-- [ ] **F4 — Verify portal states.** Check file limits, token entry, empty evidence, offline server, unresolved results, citations and export on desktop and mobile.
+- [x] **F1 — Run the portal and extension locally.** User loaded version 0.2.0 in Chrome. Lookups enabled; existing local API token saved with explicit approval. Both fixture posts verified against the protected, isolated QA backend.
+- [x] **F2 — Verify same-image/different-caption behavior.** Installed extension retrieves the first synthetic report; the second caption is explicitly unverified, with a separate workspace link and no inherited report verdict.
+- [x] **F3 — Test X extraction.** Inspected and scrolled public `x.com/NASA`; fixed extraction for current markup without test IDs. Real visible image posts show unknown status and videos remain unverified. Regression tests cover recycled nodes, quoted posts, galleries, private SPA routes, stale responses and recovery. Logged-in X variants remain F9.
+- [x] **F4 — Verify portal states.** Browser checks passed for invalid/corrected tokens, offline server, valid PNG, over-5-MB input, corrupt PNG, over-16-megapixel input, unresolved/empty evidence, readable citation page, JSON export and 390-pixel mobile layout without horizontal overflow. See `docs/PRODUCT_QA.md`.
 
 ### Both
 - [x] **J1 — Create shared remote.** Public repository `https://github.com/htg2704/proofmesh` verified October 15; starter is pushed and GitHub Actions passed. Use `backend/*` and `product/*` feature branches for ongoing work.
@@ -75,8 +75,8 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 ## Starter implementation status
 
 - Code written: FastAPI API, SQLite/Firestore store adapters, normalized image identity and dHash candidates, context/date-scoped reuse, Gemini research/assessment/critique adapter, synthetic fixture, portal, MV3 extension and tests.
-- Verified locally: 20 Python tests, 3 JavaScript boundary tests, portal loading, synthetic report, exact reuse, changed-caption uncertainty and one live Gemini pipeline on the trial-credit project. See `docs/VERIFICATION.md`.
-- Still to verify: installed extension on X, Firestore, Cloud Run, mobile/accessibility and real-world evidence quality.
+- Verified locally: 20 Python + 21 JavaScript tests, installed Chrome extension on the fixture/public X, portal desktop/mobile edge states, exact reuse, changed-caption uncertainty and one live Gemini pipeline. See `docs/VERIFICATION.md` and `docs/PRODUCT_QA.md`.
+- Still to verify: logged-in X variants, Firestore, Cloud Run, broader accessibility and real-world evidence quality.
 - Not implemented: semantic claim matching, reverse-image web retrieval, provenance/watermark verification, multi-image posts, durable asynchronous jobs and a production sharing/moderation model.
 - Semantic similarity, when added, should retrieve candidate evidence only. It must not automatically transfer a prior verdict.
 
