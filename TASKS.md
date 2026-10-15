@@ -8,7 +8,7 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 
 ## Current focus — October 15
 
-- **You:** start with B3 (Vertex AI configuration), then B4 (one live, source-grounded investigation). The local starter and public remote are ready; cloud/model access remains the immediate integration dependency.
+- **You:** B3 is verified. Continue B4 with contradicted and unresolved cases, then B5 (image-source retrieval). One live, source-grounded investigation and zero-call repeat reuse have passed.
 - **Partner:** start with F1 and F2 (load the unpacked extension and verify the two-caption fixture), then F3 (real X extraction).
 - **Both:** finish J2 (three attributable public demo cases) before expanding features. Keep October 16 for integration, evaluation and recording; October 17 remains the submission buffer.
 - **Verified:** starter committed and pushed to public `htg2704/proofmesh`; 17 Python tests and 3 JavaScript tests pass locally, and the starter's GitHub Actions run passed.
@@ -26,7 +26,7 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 ### You
 - [ ] **B1 — Accept API contract.** Read `docs/API.md`; confirm both clients send claim + optional image and treat `related_media` as unverified. Freeze endpoint names for today's integration.
 - [x] **B2 — Verify registry and cache tests.** Passed locally October 14: same image + same claim reuses with zero inference, new caption never inherits a verdict, demo/live are isolated, and reports survive restart. Re-run after changes.
-- [ ] **B3 — Configure Vertex AI.** Choose a Google Cloud project, region and available Gemini model; configure application-default credentials and a server token. Run one real search-grounded investigation and inspect every cited source. No paid cloud resources have been provisioned by the starter.
+- [x] **B3 — Configure Vertex AI.** Verified October 15 on the trial-credit project using project-local credentials, global endpoint and Gemini 3.5 Flash. One real search-grounded investigation completed in 22.76 seconds with three logical model calls; repeat retrieval made zero calls. Source quality evaluation remains B4.
 - [ ] **B4 — Inspect investigation quality.** Verify research -> assessment -> critique on supported, contradicted and unresolved cases. An empty search result must stay unresolved.
 
 ### Partner
@@ -75,8 +75,8 @@ This is the canonical task list. A checkbox means the acceptance condition was v
 ## Starter implementation status
 
 - Code written: FastAPI API, SQLite/Firestore store adapters, normalized image identity and dHash candidates, context/date-scoped reuse, Gemini research/assessment/critique adapter, synthetic fixture, portal, MV3 extension and tests.
-- Verified locally: 17 Python tests, 3 JavaScript boundary tests, portal loading, synthetic report, exact reuse and changed-caption uncertainty. See `docs/VERIFICATION.md`.
-- Still to verify: installed extension on X, live Gemini, Firestore, Cloud Run, mobile/accessibility and real-world evidence quality.
+- Verified locally: 20 Python tests, 3 JavaScript boundary tests, portal loading, synthetic report, exact reuse, changed-caption uncertainty and one live Gemini pipeline on the trial-credit project. See `docs/VERIFICATION.md`.
+- Still to verify: installed extension on X, Firestore, Cloud Run, mobile/accessibility and real-world evidence quality.
 - Not implemented: semantic claim matching, reverse-image web retrieval, provenance/watermark verification, multi-image posts, durable asynchronous jobs and a production sharing/moderation model.
 - Semantic similarity, when added, should retrieve candidate evidence only. It must not automatically transfer a prior verdict.
 

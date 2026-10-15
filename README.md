@@ -4,7 +4,7 @@
 
 ProofMesh is a hackathon prototype for context-aware misinformation investigations. A source-linked report belongs to a particular claim and media context. Recognizing an image must never transfer a verdict to a different caption.
 
-**Status: first development slice, not a finished fact-checking service.** Local registry, synthetic demonstration, portal and tests are runnable. A Gemini on Vertex AI adapter and Chrome extension starter are included. Live Gemini, real X behavior and Google Cloud deployment still require integration validation.
+**Status: first development slice, not a finished fact-checking service.** Local registry, synthetic demonstration, portal and tests are runnable. One live Gemini on Vertex AI investigation and zero-call repeat reuse are verified. The Chrome extension starter, real X behavior and Google Cloud deployment still require integration validation.
 
 ## Start here
 
@@ -62,7 +62,9 @@ export PROOFMESH_API_TOKEN="$(.venv/bin/python -c 'import secrets; print(secrets
 .venv/bin/python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000
 ```
 
-Enter the token through **Connection settings** in the portal, and the extension popup if needed. `.env.example` documents settings; the application does not automatically load `.env`.
+Enter the token through **Connection settings** in the portal, and the extension popup if needed. `.env.example` documents settings. Alternatively, put settings in a Git-ignored repository `.env` and run `.venv/bin/python scripts/dev.py`; this launcher loads plain key/value settings without shell evaluation. Direct uvicorn invocation uses exported environment variables only.
+
+Run `.venv/bin/python scripts/smoke_vertex.py` only when live mode is configured and usage is authorized. It investigates one public NASA claim, records returned token/search-query counts in ignored `data/vertex-smoke-result.json`, and checks that the repeat uses zero model calls. The pipeline uses one HTTP attempt per stage and output-token limits of 4,096/3,072/1,536 for research/assessment/critique. These controls bound this test; they are not a Google billing-account spend cap.
 
 Live workflow: Google Search-grounded research -> structured assessment -> critique. Only source-linked grounding segments can become evidence. Unknown evidence references are rejected; findings without support remain unresolved. This is a second model review of the supplied evidence, not independent forensic verification. Reports retain Google Search attribution for isolated rendering in the portal.
 
@@ -112,4 +114,3 @@ Do not describe this starter as a reliable real/fake classifier. Report observed
 - [C2PA explainer](https://spec.c2pa.org/specifications/specifications/2.4/explainer/Explainer.html) — possible future provenance integration
 
 License selection remains with the authors; public visibility alone does not grant an open-source license.
-

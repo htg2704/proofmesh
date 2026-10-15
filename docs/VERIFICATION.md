@@ -6,7 +6,20 @@
 - Verified GitHub reports `htg2704/proofmesh` as public, with `main` as the default branch.
 - Verified local `main` and fetched `origin/main` both pointed to starter commit `67161aa77c918295d5448f04c315e5b4f3aed8f2` before this documentation update.
 - Verified [GitHub Actions run 38604551946](https://github.com/htg2704/proofmesh/actions/runs/38604551946) completed successfully for that starter commit.
-- The live Gemini, installed-extension and Cloud Run limitations below remain outstanding.
+- The installed-extension and Cloud Run limitations below remain outstanding. The live Gemini configuration is now verified by the additional smoke test below.
+
+## Vertex AI setup and smoke test — October 15
+
+- The active `proofmesh` gcloud profile uses the user-approved account and the trial-credit project. App credentials are stored in Git-ignored `data/gcloud-trial/`; `.env` selects that credential file and project explicitly. The prior global ADC file was not replaced.
+- Verified trial billing linkage and that `aiplatform.googleapis.com` is enabled.
+- Configured `gemini-3.5-flash` on the global endpoint. Existing SDK default automatic retries are disabled; each stage has an explicit output-token limit.
+- Live claim: NASA's Perseverance rover landed on Mars on February 18, 2021.
+- Result: supported, with three evidence segments from two distinct source URLs. The sources were Wikipedia and Royal Museums Greenwich, so this does not establish a primary-source-only retrieval policy.
+- Three model invocations completed in **22.76 seconds**. A repeat retrieved the persisted report with **zero model calls**.
+- Provider-reported totals: **2,006 prompt tokens**, **264 candidate-output tokens**, **1,304 thinking tokens**, and **one reported search query**.
+- At the published Gemini 3.5 Flash global rates checked October 15, indicative model token cost is **US$0.017121**, before search charges, credits, taxes and final billing adjustments. One search query would add US$0.014 if outside the account's free allowance. This estimate is not a billing receipt or a hard account spend cap.
+- An earlier attempt on the initial project returned HTTP 504 and published no report. The working setup uses the new trial-credit project; the unused initial project's billing linkage was not changed.
+- Added three mocked provider tests covering quota attribution, no retries, token limits, abstention without grounding and critique rejection. **20 Python tests and 3 JavaScript tests pass** after these changes. Mock tests do not make paid calls.
 
 ## Passed locally
 
@@ -25,7 +38,7 @@ One dependency emits a Starlette warning about future test-client migration from
 
 ## Not yet verified
 
-- Actual Gemini on Vertex AI request, grounding quality, model availability, usage/cost and search attribution styling.
+- Broad evaluation of live grounding quality, billed cost reconciliation, search attribution styling, and contradicted/unresolved cases. One successful live request is documented above.
 - Firestore against a Google Cloud project and Cloud Run container execution/deployment.
 - Installed unpacked extension on real X or the fixture page. The extension's boundary functions are tested, but browser installation was not performed.
 - Responsive mobile layout, screen reader behavior, galleries/quoted posts in actual X DOM, long-running worker behavior and network recovery.

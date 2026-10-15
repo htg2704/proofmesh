@@ -50,7 +50,9 @@ Development origin: `http://127.0.0.1:8000`. Machine-readable schema: `/openapi.
 
 `model_calls` counts logical SDK model invocations in this request. Cached reuse reports zero. It is not a billing invoice or token estimate. The research pass can return unresolved after one invocation if no usable grounding exists.
 
-A report contains `id`, `context_key`, `claim`, `media`, `corpus`, `created_at`, `expires_at`, `origin`, `assessment`, `evidence`, `events`, `model_calls`, and optional `search_attribution_html`.
+A report contains `id`, `context_key`, `claim`, `media`, `corpus`, `created_at`, `expires_at`, `origin`, `assessment`, `evidence`, `events`, `model_calls`, optional `usage`, and optional `search_attribution_html`.
+
+`usage` records provider-returned prompt, candidate-output, thinking and total token counts per stage, plus the number of reported web search queries. Missing values remain null. These are observability data, not an invoice or guaranteed billing total. The SDK is configured for one HTTP attempt per stage, with no automatic retries.
 
 - `origin.status` is currently always `unknown`; no detector ran.
 - `assessment.findings[].status`: `supported`, `contradicted`, or `unresolved`.
