@@ -52,3 +52,7 @@ The earlier four-case demonstration remains in `docs/evaluation-results.json`. I
 47 Python and 27 JavaScript tests cover publication anchoring, quotation validation, reviewer scope and cookie expiry/tampering, quota reservation, job completion without polling recursion, cleared stale results after failure, exact reuse, changed captions, prompt injection boundaries, private-route exclusion, recycled DOM nodes, SSRF defenses and bounded retries. Mocks and DOM fixtures do not replace live evaluation.
 
 No precision/recall estimate, universal AI-origin detector, C2PA validation, semantic claim reuse, video or multi-image analysis is claimed. Same-model critique can miss errors. No new Instagram adapter or broader logged-in X/accessibility validation is included.
+
+## Subsequent v0.5 hosted integration check
+
+The ordinary visitor flow later completed a fresh Canberra claim with three model calls and one provider attempt per stage, persisted it in a private client namespace, and reused it with zero model calls. This verifies the new access/queue/storage path and is not added to the prespecified accuracy outcomes. The earlier v0.4 reviewer capacity failure remains part of the record.

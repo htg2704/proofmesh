@@ -1,4 +1,4 @@
-> Current consumer access: v0.5. Normal browser use needs no access code. Start with [THIRD_PARTY.md](THIRD_PARTY.md) for scoped keys, limits and versioned routes; earlier reviewer-only examples below describe compatibility behavior.
+> Current consumer access: v0.5. Normal browser use needs no access code. Start with [THIRD_PARTY.md](THIRD_PARTY.md) for scoped keys, limits and versioned routes; earlier reviewer-only examples below describe optional compatibility behavior that is disabled on the hosted service.
 
 # API contract v0.2
 

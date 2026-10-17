@@ -66,3 +66,7 @@ Broader logged-in X variants, complete keyboard/screen-reader behavior, Instagra
 Both actions now have information controls that expose explanations on hover, focus or tap, with Escape dismissal. Permanent helper text distinguishes zero-model lookup from new AI work that consumes the cloud allowance. Click/focus behavior and dismissal were checked in Chrome; full screen-reader coverage is not claimed. The portal presents the web workspace and extension as clients of a shared evidence rail, with SDK/MCP, platform and Android/Gemini integrations explicitly marked as proposals.
 
 After the user reloaded version 0.4.0, the hosted synthetic feed retrieved an existing report for the first caption, left the second as related media/unverified, and opened the corrected `demo_report` public link successfully. These checks made no model calls. Current regression suite: 47 Python + 27 JavaScript.
+
+## v0.5 no-code browser flow
+
+The normal app has examples in its own workspace; collection selection, the synthetic developer fixture and reviewer-code input are hidden from the primary UI. First use creates a limited HttpOnly guest session automatically. A browser test on Cloud Run reused an example, completed a fresh private visitor investigation and then retrieved it with zero model calls, without entering a key or code. Developer keys live under `/developers`; trusted team keys are optional advanced connection settings. The hosted legacy reviewer secret and its reserved allowance are disabled.

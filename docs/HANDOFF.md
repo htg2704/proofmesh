@@ -1,45 +1,35 @@
 # ProofMesh handoff — Hounds of Singularity
 
-Core prototype implementation is complete and deployed. No hackathon form fields, uploads or submission action were performed. The user will review and submit.
+The normal app is deployed. No hackathon submission was made; the user will record their own final demo and submit.
 
-## Copy into the submission form
+## User experience
 
-- Challenge: **Media, Content & Digital Experiences**
-- Prototype: https://proofmesh-2god3tua3a-el.a.run.app/
-- Public repository: https://github.com/htg2704/proofmesh
-- Draft reference video (user will replace with their own demo): https://drive.google.com/file/d/1XFfp6bKjPRfR-LIW3-YX574ly6-6Nizc/view?usp=sharing
-- Draft MP4 reference: https://proofmesh-2god3tua3a-el.a.run.app/assets/demo.mp4
-- PDF: `submission/proofmesh-official.pdf` (official organizer template, 15 pages, 2,530,169 bytes, below the 5 MB limit)
-- Editable deck: `submission/proofmesh-submission.pptx`
-- Brief: copy `submission/BRIEF.txt` (below 1,024 characters)
-- Portal cutoff: **October 18, 2026 at 11:59 PM IST**, verified in the actual form.
+Open https://proofmesh-2god3tua3a-el.a.run.app/. Enter a claim/image or prefill an example in the same workspace. No reviewer code, developer key or separate demo page is required. A limited browser workspace is created automatically on demand. New reports are isolated by client; deliberately published examples can be reused only when their exact context is fresh.
 
-**Demo work is frozen at the user's request. The user will record the final demonstration.** The existing 3:20 file is a draft reference assembled from screen captures, slides and synthetic narration; it is not a continuous screen recording. The draft remains in the approved Drive account with Anyone with the link / Viewer access. Do not treat this link as the final submission video. Replace the video field with the user's recording when ready. No further narration, video editing or uploads are pending for the agent.
+The former reviewer credential and reserved allowance are disabled on the hosted service. The separate public synthetic fixture remains only as a developer regression tool, not the main user flow.
 
-## Team use
+## Team testing and third parties
 
-Public examples work without a token. The private reviewer link is saved in ignored `data/reviewer-access.txt`; it creates an eight-hour browser session in a separate shared review collection. Six admissions were reserved for reviewers, of which one failed. Do not publish the team API token or reviewer code in the repository/deck. The team registry still uses the team API token in Connection settings. The cloud token is in this project's Secret Manager, not in source control. It was saved to the installed Chrome extension only with explicit approval.
+Harshwardhan, Chennika and authorized Codex tests have distinct private testing credentials in ignored `data/TEAM_ACCESS.md`. Use the assigned key once in Connection settings; existing owner API credentials also work. Those credentials bypass application request/daily limits. They are team credentials, so never share them with third-party integrations.
 
-The extension files are version 0.4.0. Reload the unpacked extension after updating, choose **Google Cloud demo** and enable visible-post lookups. Local/cloud token slots stay separate. Version 0.4.0 adds timestamp-aware caption context and regression coverage; it also retains the public synthetic deep-link fixes. The user reloaded the installed extension, and its hosted fixture now shows exact reuse, changed-caption abstention and the corrected public report link. Broader X layout coverage remains limited.
+Third parties can obtain a limited REST key at `/developers`, or run their own deployment. Defaults: 60 requests/minute and two new investigations per UTC day per credential. Keys expire after 30 days, can be revoked, and cannot access other clients' or team reports. See `THIRD_PARTY.md` for commands, CORS, errors and owner administration.
 
-## Availability and remaining scope
+The approved US$5 financial guard is preserved: twelve total job admissions across the live window, five consumed and seven remaining at verification. Trusted rate exemptions do not bypass that shared guard, provider capacity or the November 17, 2026, 23:59:59 IST expiry. Recorded results and exact reuse require no extra model calls. Workload controls are not an absolute Google billing cap.
 
-Live jobs are configured through **November 17, 2026, 23:59:59 IST**, with four attempts per UTC day and twelve total across the window. Four cloud attempts were consumed through October 17; eight remain across the window. The October 17 UTC daily cap is reached; new admissions resume October 18 at 00:00 UTC (05:30 IST). This is bounded access under the approved US$5 total, not unlimited model use. Public recorded examples and registry matches make zero additional model calls.
+## Code and verification
 
-Automatic Instagram detection is not implemented. You can manually upload a supported image and caption through the authenticated portal. Video/Reels, galleries, watermark checks, semantic claim matching, fingerprint-only requests and broader logged-in X/accessibility validation are deferred. The task board keeps those gaps explicit rather than marking every planned enhancement complete.
+Application image: `3d62817`. Editable diagram correction: `66e7b74`. All 61 Python and 28 JavaScript tests pass; GitHub CI passed. Hosted checks verified real Firestore-backed 429/Retry-After, independent client counters, team-report isolation, immediate revocation, browser CORS and all three trusted exemptions. A fresh ordinary visitor investigation completed with three model calls and one provider attempt per stage; its repeat used zero model calls. Earlier provider 429 failures remain documented in `EVALUATION.md`.
 
-Current checks: 47 Python and 27 JavaScript tests. See `EVALUATION.md`, `PRODUCT_QA.md` and `DEPLOYMENT.md` for actual model, browser, persistence and cost-control evidence, including failures and limitations.
+## Materials for the user
 
-Fresh hosted inference remains subject to Vertex capacity: the latest reviewer job failed with provider 429 twice and published no report. Start a judging walkthrough with the public recorded cases, then attempt a new reviewer check when the UTC daily cap permits. No guarantee of fresh inference availability is claimed.
+- Category: Media, Content & Digital Experiences.
+- Repository: https://github.com/htg2704/proofmesh
+- Brief: `submission/BRIEF.txt` (953 characters).
+- Editable architecture: `docs/diagrams/proofmesh-architecture.drawio`; matching PNG/SVG previews are alongside it. It uses grouped native shapes, datastore cylinders and embedded service icons, and was inspected in draw.io's native viewer.
+- Existing official-template presentation: `submission/proofmesh-submission.pptx` and `submission/proofmesh-official.pdf`. These predate the v0.5 access change and new architecture; use the supplied architecture preview when revising the slide. The PDF is 15 pages and below 5 MB.
+- Final demo video: user will record it. Existing Drive draft: https://drive.google.com/file/d/1XFfp6bKjPRfR-LIW3-YX574ly6-6Nizc/view?usp=sharing. It is a reference assembled from captures/slides and synthetic narration, not a continuous recording. Demo production is frozen; no further agent voiceover or video work is pending.
+- Portal cutoff previously verified in the form: October 18, 2026, 11:59 PM IST. The user submits.
 
-## Current release
+## Remaining product limits
 
-Code and assets: `8d70762`, deployed as Cloud Run revision `proofmesh-00009-ph7`. Health and range playback were checked; three public examples retain recorded-run labels. [GitHub CI](https://github.com/htg2704/proofmesh/actions/runs/39044370607) passed. Action explanations work on hover/focus/tap, and the live portal presents the shared evidence rail with current versus proposed clients distinguished. SDK/MCP and platform integrations are not implemented.
-
-## v0.5 app and rail access
-
-The main app no longer asks judges for a reviewer code or sends them to a separate demo. Examples prefill the same workspace. A limited, isolated browser session opens automatically on demand; `/developers` issues limited REST keys. The legacy reviewer path is hidden and retained for compatibility only. Use the normal prototype URL for judging.
-
-Team rate exemptions use distinct credentials from ignored `data/TEAM_ACCESS.md`; use the assigned key in Connection settings. Existing owner credentials remain exempt. The shared financial guard is still in force under the existing US$5 approval. Third-party request limits, errors, isolation and local setup are documented in `THIRD_PARTY.md`.
-
-New editable architecture: `docs/diagrams/proofmesh-architecture.drawio`, with matching PNG/SVG previews and embedded official service icons. This supersedes the older diagram in the existing presentation; the user can import the supplied PNG or edit the native file. Demo and voiceover work remains frozen.
+No Instagram adapter, video/Reels or gallery analysis, watermark/C2PA validation, universal AI-origin detector, semantic claim reuse, MCP server or SDK is implemented. Platform/Android/Gemini integrations are proposals. Same-model critique can miss errors. Guest/key isolation is not verified human identity, account recovery, Sybil resistance or production DDoS protection. Broader logged-in X and accessibility coverage remains deferred.

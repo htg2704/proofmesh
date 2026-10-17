@@ -60,3 +60,11 @@ The official submission template was downloaded from the organizer's linked Goog
 ## v0.4 gap-fix verification — October 17
 
 47 Python and 27 JavaScript tests pass. Prespecified evaluation, publication context, exact quotation checks and first-pass failures are recorded in `EVALUATION.md`. Reviewer login and team/report collection isolation passed against Cloud Run. Fresh reviewer inference failed with provider 429 on both bounded research attempts; no report was published. The previous report being left on screen was fixed and regression-tested. The user reloaded extension 0.4.0; hosted exact/changed-caption behavior and its corrected public report link were verified directly. The public frozen samples were refreshed from v0.4 runs and keep explicit recorded-example labels.
+
+## v0.5 normal app and third-party access — October 17
+
+61 Python and 28 JavaScript checks pass. Hosted Firestore-backed verification confirmed a limited client receives 429 with Retry-After, another client stays unaffected, private team reports return 404, revocation returns 401, and cross-origin bearer preflight succeeds without cross-origin cookie credentials. All three trusted testing credentials returned rate-exempt team access. Disposable QA keys were revoked.
+
+The ordinary browser flow opened an isolated workspace without a code, reused a selected public example, then completed a fresh Canberra investigation with three model calls and one provider attempt per stage. Its repeat used zero model calls. The report stayed in a client namespace. This is an integration check, not another independent accuracy benchmark. Hosted legacy reviewer credentials and reserved quotas are retired. The shared guard has five of twelve admissions consumed.
+
+The editable draw.io file was opened in the native viewer; embedded logos, grouped components and corrected datastore cylinders were visually checked. SVG/PNG previews derive from the same layout. Application image 3d62817; diagram correction 66e7b74. CI: https://github.com/htg2704/proofmesh/actions/runs/39047021769. No demo/voiceover work or hackathon submission was performed in this phase.
