@@ -66,3 +66,15 @@ def test_api_jobs_auth_and_public_demo(tmp_path, monkeypatch):
     status=client.get('/api/jobs/'+result.json()['id'],headers=headers).json()
     assert status['status']=='succeeded'
     assert 'claim' not in status and 'image_key' not in status
+
+
+def test_explicit_retry_is_bounded_and_counts_against_quota(tmp_path):
+    jobs, _ = make(tmp_path)
+    sub=Submission(claim='A failed job eligible for one manual retry')
+    job,_=jobs.reserve(sub)
+    jobs.update(job['id'],status='failed')
+    assert jobs.reserve(sub)[1] is False
+    retried,created=jobs.reserve(sub,retry_failed=True)
+    assert created and retried['attempt']==2
+    jobs.update(job['id'],status='failed')
+    assert jobs.reserve(sub,retry_failed=True)[1] is False

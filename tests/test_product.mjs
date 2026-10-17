@@ -97,13 +97,13 @@ test('duplicate DOM activity does not repeat successful registry requests', asyn
 });
 
 function worker(fetch, enabled=true) {
-  const context=vm.createContext({URL,AbortSignal,btoa,fetch,chrome:{storage:{local:{get:async()=>({enabled,apiToken:'test-token'})}},runtime:{onMessage:{addListener(){}}}}});
+  const context=vm.createContext({URL,AbortSignal,btoa,fetch,Date,chrome:{storage:{local:{get:async()=>({enabled,apiToken:'test-token'})}},runtime:{onMessage:{addListener(){}}}}});
   vm.runInContext(source('extension/background.js'),context); return context;
 }
 test('worker lookup sends authenticated demo JSON and makes no investigation request', async () => {
   const calls=[]; const w=worker(async(url,options)=>{calls.push({url,options}); return {ok:true,json:async()=>({status:'unknown',report:null})};});
   await w.handle({type:'match',claim:'A synthetic claim',imageUrl:null},{url:'http://127.0.0.1:8000/feed'});
-  assert.equal(calls[0].url,'http://127.0.0.1:8000/api/matches'); assert.equal(calls[0].options.headers.Authorization,'Bearer test-token');
+  assert.equal(calls[0].url,'http://127.0.0.1:8000/api/demo/matches'); assert.equal(calls[0].options.headers.Authorization,'Bearer test-token');
   assert.equal(JSON.parse(calls[0].options.body).corpus,'demo');
 });
 test('paused worker and private SPA sender cannot transmit posts', async () => {
@@ -116,4 +116,18 @@ test('worker reports offline and non-JSON responses without publishing a verdict
   const message={type:'match',claim:'A test claim',imageUrl:null},sender={url:'http://127.0.0.1:8000/feed'};
   await assert.rejects(worker(async()=>{throw new TypeError('Failed to fetch');}).handle(message,sender),/Cannot reach/);
   await assert.rejects(worker(async()=>({json:async()=>{throw new Error('html');}})).handle(message,sender),/unreadable/);
+});
+
+test('on-demand investigation enqueues a short job request instead of waiting on model work', async () => {
+  const calls=[]; const w=worker(async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({id:'c'.repeat(64),status:'queued'})};});
+  const data=await w.handle({type:'investigate',claim:'A public factual claim',imageUrl:null},{url:'https://x.com/NASA'});
+  assert.equal(calls[0].url,'http://127.0.0.1:8000/api/jobs');
+  assert.equal(data.status,'queued'); assert.equal(data.api_origin,'http://127.0.0.1:8000');
+});
+
+test('worker only allows the fixed hosted demo origin in addition to local fixtures', () => {
+  const w=worker(async()=>{});
+  assert.equal(w.allowedSender('https://proofmesh-2god3tua3a-el.a.run.app/feed'),true);
+  assert.equal(w.allowedSender('https://proofmesh-2god3tua3a-el.a.run.app/other'),false);
+  assert.equal(w.allowedImage('https://evil.example/fixtures/bridge.png'),false);
 });

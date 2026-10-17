@@ -18,7 +18,7 @@ class PageText(HTMLParser):
         self.published = None
 
     def handle_starttag(self, tag, attrs):
-        if tag in {'script', 'style', 'noscript', 'svg'}:
+        if tag in {'script', 'style', 'noscript', 'svg', 'nav', 'header', 'footer', 'aside', 'form'}:
             self.skip += 1
         if tag == 'meta':
             a = dict(attrs)
@@ -28,7 +28,7 @@ class PageText(HTMLParser):
             self.parts.append('\n')
 
     def handle_endtag(self, tag):
-        if tag in {'script', 'style', 'noscript', 'svg'} and self.skip:
+        if tag in {'script', 'style', 'noscript', 'svg', 'nav', 'header', 'footer', 'aside', 'form'} and self.skip:
             self.skip -= 1
         if tag in {'p', 'li', 'div'}:
             self.parts.append('\n')
@@ -77,10 +77,10 @@ def fetch_page(url, claim):
                 raise ValueError('Source exceeds retrieval limit')
             parser = PageText()
             parser.feed(raw.decode('utf-8', errors='replace'))
-            paragraphs = [' '.join(p.split()) for p in ''.join(parser.parts).split('\n') if len(p.strip()) > 40]
+            paragraphs = [' '.join(p.split()) for p in ''.join(parser.parts).split('\n') if len(p.strip()) > 15]
             terms = {w.lower() for w in re.findall(r'\w{4,}', claim)}
             ranked = sorted(enumerate(paragraphs), key=lambda pair: len(terms & set(re.findall(r'\w+', pair[1].lower()))), reverse=True)
-            selected = sorted(ranked[:4])
+            selected = ranked[:4]
             # Short attributed extract; never treat a page's publication date as capture date.
             text = ' '.join(p for _, p in selected)
             excerpt = ' '.join(text.split()[:120])
@@ -111,10 +111,15 @@ def enrich_evidence(leads, claim, fetcher=fetch_page):
 
 def vision_leads(image_base64):
     if not image_base64:
-        return {'status': 'not_requested', 'pages': [], 'model_calls': 0}
+        return {'status': 'not_requested', 'pages': [], 'vision_calls': 0}
     from google.cloud import vision
+    import io
+    from PIL import Image, ImageOps
+    with Image.open(io.BytesIO(base64.b64decode(image_base64))) as raw:
+        image = ImageOps.exif_transpose(raw).convert('RGB'); image.thumbnail((1600, 1600))
+        encoded = io.BytesIO(); image.save(encoded, format='JPEG', quality=85)
     client = vision.ImageAnnotatorClient()
-    result = client.web_detection(image=vision.Image(content=base64.b64decode(image_base64)), retry=None, timeout=20)
+    result = client.web_detection(image=vision.Image(content=encoded.getvalue()), retry=None, timeout=20)
     if result.error.message:
         raise RuntimeError('Image retrieval failed')
     pages = [{'url': p.url, 'title': p.page_title or 'Image matching page',

@@ -30,7 +30,7 @@ def create_app(store=None, investigator=None):
         store = (FirestoreStore(os.environ["GOOGLE_CLOUD_PROJECT"], os.getenv("PROOFMESH_FIRESTORE_COLLECTION", "proofmesh_investigations"))
                  if os.getenv("PROOFMESH_STORE") == "firestore" else SQLiteStore(os.getenv("PROOFMESH_DB", str(ROOT / "data/proofmesh.sqlite3"))))
     service = ProofMesh(store, investigator or GeminiInvestigator())
-    app = FastAPI(title="ProofMesh", version="0.1.0", docs_url=None, redoc_url=None)
+    app = FastAPI(title="ProofMesh", version="0.3.0", docs_url=None, redoc_url=None)
     app.state.service = service
     jobs = Jobs(store, service)
     app.state.jobs = jobs
@@ -39,7 +39,7 @@ def create_app(store=None, investigator=None):
 
     @app.middleware("http")
     async def boundary(request: Request, call_next):
-        if request.url.path.startswith("/api/") and request.url.path not in {"/api/health", "/api/demo", "/api/demo/matches"} and not request.url.path.startswith("/api/demo/reports/"):
+        if request.url.path.startswith("/api/") and request.url.path not in {"/api/health", "/api/examples", "/api/demo", "/api/demo/matches"} and not request.url.path.startswith("/api/demo/reports/"):
             if token and not hmac.compare_digest(request.headers.get("authorization", ""), f"Bearer {token}"):
                 return JSONResponse({"detail": "API token required"}, status_code=401)
         if request.url.path.startswith("/api/"):
@@ -56,14 +56,14 @@ def create_app(store=None, investigator=None):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
         if request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         return response
 
     @app.get("/api/health")
     def health():
-        return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "version": "0.1.0"}
+        return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "version": "0.3.0"}
 
     @app.get("/api/investigations")
     def list_reports(corpus: str = "live"):
@@ -121,11 +121,11 @@ def create_app(store=None, investigator=None):
             lock.release()
 
     @app.post("/api/jobs", status_code=202)
-    def start_job(submission: Submission, background: BackgroundTasks):
+    def start_job(submission: Submission, background: BackgroundTasks, retry_failed: bool = False):
         if not live:
             raise HTTPException(503, "Live investigation is disabled")
         try:
-            job, created = jobs.reserve(submission)
+            job, created = jobs.reserve(submission, retry_failed=retry_failed)
             if created:
                 try:
                     jobs.save_image(job['id'], submission.image_base64)
@@ -199,6 +199,12 @@ def create_app(store=None, investigator=None):
     @app.get("/fixtures/bridge-archive")
     def archive_page():
         return FileResponse(ROOT / "web/evidence.html")
+
+    @app.get("/api/examples")
+    def recorded_examples():
+        import json
+        path = ROOT / "web/recorded-cases.json"
+        return {"reports": json.loads(path.read_text()) if path.exists() else []}
 
     @app.get("/")
     def index():

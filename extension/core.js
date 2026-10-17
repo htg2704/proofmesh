@@ -1,9 +1,10 @@
 /* Pure DOM extraction shared by the content script and regression tests. */
 globalThis.ProofMeshCore = (() => {
   const API = 'http://127.0.0.1:8000';
+  const CLOUD = 'https://proofmesh-2god3tua3a-el.a.run.app';
   const PRIVATE_PATH = /^\/(?:messages|settings|compose|login|logout|account)(?:\/|$)|^\/i\/(?:chat|flow|account)(?:\/|$)/;
   function allowedPage(url) {
-    try { const u = new URL(url); return !u.username && !u.password && ((u.protocol === 'https:' && u.hostname === 'x.com' && !PRIVATE_PATH.test(u.pathname)) || (u.origin === API && u.pathname === '/feed')); } catch { return false; }
+    try { const u = new URL(url); return !u.username && !u.password && ((u.protocol === 'https:' && u.hostname === 'x.com' && !PRIVATE_PATH.test(u.pathname)) || ([API,CLOUD].includes(u.origin) && u.pathname === '/feed')); } catch { return false; }
   }
   function postId(href) { try { return new URL(href, 'https://x.com').pathname.match(/^\/[^/]+\/status\/(\d+)(?:\/|$)/)?.[1] || null; } catch { return null; } }
   function extractPost(article, pageUrl) {
@@ -27,5 +28,5 @@ globalThis.ProofMeshCore = (() => {
     if (new URL(pageUrl).hostname === 'x.com' && /\b(today|yesterday|tomorrow|tonight|right now|this (morning|evening|week|month|year))\b/i.test(claim)) return {kind:'unsupported', reason:'Relative-time caption needs publication-context review'};
     return {kind:'post', claim, imageUrl:urls[0] || null, postId:ids[0] || null, signature:JSON.stringify([claim, urls[0] || null, ids[0] || null])};
   }
-  return {API, allowedPage, extractPost};
+  return {API, CLOUD, allowedPage, extractPost};
 })();

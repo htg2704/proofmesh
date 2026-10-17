@@ -22,7 +22,7 @@ function safeLink(url) { try { const parsed = new URL(url, location.origin); ret
 function renderReport(report, reused = false) {
   currentReport = report;
   const root = $('result'); root.replaceChildren();
-  root.append(node('span', report.corpus === 'demo' ? 'Synthetic demo · not real-world evidence' : 'Live investigation', `tag ${report.corpus === 'demo' ? 'demo' : ''}`));
+  root.append(node('span', report.corpus === 'demo' ? 'Synthetic demo · not real-world evidence' : report.recorded_example ? 'Recorded live investigation · inspect the original sources' : 'Live investigation', `tag ${report.corpus === 'demo' ? 'demo' : ''}`));
   if (reused) root.append(node('span', 'Reused · 0 model calls', 'tag'));
   root.append(node('h3', report.assessment.summary, 'report-summary'));
   root.append(node('p', `Investigated ${new Date(report.created_at).toLocaleString()} · ${new Date(report.expires_at) <= new Date() ? 'Archived report; check current evidence before reuse.' : 'Assessment belongs to the claim below.'}`, 'muted'));
@@ -87,7 +87,14 @@ async function pollJob(id) {
   for (let count = 0; count < 120; count++) {
     const job = await api(`/api/jobs/${encodeURIComponent(id)}`);
     notice(`Investigation ${job.status}. You can close this page and return; the job is saved.`);
-    if (job.status === 'failed') { sessionStorage.removeItem('proofmesh-job'); throw new Error(job.error || 'Investigation failed.'); }
+    if (job.status === 'failed') {
+      sessionStorage.removeItem('proofmesh-job');
+      if ((job.attempt || 1) < 2) {
+        const retry = node('button', 'Retry once with Google Cloud', 'text-button');
+        retry.addEventListener('click', () => run(async () => { const next = await api('/api/jobs?retry_failed=true', payload()); await pollJob(next.id); })); $('result').append(retry);
+      }
+      throw new Error(job.error || 'Investigation failed.');
+    }
     if (job.status === 'succeeded') {
       renderReport(await api(`/api/investigations/${job.report_id}`), job.reused);
       sessionStorage.removeItem('proofmesh-job'); notice(`Investigation complete · ${job.model_calls} model calls.`); await refresh(); return;
@@ -101,3 +108,14 @@ $('save-token').addEventListener('click', () => { sessionStorage.setItem('proofm
 $('refresh-button').addEventListener('click', () => run(refresh));
 $('corpus').addEventListener('change', () => run(refresh));
 (async () => { try { const health = await api('/api/health'); $('connection').textContent = health.live_enabled ? 'Live pipeline enabled' : 'Local · demo ready'; if (health.authentication_required && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'demo'; notice('Public synthetic demo ready. Live investigations require your team API token in Connection settings.'); await refresh(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
+
+async function loadExamples() {
+  const {reports} = await api('/api/examples');
+  const root = $('recorded-examples');
+  for (const report of reports) {
+    const label = {supported_history:'Accurate historical caption', misleading_caption:'Same image, misleading caption', unsupported_no_media:'Insufficient evidence'}[report.example_name] || 'Recorded case';
+    const button=node('button', label, 'text-button');
+    button.addEventListener('click', () => { renderReport(report); notice('Recorded live run. Viewing this case makes zero model calls; it does not assess the text currently in the input.'); }); root.append(button);
+  }
+}
+loadExamples().catch(() => {});

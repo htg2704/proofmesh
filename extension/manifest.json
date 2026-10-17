@@ -1,11 +1,44 @@
 {
   "manifest_version": 3,
-  "name": "ProofMesh — Context before conclusions",
-  "version": "0.2.0",
+  "name": "ProofMesh \u2014 Context before conclusions",
+  "version": "0.3.0",
   "description": "Look up shared investigations for visible X posts. Matching an image never transfers a verdict to a new caption.",
-  "permissions": ["storage"],
-  "host_permissions": ["http://127.0.0.1:8000/*", "https://pbs.twimg.com/*"],
-  "background": {"service_worker": "background.js"},
-  "action": {"default_popup": "popup.html", "default_title": "ProofMesh settings"},
-  "content_scripts": [{"matches": ["https://x.com/*", "http://127.0.0.1:8000/feed*"], "exclude_matches": ["https://x.com/messages*", "https://x.com/i/chat*", "https://x.com/settings*", "https://x.com/compose*", "https://x.com/i/flow*"], "js": ["core.js", "content.js"], "css": ["content.css"]}]
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8000/*",
+    "https://pbs.twimg.com/*",
+    "https://proofmesh-2god3tua3a-el.a.run.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ProofMesh settings"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "http://127.0.0.1:8000/feed*",
+        "https://proofmesh-2god3tua3a-el.a.run.app/feed*"
+      ],
+      "exclude_matches": [
+        "https://x.com/messages*",
+        "https://x.com/i/chat*",
+        "https://x.com/settings*",
+        "https://x.com/compose*",
+        "https://x.com/i/flow*"
+      ],
+      "js": [
+        "core.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ]
+    }
+  ]
 }

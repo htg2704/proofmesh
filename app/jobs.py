@@ -47,7 +47,7 @@ class Jobs:
                 body = json.loads(row[0]); body.update(changes)
                 db.execute('UPDATE jobs SET body=? WHERE id=?', (json.dumps(body), key))
 
-    def reserve(self, submission):
+    def reserve(self, submission, retry_failed=False):
         cutoff = os.getenv('PROOFMESH_LIVE_UNTIL')
         if cutoff and utc() > datetime.fromisoformat(cutoff):
             raise ValueError('Live demo window ended; matching existing evidence remains available.')
@@ -59,7 +59,7 @@ class Jobs:
         if cached:
             return {'id': key, 'status': 'succeeded', 'report_id': key, 'reused': True, 'model_calls': 0}, False
         job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim,
-               'image_key': None, 'report_id': None, 'reused': False, 'model_calls': None, 'error': None}
+               'attempt': 1, 'image_key': None, 'report_id': None, 'reused': False, 'model_calls': None, 'error': None}
         # The quota and deduplication claim are committed together, across instances.
         if self.cloud:
             from google.cloud import firestore
@@ -70,7 +70,10 @@ class Jobs:
                 old = ref.get(transaction=transaction)
                 limit = budget.get(transaction=transaction)
                 if old.exists:
-                    return old.to_dict(), False
+                    previous = old.to_dict()
+                    if not retry_failed or previous['status'] != 'failed' or previous.get('attempt', 1) >= 2:
+                        return previous, False
+                    job['attempt'] = previous.get('attempt', 1) + 1
                 count = limit.to_dict().get('count', 0) if limit.exists else 0
                 if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '10')):
                     raise ValueError('Daily investigation cap reached')
@@ -82,11 +85,14 @@ class Jobs:
             db.execute('BEGIN IMMEDIATE')
             old = db.execute('SELECT body FROM jobs WHERE id=?', (key,)).fetchone()
             if old:
-                return json.loads(old[0]), False
-            count = db.execute('SELECT COUNT(*) FROM jobs WHERE json_extract(body, "$.created_at") LIKE ?', (utc().date().isoformat() + '%',)).fetchone()[0]
+                previous = json.loads(old[0])
+                if not retry_failed or previous['status'] != 'failed' or previous.get('attempt', 1) >= 2:
+                    return previous, False
+                job['attempt'] = previous.get('attempt', 1) + 1
+            count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs WHERE json_extract(body, "$.created_at") LIKE ?', (utc().date().isoformat() + '%',)).fetchone()[0]
             if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '10')):
                 raise ValueError('Daily investigation cap reached')
-            db.execute('INSERT INTO jobs VALUES (?,?)', (key, json.dumps(job)))
+            db.execute('INSERT OR REPLACE INTO jobs VALUES (?,?)', (key, json.dumps(job)))
         return job, True
 
     def save_image(self, key, encoded):
@@ -147,7 +153,7 @@ class Jobs:
             self.update(key, status='succeeded', report_id=result['report']['id'], model_calls=result['model_calls'], reused=result['reused'], completed_at=utc().isoformat())
         except Exception as exc:
             import logging
-            logging.getLogger('proofmesh').error('Job failed: %s', type(exc).__name__)
+            logging.getLogger('proofmesh').error('Job failed: %s code=%s', type(exc).__name__, getattr(exc, 'code', None))
             self.update(key, status='failed', error='Investigation failed. No successful report was published; no automatic paid retry.', completed_at=utc().isoformat())
         finally:
             try:
@@ -162,7 +168,7 @@ class Jobs:
         client = tasks_v2.CloudTasksClient()
         parent = client.queue_path(os.environ['GOOGLE_CLOUD_PROJECT'], os.environ['PROOFMESH_REGION'], os.environ['PROOFMESH_QUEUE'])
         root = os.environ['PROOFMESH_WORKER_URL'].rstrip('/')
-        client.create_task(parent=parent, task={'name': parent + '/tasks/job-' + key,
+        client.create_task(parent=parent, task={'name': parent + '/tasks/job-' + key + '-a' + str(self.get(key).get('attempt', 1)),
             'http_request': {'http_method': tasks_v2.HttpMethod.POST, 'url': root + '/internal/jobs/' + key,
                              'headers': {'X-ProofMesh-Worker-Token': os.environ['PROOFMESH_WORKER_TOKEN']},
                              'oidc_token': {'service_account_email': os.environ['PROOFMESH_TASK_IDENTITY'], 'audience': root}},
