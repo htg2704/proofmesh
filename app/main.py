@@ -13,6 +13,8 @@ from app.demo import seed, demo_image
 from app.investigator import GeminiInvestigator, InvestigationUnavailable
 from app.models import Submission
 from app.jobs import Jobs
+from app.access import COOKIE, review_cookie, valid_cookie
+from pydantic import BaseModel, Field
 from app.service import ProofMesh
 from app.store import SQLiteStore, FirestoreStore
 
@@ -21,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def create_app(store=None, investigator=None):
     token = os.getenv("PROOFMESH_API_TOKEN", "")
+    reviewer_token = os.getenv("PROOFMESH_REVIEW_TOKEN", "")
     live = os.getenv("PROOFMESH_ENABLE_LIVE", "false").lower() == "true"
     if live and len(token) < 24:
         raise RuntimeError("Live mode requires PROOFMESH_API_TOKEN with at least 24 characters")
@@ -30,7 +33,7 @@ def create_app(store=None, investigator=None):
         store = (FirestoreStore(os.environ["GOOGLE_CLOUD_PROJECT"], os.getenv("PROOFMESH_FIRESTORE_COLLECTION", "proofmesh_investigations"))
                  if os.getenv("PROOFMESH_STORE") == "firestore" else SQLiteStore(os.getenv("PROOFMESH_DB", str(ROOT / "data/proofmesh.sqlite3"))))
     service = ProofMesh(store, investigator or GeminiInvestigator())
-    app = FastAPI(title="ProofMesh", version="0.3.0", docs_url=None, redoc_url=None)
+    app = FastAPI(title="ProofMesh", version="0.4.0", docs_url=None, redoc_url=None)
     app.state.service = service
     jobs = Jobs(store, service)
     app.state.jobs = jobs
@@ -39,9 +42,15 @@ def create_app(store=None, investigator=None):
 
     @app.middleware("http")
     async def boundary(request: Request, call_next):
-        if request.url.path.startswith("/api/") and request.url.path not in {"/api/health", "/api/examples", "/api/demo", "/api/demo/matches"} and not request.url.path.startswith("/api/demo/reports/"):
-            if token and not hmac.compare_digest(request.headers.get("authorization", ""), f"Bearer {token}"):
-                return JSONResponse({"detail": "API token required"}, status_code=401)
+        header = request.headers.get("authorization", "")
+        request.state.role = "none"
+        if not token or hmac.compare_digest(header, f"Bearer {token}"):
+            request.state.role = "team"
+        elif len(reviewer_token) >= 32 and (hmac.compare_digest(header, f"Bearer {reviewer_token}") or valid_cookie(request.cookies.get(COOKIE), reviewer_token)):
+            request.state.role = "review"
+        public = request.url.path in {"/api/health", "/api/access/reviewer", "/api/examples", "/api/demo", "/api/demo/matches"} or request.url.path.startswith("/api/demo/reports/")
+        if request.url.path.startswith("/api/") and not public and request.state.role == "none":
+            return JSONResponse({"detail": "Team or reviewer access required"}, status_code=401)
         if request.url.path.startswith("/api/"):
             if request.method == "POST":
                 if request.headers.get("content-type", "").split(";")[0] != "application/json":
@@ -61,27 +70,47 @@ def create_app(store=None, investigator=None):
             response.headers["Cache-Control"] = "no-store"
         return response
 
+    def scope(submission, request):
+        if request.state.role == "review" and submission.corpus != "demo":
+            return submission.model_copy(update={"corpus": "review"})
+        return submission
+
+    class ReviewerAccess(BaseModel):
+        code: str = Field(min_length=24, max_length=128)
+
+    @app.post("/api/access/reviewer")
+    def review_access(body: ReviewerAccess):
+        if len(reviewer_token) < 32 or not hmac.compare_digest(body.code, reviewer_token):
+            raise HTTPException(401, "Invalid reviewer access link")
+        response = JSONResponse({"access": "review", "message": "Review workspace connected"})
+        response.set_cookie(COOKIE, review_cookie(reviewer_token), httponly=True, secure=bool(os.getenv("K_SERVICE")), samesite="strict", max_age=8*3600)
+        return response
+
     @app.get("/api/health")
-    def health():
-        return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "version": "0.3.0"}
+    def health(request: Request):
+        return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "access": request.state.role,
+                "review_enabled": len(reviewer_token) >= 32, "version": "0.4.0"}
 
     @app.get("/api/investigations")
-    def list_reports(corpus: str = "live"):
-        if corpus not in {"live", "demo"}:
+    def list_reports(request: Request, corpus: str = "live"):
+        if request.state.role == "review":
+            corpus = "review"
+        if corpus not in {"live", "demo", "review"}:
             raise HTTPException(400, "Unknown corpus")
         return {"reports": service.store.all(corpus)}
 
     @app.get("/api/investigations/{report_id}")
-    def read_report(report_id: str):
+    def read_report(report_id: str, request: Request):
         if not re.fullmatch(r"[a-f0-9]{64}", report_id):
             raise HTTPException(404, "Investigation not found")
         report = service.store.get(report_id)
-        if not report:
+        if not report or (request.state.role == "review" and report.get("corpus") != "review"):
             raise HTTPException(404, "Investigation not found")
         return report
 
     @app.post("/api/matches")
-    def match(submission: Submission):
+    def match(submission: Submission, request: Request):
+        submission = scope(submission, request)
         try:
             if submission.corpus == "demo":
                 seed(demo_service)
@@ -91,8 +120,8 @@ def create_app(store=None, investigator=None):
             raise HTTPException(400, str(exc)) from exc
 
     @app.post("/api/investigations")
-    def investigate(submission: Submission):
-        if os.getenv("K_SERVICE"):
+    def investigate(submission: Submission, request: Request):
+        if os.getenv("K_SERVICE") or request.state.role == "review":
             raise HTTPException(409, "Use POST /api/jobs and poll its status on the hosted service")
         if not lock.acquire(blocking=False):
             raise HTTPException(429, "An investigation is already running; try again shortly")
@@ -121,7 +150,8 @@ def create_app(store=None, investigator=None):
             lock.release()
 
     @app.post("/api/jobs", status_code=202)
-    def start_job(submission: Submission, background: BackgroundTasks, retry_failed: bool = False):
+    def start_job(submission: Submission, background: BackgroundTasks, request: Request, retry_failed: bool = False):
+        submission = scope(submission, request)
         if not live:
             raise HTTPException(503, "Live investigation is disabled")
         try:
@@ -142,14 +172,16 @@ def create_app(store=None, investigator=None):
             raise HTTPException(400, str(exc)) from exc
 
     @app.get("/api/jobs/{job_id}")
-    def read_job(job_id: str):
+    def read_job(job_id: str, request: Request):
         if not re.fullmatch(r"[a-f0-9]{64}", job_id):
             raise HTTPException(404, "Job not found")
         job = jobs.get(job_id)
+        if job and request.state.role == "review" and job.get("corpus", "live") != "review":
+            raise HTTPException(404, "Job not found")
         if not job:
             # Cached jobs can have no job document.
             report = store.get(job_id)
-            if report:
+            if report and (request.state.role != "review" or report.get("corpus") == "review"):
                 return {"id": job_id, "status": "succeeded", "report_id": job_id, "reused": True, "model_calls": 0}
             raise HTTPException(404, "Job not found")
         return jobs.public(job)

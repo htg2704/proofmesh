@@ -131,3 +131,13 @@ test('worker only allows the fixed hosted demo origin in addition to local fixtu
   assert.equal(w.allowedSender('https://proofmesh-2god3tua3a-el.a.run.app/other'),false);
   assert.equal(w.allowedImage('https://evil.example/fixtures/bridge.png'),false);
 });
+
+test('relative-time caption uses an explicit timestamp and detects timestamp recycling',()=>{
+  const html=modern.replace('A mission launched on 12 October 2026.','This event happened today.').replace('1h</a>','<time datetime="2026-10-17T05:30:00+05:30">1h</time></a>');
+  const {dom,result}=extraction(html);
+  assert.equal(result.kind,'post');assert.equal(result.publishedAt,'2026-10-17T00:00:00.000Z');
+  assert.equal(result.sourceUrl,'https://x.com/Example/status/123456789');
+  dom.window.document.querySelector('time').setAttribute('datetime','2026-10-18T00:00:00Z');
+  assert.notEqual(result.signature,dom.window.ProofMeshCore.extractPost(dom.window.document.querySelector('article'),'https://x.com/Example').signature);
+  dom.window.close();
+});

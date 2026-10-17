@@ -53,3 +53,23 @@ test('offline startup is understandable and unresolved records have no invented 
   assert.match(h.w.document.getElementById('result').textContent,/No source-linked evidence available/);
   assert.equal(h.w.document.querySelectorAll('#result .source-card a').length,0); h.w.close();
 });
+
+test('completed deep-linked job is read once, becomes a report URL and does not restart polling',async()=>{
+  const id='a'.repeat(64), dom=new JSDOM(read('web/index.html'),{url:'https://proofmesh.example/?job='+id,runScripts:'outside-only'}), w=dom.window;
+  let jobs=0,reads=0;
+  w.fetch=async path=>{
+    if(path==='/api/health')return {ok:true,json:async()=>({live_enabled:true,authentication_required:false})};
+    if(path==='/api/jobs/'+id){jobs++;if(jobs>2)throw new Error('Polling loop');return {ok:true,json:async()=>({status:'succeeded',report_id:report.id,reused:false,model_calls:3})};}
+    if(path==='/api/investigations/'+report.id){reads++;return {ok:true,json:async()=>report};}
+    return {ok:true,json:async()=>({reports:[]})};
+  };
+  w.sessionStorage.setItem('proofmesh-job',id);
+  w.eval(read('web/app.js'));
+  for(let i=0;i<10;i++)await tick();
+  assert.equal(jobs,1);assert.equal(reads,1);
+  assert.equal(new URL(w.location.href).searchParams.get('job'),null);
+  assert.equal(new URL(w.location.href).searchParams.get('report'),report.id);
+  assert.equal(w.sessionStorage.getItem('proofmesh-job'),null);
+  assert.match(w.document.getElementById('notice').textContent,/Investigation complete/);
+  w.close();
+});

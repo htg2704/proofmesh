@@ -25,7 +25,7 @@ def service(tmp_path):
 
 
 def submission(claim=DEMO_CLAIM, corpus="demo"):
-    return Submission(claim=claim, image_base64=base64.b64encode(demo_image()).decode(), corpus=corpus)
+    return Submission(claim=claim, image_base64=base64.b64encode(demo_image()).decode(), corpus=corpus, published_at="2026-10-14T12:00:00Z" if corpus == "live" else None)
 
 
 def test_exact_context_reuses_without_inference(service):

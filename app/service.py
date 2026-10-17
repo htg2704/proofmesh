@@ -1,5 +1,6 @@
 import copy
 from datetime import datetime, timezone, timedelta
+from app.context import publication_stamp, context_record, require_publication_context, RELATIVE_TIME
 from app.fingerprints import image_identity, context_key, normalize_claim, similar
 
 
@@ -13,7 +14,9 @@ class ProofMesh:
 
     def match(self, submission):
         identity = image_identity(submission.image_base64)
-        key = context_key(submission.claim, identity, submission.corpus, now().date().isoformat())
+        if submission.corpus != "demo" and RELATIVE_TIME.search(submission.claim) and not submission.published_at:
+            return {"status": "unknown", "report": None, "related": [], "model_calls": 0, "needs_publication_time": True, "message": "Publication time is required to interpret this caption."}
+        key = context_key(submission.claim, identity, submission.corpus, now().date().isoformat(), publication_stamp(submission))
         records = self.store.all(submission.corpus)
         exact = self.store.get(key)
         if exact and datetime.fromisoformat(exact["expires_at"]) <= now():
@@ -28,13 +31,15 @@ class ProofMesh:
         cached = self.match(submission)
         if cached["report"]:
             return {"report": cached["report"], "reused": True, "model_calls": 0}
-        if submission.corpus != "live":
+        if submission.corpus not in {"live", "review"}:
             raise ValueError("Demo investigations are fixed fixtures. Use the live corpus for new investigations.")
+        require_publication_context(submission)
         identity = image_identity(submission.image_base64)
         stamp = now()
-        key = context_key(submission.claim, identity, submission.corpus, stamp.date().isoformat())
+        key = context_key(submission.claim, identity, submission.corpus, stamp.date().isoformat(), publication_stamp(submission))
         result = self.investigator.investigate(submission, stamp.date().isoformat())
         report = self.make_report(submission.claim, identity, key, submission.corpus, result, stamp)
+        report["publication_context"] = context_record(submission, stamp.date().isoformat())
         self.store.put(report)
         return {"report": report, "reused": False, "model_calls": result["model_calls"]}
 

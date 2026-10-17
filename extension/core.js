@@ -23,10 +23,12 @@ globalThis.ProofMeshCore = (() => {
     const images = own('[data-testid="tweetPhoto"] img, img[src^="https://pbs.twimg.com/media/"], img[src^="http://127.0.0.1:8000/fixtures/"]');
     const urls = [...new Set(images.map(img => img.src).filter(Boolean))];
     if (urls.length > 1) return {kind:'unsupported', reason:'Multi-image posts need manual review'};
-    // Publication time is not in the backend reuse key yet. Hold these X
-    // captions for review rather than transfer an old relative-date verdict.
-    if (new URL(pageUrl).hostname === 'x.com' && /\b(today|yesterday|tomorrow|tonight|right now|this (morning|evening|week|month|year))\b/i.test(claim)) return {kind:'unsupported', reason:'Relative-time caption needs publication-context review'};
-    return {kind:'post', claim, imageUrl:urls[0] || null, postId:ids[0] || null, signature:JSON.stringify([claim, urls[0] || null, ids[0] || null])};
+    const stamps = [...new Set(own('time[datetime]').map(e => e.getAttribute('datetime')).filter(value => /(?:Z|[+-]\d{2}:\d{2})$/i.test(value || '') && Number.isFinite(Date.parse(value))).map(value => new Date(value).toISOString()))];
+    const publishedAt = stamps.length === 1 ? stamps[0] : null;
+    const statusLink = own('a[href*="/status/"]').map(e => new URL(e.getAttribute('href'), pageUrl)).find(u => u.hostname === 'x.com' && /^\/[^/]+\/status\/\d+/.test(u.pathname));
+    const sourceUrl = statusLink ? 'https://x.com' + statusLink.pathname.match(/^\/[^/]+\/status\/\d+/)[0] : null;
+    if (new URL(pageUrl).hostname === 'x.com' && !publishedAt && /\b(today|yesterday|tomorrow|tonight|right now|this (morning|evening|week|month|year))\b/i.test(claim)) return {kind:'unsupported', reason:'Relative-time caption needs publication-context review'};
+    return {kind:'post', claim, imageUrl:urls[0] || null, postId:ids[0] || null, publishedAt, sourceUrl, signature:JSON.stringify([claim, urls[0] || null, ids[0] || null, publishedAt])};
   }
   return {API, CLOUD, allowedPage, extractPost};
 })();

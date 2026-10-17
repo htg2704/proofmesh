@@ -22,7 +22,7 @@ def configure(monkeypatch):
 
 def test_live_pipeline_bounds_calls_and_scopes_quota(monkeypatch):
     configure(monkeypatch)
-    assessment = {"summary": "Supported by the supplied NASA excerpt.", "findings": [{"claim": "Perseverance landed in 2021", "status": "supported", "explanation": "The cited excerpt gives the date.", "evidence_ids": ["E1"]}], "limitations": []}
+    assessment = {"summary": "Supported by the supplied NASA excerpt.", "findings": [{"claim": "Perseverance landed in 2021", "status": "supported", "explanation": "The cited excerpt gives the date.", "evidence_ids": ["E1"], "evidence_quotes": [{"evidence_id": "E1", "quote": "Perseverance landed on 18 February 2021."}]}], "limitations": []}
     client = MagicMock()
     client.models.generate_content.side_effect = [response(grounded=True), response(json.dumps(assessment)), response('{"accepted":true,"issues":[]}')]
     with patch("google.auth.default", return_value=(object(), "other-default-project")) as auth, patch("google.genai.Client") as constructor:
@@ -51,7 +51,7 @@ def test_no_grounding_stops_after_one_call_and_abstains(monkeypatch):
 
 def test_rejected_assessment_is_not_published_as_supported(monkeypatch):
     configure(monkeypatch)
-    assessment = {"summary": "Initial conclusion", "findings": [{"claim": "A claim", "status": "supported", "explanation": "Initial reasoning", "evidence_ids": ["E1"]}], "limitations": []}
+    assessment = {"summary": "Initial conclusion", "findings": [{"claim": "A claim", "status": "supported", "explanation": "Initial reasoning", "evidence_ids": ["E1"], "evidence_quotes": [{"evidence_id": "E1", "quote": "Perseverance landed on 18 February 2021."}]}], "limitations": []}
     client = MagicMock()
     client.models.generate_content.side_effect = [response(grounded=True), response(json.dumps(assessment)), response('{"accepted":false,"issues":["The source does not support the entire claim."]}')]
     with patch("google.auth.default", return_value=(object(), None)), patch("google.genai.Client") as constructor:

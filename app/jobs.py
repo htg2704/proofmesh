@@ -7,6 +7,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from app.fingerprints import context_key, image_identity
 from app.models import Submission
+from app.context import publication_stamp, require_publication_context
 
 
 def utc():
@@ -51,26 +52,31 @@ class Jobs:
         cutoff = os.getenv('PROOFMESH_LIVE_UNTIL')
         if cutoff and utc() > datetime.fromisoformat(cutoff):
             raise ValueError('Live demo window ended; matching existing evidence remains available.')
-        if submission.corpus != 'live':
+        if submission.corpus not in {'live', 'review'}:
             raise ValueError('New jobs require the live corpus')
+        require_publication_context(submission)
         identity = image_identity(submission.image_base64)
-        key = context_key(submission.claim, identity, 'live', utc().date().isoformat())
+        key = context_key(submission.claim, identity, submission.corpus, utc().date().isoformat(), publication_stamp(submission))
         cached = self.service.match(submission)['report']
         if cached:
             return {'id': key, 'status': 'succeeded', 'report_id': key, 'reused': True, 'model_calls': 0}, False
-        job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim,
+        job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim, 'corpus': submission.corpus, 'published_at': publication_stamp(submission), 'source_url': submission.source_url,
                'attempt': 1, 'image_key': None, 'report_id': None, 'reused': False, 'model_calls': None, 'error': None}
+        review_cap = int(os.getenv('PROOFMESH_REVIEW_JOBS', '6')) if len(os.getenv('PROOFMESH_REVIEW_TOKEN', '')) >= 32 else 0
+        is_review = submission.corpus == 'review'
         # The quota and deduplication claim are committed together, across instances.
         if self.cloud:
             from google.cloud import firestore
             ref = self.collection.document(key)
             budget = self.store.client.collection('proofmesh_limits').document(utc().date().isoformat())
             total_ref = self.store.client.collection('proofmesh_limits').document('window_total')
+            review_ref = self.store.client.collection('proofmesh_limits').document('review_total')
             @firestore.transactional
             def take(transaction):
                 old = ref.get(transaction=transaction)
                 limit = budget.get(transaction=transaction)
                 total_doc = total_ref.get(transaction=transaction)
+                review_doc = review_ref.get(transaction=transaction)
                 if old.exists:
                     previous = old.to_dict()
                     if not retry_failed or previous['status'] != 'failed' or previous.get('attempt', 1) >= 2:
@@ -78,12 +84,16 @@ class Jobs:
                     job['attempt'] = previous.get('attempt', 1) + 1
                 count = limit.to_dict().get('count', 0) if limit.exists else 0
                 total_count = total_doc.to_dict().get('count', 0) if total_doc.exists else count
+                review_used = review_doc.to_dict().get('count', 0) if review_doc.exists else 0
+                self.check_review_budget(is_review, review_cap, review_used, total_count)
                 if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
                     raise ValueError('Live-window investigation cap reached')
                 if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
                     raise ValueError('Daily investigation cap reached')
                 transaction.set(budget, {'count': count + 1})
                 transaction.set(total_ref, {'count': total_count + 1})
+                if is_review:
+                    transaction.set(review_ref, {'count': review_used + 1})
                 transaction.set(ref, job)
                 return job, True
             return take(self.store.client.transaction())
@@ -97,12 +107,22 @@ class Jobs:
                 job['attempt'] = previous.get('attempt', 1) + 1
             count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs WHERE json_extract(body, "$.created_at") LIKE ?', (utc().date().isoformat() + '%',)).fetchone()[0]
             total_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs').fetchone()[0]
+            review_used = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.corpus")="review"').fetchone()[0]
+            self.check_review_budget(is_review, review_cap, review_used, total_count)
             if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
                 raise ValueError('Live-window investigation cap reached')
             if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
                 raise ValueError('Daily investigation cap reached')
             db.execute('INSERT OR REPLACE INTO jobs VALUES (?,?)', (key, json.dumps(job)))
         return job, True
+
+    @staticmethod
+    def check_review_budget(is_review, cap, used, total):
+        if is_review and used >= cap:
+            raise ValueError('Reviewer investigation allowance reached. Existing reports remain readable.')
+        reserved = max(0, cap - used)
+        if not is_review and reserved and total >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')) - reserved:
+            raise ValueError('Remaining investigation allowance is reserved for reviewers.')
 
     def save_image(self, key, encoded):
         if not encoded:
@@ -158,7 +178,7 @@ class Jobs:
             return
         job = self.get(key)
         try:
-            result = self.service.investigate(Submission(claim=job['claim'], image_base64=self.image(job['image_key'])))
+            result = self.service.investigate(Submission(claim=job['claim'], image_base64=self.image(job['image_key']), corpus=job.get('corpus', 'live'), published_at=job.get('published_at'), source_url=job.get('source_url')))
             self.update(key, status='succeeded', report_id=result['report']['id'], model_calls=result['model_calls'], reused=result['reused'], completed_at=utc().isoformat())
         except Exception as exc:
             import logging

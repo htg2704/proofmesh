@@ -41,10 +41,14 @@ def image_identity(encoded: str | None) -> dict:
         raise ValueError("Invalid or oversized image") from exc
 
 
-def context_key(claim: str, identity: dict, corpus: str, date: str) -> str:
+def context_key(claim: str, identity: dict, corpus: str, date: str, published_at: str | None = None) -> str:
     # The reference date prevents a cached 'today' verdict being reused tomorrow.
     import json
     content = [normalize_claim(claim), identity["sha256"], corpus, date]
+    if corpus in {"live", "review"}:
+        content.append("evidence-policy-0.4")
+    if published_at:
+        content.append(published_at)
     return hashlib.sha256(json.dumps(content, ensure_ascii=False).encode()).hexdigest()
 
 

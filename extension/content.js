@@ -14,7 +14,7 @@
     return enabled && state.epoch === epoch && article.isConnected && states.get(article) === state && core.allowedPage(location.href) && core.extractPost(article, location.href).signature === state.signature;
   }
   async function send(type, post) {
-    const response = await chrome.runtime.sendMessage({type, claim:post.claim, imageUrl:post.imageUrl});
+    const response = await chrome.runtime.sendMessage({type, claim:post.claim, imageUrl:post.imageUrl, publishedAt:post.publishedAt, sourceUrl:post.sourceUrl});
     if (!response || response.error) throw new Error(response?.error || 'The extension connection was interrupted. Reload this page.');
     return response.data;
   }

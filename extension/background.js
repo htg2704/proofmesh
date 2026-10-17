@@ -27,7 +27,7 @@ async function handle(message, sender) {
   const API = settings.apiOrigin === 'cloud' ? CLOUD : LOCAL;
   const corpus = [LOCAL,CLOUD].includes(new URL(sender.url).origin) ? 'demo' : 'live';
   const token = settings.apiOrigin === 'cloud' ? settings.cloudToken : settings.apiToken;
-  const body = { claim: message.claim, image_base64: await imageBytes(message.imageUrl), corpus };
+  const body = { claim: message.claim, image_base64: await imageBytes(message.imageUrl), corpus, published_at:message.publishedAt || null, source_url:message.sourceUrl || null };
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
   let response;
