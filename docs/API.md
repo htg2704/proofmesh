@@ -61,7 +61,7 @@ A report contains `id`, `context_key`, `claim`, `media`, `corpus`, `created_at`,
 - `origin.status` is currently always `unknown`; no detector ran.
 - `assessment.findings[].status`: `supported`, `contradicted`, or `unresolved`.
 - Non-unresolved findings require valid evidence IDs. Valid IDs establish structural linkage, not factual correctness; the evaluation must test entailment.
-- `evidence[].kind`: `demo_fixture` or `search_grounded_excerpt`. Never label the latter as a verbatim source quote.
+- `evidence[].kind`: `demo_fixture`, `source_page_excerpt`, `search_grounded_excerpt` or `image_match_lead`. Never label the latter as a verbatim source quote.
 - `events` are completed pipeline steps, not a streamed progress feed.
 - `search_attribution_html` must be shown in a sandboxed frame without script privileges, not injected into the main page DOM.
 

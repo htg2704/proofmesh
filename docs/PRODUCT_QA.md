@@ -52,3 +52,11 @@ The source-page route is also checked through the Python API test. CI installs l
 - Recycled-node, gallery, quote and private-route edge cases are covered by controlled DOM regression fixtures, not by modifying actual X content or opening private messages.
 - The QA registry is synthetic. No new live investigations or paid Google model calls were made during this product pass.
 - Google Search attribution styling, durable asynchronous investigations, deployed extension configuration, semantic matching, Firestore and Cloud Run remain separate work.
+
+## Hosted release verification — October 17
+
+Chrome version: 155.0.8059.80. The installed extension used its fixed Cloud Run origin, with its separate cloud API token saved only after explicit user approval. The hosted synthetic feed reused the first caption and left the second as related media without a transferred verdict. Actual public `x.com/NASA` image posts completed authenticated registry lookups and displayed unknown/unverified; videos remained unverified with manual-review text. These lookups did not invoke inference. No social post was published, liked, shared or changed.
+
+Public portal recorded cases were inspected with their own caption/image, source links, page-date labels, unresolved state and the visible QA note about an incidental model date error. The selected examples are frozen outputs, not live inference triggered by opening them. `docs/EVALUATION.md` and `docs/DEPLOYMENT.md` contain the fresh cloud-job evidence.
+
+Broader logged-in X variants, complete keyboard/screen-reader behavior, Instagram and other browsers remain unverified. Version 0.3.1 contains the final public synthetic deep-link and popup workspace-link fixes; reload the unpacked extension after updating its files.

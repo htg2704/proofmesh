@@ -26,10 +26,10 @@ The selected evaluation contains a supported historical caption, a contradicted 
 
 - Repository: https://github.com/htg2704/proofmesh
 - Hosted portal: https://proofmesh-2god3tua3a-el.a.run.app
-- Deck: `proofmesh-hounds-pitch.pptx` / `proofmesh-hounds-pitch.pdf`
-- Demo recording: see `DEMO_SCRIPT.md`; attach the final video link after recording/upload.
+- Deck: `proofmesh-submission.pptx` / `proofmesh-official.pdf`
+- Demo video: https://proofmesh-2god3tua3a-el.a.run.app/assets/demo.mp4 (3:20, captioned walkthrough of actual working-build captures; no narration).
 - Team name: Hounds of Singularity. Member details: enter the exact names from your registration.
-- User-confirmed cutoff: midnight between October 18 and 19, 2026, India time (October 19 at 00:00 IST). Verify the form is complete before the cutoff.
+- Portal-verified cutoff: October 18, 2026 at 11:59 PM IST. Deck must follow the official template, PDF under 5 MB; video must be 3–4 minutes. The form is left for the user to submit.
 
 ## Known limitations
 

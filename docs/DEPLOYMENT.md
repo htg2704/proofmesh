@@ -1,52 +1,47 @@
-# Google Cloud deployment — prepared, not executed
+# Google Cloud deployment — verified October 17, 2026
 
-The hackathon build targets Gemini on Vertex AI, Firestore and Cloud Run. No cloud resources or billing changes were created by the starter.
+Project: `project-9e0a8470-4ba3-458b-885` (ProofMesh), owned through the user-approved account. No billing upgrade or new billing account was created.
 
-## Prerequisites
+Portal: https://proofmesh-2god3tua3a-el.a.run.app/
 
-1. Choose a Google Cloud project and region, review cost/quotas, and enable Cloud Run, build/artifact services, Firestore and Vertex AI as required.
-2. Create a Firestore Native database appropriate to the project/region.
-3. Create a runtime service account with narrowly scoped Vertex AI access and Firestore data access. Store the application API token in Secret Manager; grant access only to that secret. Do not ship a service-account key.
-4. Choose a currently available Gemini model that supports the configured Google Search tool and structured output. Set `GEMINI_MODEL` explicitly.
-5. Validate one real investigation and the resulting search attribution using application-default credentials locally.
+## Resources
 
-## Container
+Cloud Run, Firestore Native, the task queue and private storage use `asia-south1` (Mumbai). Gemini 3.5 Flash uses the global Vertex AI endpoint; this is not an India-only residency guarantee.
 
-```bash
-docker build -t proofmesh .
-docker run --rm -p 8000:8080 -e PORT=8080 proofmesh
-```
+- Cloud Run: zero minimum instances, one maximum instance, 1 CPU, 512 MiB, concurrency 8, request-based CPU, 300-second timeout.
+- Firestore: reports, durable job documents and transactional daily/whole-window admission counts.
+- Cloud Tasks: `proofmesh-investigations`, one concurrent dispatch, one dispatch/second, bounded delivery retry. The worker's persistent claim prevents duplicate inference.
+- Private image bucket: upload for queued work, deletion after execution, one-day lifecycle backstop. Uniform bucket-level access and public-access prevention are enabled.
+- Secret Manager: separate API and worker secrets. No service-account private keys are deployed.
+- Build artifacts: a dedicated Artifact Registry repository and a private build-source bucket with three-day cleanup.
 
-This local command demonstrates demo mode only. Container-local SQLite is temporary; use a mounted volume for local persistence or Firestore for cloud deployment.
+`proofmesh-runtime` has Vertex AI use, Firestore data access, service-use permission, image-bucket object access, secret-specific access and queue-specific enqueue permission. It can act as only the dedicated task-caller identity, which has Cloud Run Invoker on this service. The separate build identity has log writing, artifact writing and build-source reading. No Owner or Editor role is granted to these runtime/build identities.
 
-## Cloud Run configuration
+## Access
 
-Use the checked-in Dockerfile via a source or container build. Configure:
+The user explicitly approved public Cloud Run invocation. Public application routes serve the synthetic demo and three deliberately published recorded investigations. They cannot invoke paid inference or read the live registry. Paid jobs, job status and private reports require the team API token. The worker separately validates its worker secret and receives a Cloud Tasks OIDC token.
 
-```text
-PROOFMESH_STORE=firestore
-PROOFMESH_ENABLE_LIVE=true
-GOOGLE_CLOUD_PROJECT=<project>
-GOOGLE_CLOUD_LOCATION=<supported-location>
-GEMINI_MODEL=<available-model>
-PROOFMESH_FIRESTORE_COLLECTION=proofmesh_investigations
-PROOFMESH_API_TOKEN=<Secret Manager reference, not a source literal>
-```
+For team use, read `proofmesh-api-token` in this project's Secret Manager and enter it in the portal's Connection settings. Do not add it to the submission text or public repository. The installed Chrome extension has the cloud token stored with explicit user approval; local and cloud token slots are separate.
 
-Start with one instance, concurrency 1, a 240-second request timeout and a measured memory limit (1 GiB is an initial configuration to test, not a benchmark). Local hourly limits are process-local and reset on restart; add distributed quota accounting before public access.
+Public demo routes and new live-token routes are different. Judges can inspect the public examples immediately; running arbitrary new claims requires the team's access token. This is a shared hackathon token, not a complete multi-user authentication system.
 
-Keep Cloud Run IAM authentication enabled for initial testing. Use the gcloud authenticated proxy or an authenticated client to validate it. The public hackathon demo access design remains a separate step: do not expose unrestricted paid model calls. The portal accepts an application token, but that is not a substitute for multi-user authentication or abuse prevention.
+## Live window and cost controls
 
-For a hosted extension, change the API constant in `extension/background.js`, portal links in `content.js`/`popup.html`, and the manifest's narrowly scoped host permissions. Keep only the intended host. Verify the consent copy accurately describes where visible post information is sent.
+The user requested one month of availability. New hosted live submissions are configured through **November 17, 2026 at 23:59:59 IST**. Four new attempts per UTC day and twelve attempts across the full window are admitted transactionally. Explicit retries count again. Three cloud attempts had been consumed by final verification, including the initial failed request; nine remained. Cache matches and public recorded views do not consume inference admissions.
 
-## Deployment acceptance
+The approved spending limit remains **US$5 total**. An INR450 project-scoped monthly usage alert, excluding credits, notifies at 50%, 90% and 100% in the billing account's currency. The USD-denominated alert was rejected by the account; no duplicate USD budget was created. Workload caps, instance limits and alerts are not an absolute billing-account dollar cap. Actual billing can lag; model-token estimates in the evaluation are not receipts.
 
-- Reports survive instance restart.
-- Unauthorized API requests fail; a fresh claim without a token cannot invoke the model.
-- Gemini returns actual grounding metadata and report links open correctly.
-- Empty grounding and provider failures do not publish fabricated assessments.
-- Exact repeat lookups make zero additional model calls.
-- Same image with a new caption remains separately assessed.
-- Budget alerts and quotas are reviewed; note that alerts alone do not impose a hard spend cap.
-- Browser integration works against the real deployment.
+## Verified behavior
 
+- Anonymous health and recorded-example reads: 200.
+- Anonymous live registry/job reads, new paid jobs and worker calls: 401.
+- Text job: the first provider request failed safely; one explicit retry completed in 10.531 seconds with three model calls. Firestore exact reuse: 104.5 ms, zero model calls.
+- The report survived a separate Cloud Run revision restart.
+- Image job: private upload, Vision lookup and Gemini completed in 22.892 seconds, supported; exact reuse took 178.7 ms with zero model calls. Its image key was cleared and the private bucket was empty afterward.
+- Installed extension verified against the hosted synthetic feed and public `x.com/NASA`, with unknown posts left unverified.
+
+## Rebuild
+
+Run `scripts/provision.py` only against the named project after reviewing its scope. It creates missing named resources and reapplies scoped IAM; it does not change billing linkage. The checked-in `.gcloudignore` excludes credentials, `.env`, `data/`, dependencies and submission files from the build context. Docker copies only application and web assets. Build with `cloudbuild.yaml` and a versioned `_IMAGE` substitution, then update the existing Cloud Run service image. Keep all existing secret references and workload limits.
+
+The initial unused project `proofmesh-htg2704-2026` was not altered during this deployment. No claim is made that it was deleted or unlinked from billing.
