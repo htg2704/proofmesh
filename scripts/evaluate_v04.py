@@ -24,7 +24,11 @@ spent=0; results=[]
 for case in cases:
     path=out/(case['id']+'.json')
     if path.exists():
-        row=json.loads(path.read_text());results.append(row);spent+=row.get('working_cost_usd',0.15);continue
+        row=json.loads(path.read_text())
+        prior=out/(case['id']+'-first-attempt.json')
+        if '--recheck-failures' not in sys.argv or 'error_type' not in row or prior.exists():
+            results.append(row);spent+=row.get('working_cost_usd',0.15);continue
+        path.rename(prior);spent+=row.get('working_cost_usd',0.15)
     if spent+0.15>1.8:
         print('Stopped at evaluation budget guard.',flush=True);break
     raw=None

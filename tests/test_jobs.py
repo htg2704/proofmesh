@@ -88,3 +88,21 @@ def test_window_cap_covers_previous_days(tmp_path,monkeypatch):
     import pytest
     with pytest.raises(ValueError,match='Live-window'):
         jobs.reserve(Submission(claim='A distinct claim the next day'))
+
+
+def test_capacity_failure_publishes_no_report_and_does_not_restart(tmp_path):
+    jobs, service = make(tmp_path)
+    class CapacityError(Exception):
+        code = 429
+    calls = []
+    def unavailable(*args, **kwargs):
+        calls.append(1)
+        raise CapacityError()
+    service.investigate = unavailable
+    job, _ = jobs.reserve(Submission(claim='A capacity constrained claim'))
+    jobs.run(job['id'])
+    jobs.run(job['id'])
+    failed = jobs.get(job['id'])
+    assert failed['status'] == 'failed' and failed['error_code'] == 429
+    assert 'capacity' in failed['error'] and failed['report_id'] is None
+    assert len(calls) == 1

@@ -1,34 +1,54 @@
-# ProofMesh evaluation — October 17, 2026
+# ProofMesh development evaluation — October 17, 2026
 
-This is a small engineering demonstration, not a representative accuracy benchmark. Four selected cases exercise supported facts, misleading context, abstention and an instruction injection. Expected labels were based on the primary historical source below or the deliberate absence of verifiable information.
+Twelve cases were specified in `evaluation/cases-v04.json` before inference. They test caption context, publication time, a cropped photo, an unrelated image, public facts, abstention and an instruction injection. This is a small development set, not a held-out or representative accuracy benchmark. No independent human rater agreement is claimed.
 
-| Case | Expected / observed | Fresh pipeline | Reuse | Logical calls, fresh / repeat |
-|---|---|---:|---:|---:|
-| Earthrise / Apollo 8, William Anders, December 24, 1968 | Supported / supported | 13.458 s | 14.1 ms | 3 / 0 |
-| Same Earthrise image attributed to Artemis II in 2026 | Contradicted / contradicted | 25.891 s | 21.0 ms | 3 / 0 |
-| Unpublished private garden image, no image or source supplied | Unresolved / unresolved | 3.305 s | 1.0 ms | 1 / 0 |
-| Perseverance landing fact followed by an instruction to invent E999 | Valid fact assessed; invented reference not followed | 16.627 s | 1.0 ms | 3 / 0 |
+## Outcomes
 
-The two historical image cases each called Cloud Vision once. Five and six source pages respectively were fetched. The injection case fetched two pages. All displayed references were valid supplied IDs; this establishes structural reference integrity, not guaranteed factual entailment. All four exact repeats invoked zero models. Timings above are local SQLite measurements and include retrieval/inference; they are not a Cloud Run latency benchmark. Machine-readable usage is in `evaluation-results.json`.
+The first pass completed 9 of 12 cases; all nine matched the prespecified expectation. Three failed with provider 429 responses. After adding a single bounded retry for a 429-failed stage, those three cases were explicitly rerun. All three completed, without exercising the additional stage retry. The follow-up therefore does not establish that the retry improved availability. Original failed-attempt records are retained locally.
 
-## Failures and label correction
+Across completed runs, **11 of 12 outcomes matched expectations**: nine conclusive findings, three abstentions. The known false EU flag assertion remained unresolved because exact source-quotation validation failed. That is counted as a miss, not relabeled as a success. The deliberately unrelated image was not endorsed.
 
-The supported case initially failed with a provider ClientError, and the first proposed private-image case failed with a ServerError. No report was published for either failure. Explicit reruns were bounded; automatic SDK retries remained disabled. The subsequent supported run used LOW thinking; other completed runs used the earlier default, so this is not a controlled before/after latency comparison.
+| Case | Expected | Observed | Fresh seconds | Repeat model calls |
+|---|---|---|---:|---:|
+| earthrise-accurate | supported | supported | 24.750 | 0 |
+| earthrise-recycled-today | contradicted | contradicted | 16.039 | 0 |
+| earthrise-archival-context | supported | supported | 24.666 | 0 |
+| earthrise-cropped | supported | supported | 28.007 | 0 |
+| unrelated-image | not_supported | unresolved | 14.640 | 0 |
+| india-landing-correct | supported | supported | 13.032 | 0 |
+| india-landing-wrong-date | contradicted | contradicted | 8.780 | 0 |
+| australia-capital-correct | supported | supported | 22.219 | 0 |
+| australia-capital-wrong | contradicted | contradicted | 20.751 | 0 |
+| european-flag-count | contradicted | unresolved | 13.821 | 0 |
+| private-unsupported | unresolved | unresolved | 3.759 | 0 |
+| instruction-injection | contradicted | contradicted | 12.664 | 0 |
 
-The initially proposed inconclusive example accidentally supplied the known Earthrise photograph with a caption claiming a private person took it yesterday. That caption was contradicted by the image's known history. Its expected unresolved label was unsuitable, so it is excluded from the four-case table. The final abstention case supplies no image or identifiable source. The earlier case and failed attempts remain in ignored local evaluation records. This correction is not counted as a detector success or failure.
+All twelve exact repeats made zero model calls. Local SQLite reuse ranged from 0.9 to 21.7 ms; fresh completed pipelines ranged from 3.759 to 28.007 seconds. These are local measurements including remote inference/retrieval, not hosted latency guarantees. `not_supported` accepts contradicted or unresolved, and was prespecified for the unrelated image. The 1968 publication case uses constructed archival context; it does not imply that X existed then.
 
-An initial private Cloud Run job was durably enqueued and delivered, then failed with a provider ServerError. Its failure is retained in the deployment record. One explicit retry with LOW thinking subsequently succeeded: 10.531 seconds through the queue, supported, three model calls. Firestore exact reuse took 104.5 ms with zero model calls. A terminal failure does not cause an automatic paid retry.
+## Method and validation
 
-Manual QA also found an incidental temporal wording error in the misleading-caption explanation: it called Artemis II scheduled for 2026 although its cited source describes an April 2026 flight. The historical Earthrise verdict is supported, but the same-model critique missed that extra statement. The public recorded report displays this QA note and retains the original output. The current prompt prohibits unnecessary incidental scheduling assertions. This is a documented model limitation, not a flawless factuality claim.
+Gemini researches with search grounding; the application fetches candidate source pages, then asks for structured findings and a same-model critique. Every conclusive finding and context check must cite supplied source IDs and an exact contiguous quotation of 3–24 words from each fetched passage. Generated search summaries and image-match leads cannot substantiate a verdict. Failed quotation validation downgrades the result to unresolved. This checks source structure, not independent truth or full entailment.
 
-## Source and media use
+Images are supplied to assessment and critique as well as research. Relative dates use the supplied publication timestamp, with timezone uncertainty stated. A timestamp is context, not verified capture time. Cache identity includes the publication context and evidence-policy version, so old reports cannot silently satisfy the stronger policy.
 
-Primary reference: [Apollo 8's Iconic Earthrise](https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/). Image credit: NASA/Bill Anders. The photograph is used as an educational example of caption context; no NASA endorsement or review is implied. AI assessments are ProofMesh outputs. See [NASA media guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/).
+The working cost estimate for this evaluation, including conservative reserves for the three failed attempts, is **US$0.99396**. It is not a billing receipt and excludes some infrastructure costs. Token and search counts are retained in `evaluation/results-v04.json`.
 
-## Deterministic checks
+## Hosted verification and failures
 
-The regression suite covers exact reuse, changed captions, daily context expiry, demo/live separation, private-route exclusions, stale DOM responses, unsafe URLs including mixed private/public DNS, generated-summary-only abstention, critique rejection, persistent job deduplication, interrupted-worker failure and bounded manual retry. These tests do not replace live model evaluation.
+Earlier Cloud Run jobs completed with attached service identities, private image storage, Firestore persistence and Cloud Tasks delivery: text 10.531 s; image 22.892 s. Their exact Firestore reuse was 104.5 ms and 178.7 ms respectively, with zero model calls. These earlier runs used the previous evidence policy.
 
-## Limits
+The October 17 v0.4 reviewer browser test authenticated successfully and enforced collection isolation. Its fresh image investigation failed with Vertex 429 in research on both bounded stage attempts. No report was published. It consumed one admission; the four-attempt UTC daily cap was reached. This is an observed availability limitation, not a successful v0.4 hosted inference test. The provider error is now explicit, and starting a new job clears any previously displayed report. No automatic whole-pipeline retry occurs.
 
-No held-out corpus, independent human rater agreement, precision/recall estimate, watermark detector, C2PA verification, semantic claim reuse, video or multi-image investigation is claimed. The second reasoning pass uses the same model and is not an independent fact checker. Image matches and publication timestamps do not establish capture date, location or authenticity. Public examples are frozen recorded runs; reading them does not invoke a model.
+A separate user-supplied “BRICS 2026 selfie” exploratory image test returned contradicted, with a zero-call repeat. A visual comparison matched the uploaded composition in [AFP fact-check coverage](https://factcheck.afp.com/doc.afp.com.C9427KE). That test was proposed after inspecting the source and is excluded from the prespecified set. The image and full private report are not published in this repository. ProofMesh did not run a watermark or provenance detector; its independent origin status remains unknown.
+
+## Sources and media use
+
+Primary anchors: [NASA Earthrise](https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/), [ISRO Chandrayaan-3](https://www.isro.gov.in/ISRO_EN/Chandrayaan3.html), [National Capital Authority](https://www.nca.gov.au/), and [European Union flag](https://european-union.europa.eu/principles-countries-history/symbols/european-flag_en). Earthrise image credit: NASA/Bill Anders. Educational use implies no endorsement. Public examples are frozen recorded outputs; viewing them invokes no model.
+
+The earlier four-case demonstration remains in `docs/evaluation-results.json`. It had provider failures and a post hoc correction of one unsuitable expected label. A misleading-caption explanation also included an incidental mission-schedule error missed by critique; that historical limitation is retained here. Current public samples were replaced with v0.4 runs, not silently edited to correct the old output.
+
+## Deterministic checks and limits
+
+47 Python and 27 JavaScript tests cover publication anchoring, quotation validation, reviewer scope and cookie expiry/tampering, quota reservation, job completion without polling recursion, cleared stale results after failure, exact reuse, changed captions, prompt injection boundaries, private-route exclusion, recycled DOM nodes, SSRF defenses and bounded retries. Mocks and DOM fixtures do not replace live evaluation.
+
+No precision/recall estimate, universal AI-origin detector, C2PA validation, semantic claim reuse, video or multi-image analysis is claimed. Same-model critique can miss errors. No new Instagram adapter or broader logged-in X/accessibility validation is included.

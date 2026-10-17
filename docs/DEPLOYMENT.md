@@ -27,7 +27,7 @@ Public demo routes and new live-token routes are different. Judges can inspect t
 
 ## Live window and cost controls
 
-The user requested one month of availability. New hosted live submissions are configured through **November 17, 2026 at 23:59:59 IST**. Four new attempts per UTC day and twelve attempts across the full window are admitted transactionally. Explicit retries count again. Three cloud attempts had been consumed by final verification, including the initial failed request; nine remained. Cache matches and public recorded views do not consume inference admissions.
+The user requested one month of availability. New hosted live submissions are configured through **November 17, 2026 at 23:59:59 IST**. Four new attempts per UTC day and twelve attempts across the full window are admitted transactionally. Explicit retries count again. Four cloud attempts have been consumed, including two failed jobs; eight remain across the window. The October 17 reviewer job failed with provider 429 after both bounded stage attempts. The four-attempt UTC daily cap is reached; it resets October 18 at 00:00 UTC (05:30 IST). Cache matches and public recorded views do not consume inference admissions.
 
 The approved spending limit remains **US$5 total**. An INR450 project-scoped monthly usage alert, excluding credits, notifies at 50%, 90% and 100% in the billing account's currency. The USD-denominated alert was rejected by the account; no duplicate USD budget was created. Workload caps, instance limits and alerts are not an absolute billing-account dollar cap. Actual billing can lag; model-token estimates in the evaluation are not receipts.
 
@@ -45,3 +45,9 @@ The approved spending limit remains **US$5 total**. An INR450 project-scoped mon
 Run `scripts/provision.py` only against the named project after reviewing its scope. It creates missing named resources and reapplies scoped IAM; it does not change billing linkage. The checked-in `.gcloudignore` excludes credentials, `.env`, `data/`, dependencies and submission files from the build context. Docker copies only application and web assets. Build with `cloudbuild.yaml` and a versioned `_IMAGE` substitution, then update the existing Cloud Run service image. Keep all existing secret references and workload limits.
 
 The initial unused project `proofmesh-htg2704-2026` was not altered during this deployment. No claim is made that it was deleted or unlinked from billing.
+
+## v0.4 reviewer workspace
+
+A separate Secret Manager reviewer credential creates an eight-hour HttpOnly, Secure, SameSite=Strict signed cookie. The private link is stored only in ignored `data/reviewer-access.txt`; do not publish it or the team token in the repo or public deck. Opening the link exchanges and removes its fragment. Six of the twelve global admissions are reserved for the shared review collection; one was consumed by the failed browser test. Reviewer sessions cannot read team reports/jobs or choose the live corpus. The same global daily/window/time limits apply. This is a shared evaluation workspace, not individual multi-user isolation.
+
+Provider 429 can still exhaust the bounded retry. The service already uses the global endpoint; no paid capacity reservation or billing upgrade was added. The v0.4 hosted fresh-run test therefore remains an observed failure. Public recorded cases remain the reliable starting path.

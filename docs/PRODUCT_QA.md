@@ -59,4 +59,4 @@ Chrome version: 155.0.8059.80. The installed extension used its fixed Cloud Run 
 
 Public portal recorded cases were inspected with their own caption/image, source links, page-date labels, unresolved state and the visible QA note about an incidental model date error. The selected examples are frozen outputs, not live inference triggered by opening them. `docs/EVALUATION.md` and `docs/DEPLOYMENT.md` contain the fresh cloud-job evidence.
 
-Broader logged-in X variants, complete keyboard/screen-reader behavior, Instagram and other browsers remain unverified. Version 0.3.1 contains the final public synthetic deep-link and popup workspace-link fixes; reload the unpacked extension after updating its files.
+Broader logged-in X variants, complete keyboard/screen-reader behavior, Instagram and other browsers remain unverified. Version 0.4.0 contains the final public synthetic deep-link and popup workspace-link fixes; reload the unpacked extension after updating its files.

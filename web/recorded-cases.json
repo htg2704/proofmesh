@@ -1,240 +1,114 @@
 [
   {
-    "id": "a20620a889789cf021b7e3e02b291df6e8fc8a6c4f36d209d44a9e6ed33f3d63",
-    "context_key": "a20620a889789cf021b7e3e02b291df6e8fc8a6c4f36d209d44a9e6ed33f3d63",
-    "claim": "NASA's Earthrise photograph was taken by William Anders during Apollo 8 on December 24, 1968.",
+    "id": "dccb6f5b4afaef2f52434e2f85a95320196fc0ee649e119ac57d2db677405fd7",
+    "context_key": "dccb6f5b4afaef2f52434e2f85a95320196fc0ee649e119ac57d2db677405fd7",
+    "claim": "This image is the Earthrise photograph taken by William Anders during Apollo 8 on December 24, 1968.",
     "media": {
       "sha256": "4185c8f94a52cb368f9266adbd292171337be3ad3e8c92f7c1f1969a2977541a",
       "dhash": "c0ff03a0a4002000"
     },
     "corpus": "live",
-    "created_at": "2026-10-17T09:06:28.136403+00:00",
-    "expires_at": "2026-10-18T09:06:28.136403+00:00",
+    "created_at": "2026-10-17T10:11:34.184813+00:00",
+    "expires_at": "2026-10-18T10:11:34.184813+00:00",
     "origin": {
       "status": "unknown",
       "explanation": "No provenance or watermark verification has been performed."
     },
     "assessment": {
-      "summary": "The claim that NASA's Earthrise photograph was taken by William Anders during Apollo 8 on December 24, 1968, is fully supported by multiple reliable sources.",
+      "summary": "The provided image is indeed the iconic 'Earthrise' photograph captured by NASA astronaut William Anders during the Apollo 8 mission on December 24, 1968.",
       "findings": [
         {
-          "claim": "NASA's Earthrise photograph was taken by William Anders during Apollo 8 on December 24, 1968.",
+          "claim": "The image is the Earthrise photograph taken by William Anders during Apollo 8 on December 24, 1968.",
           "status": "supported",
-          "explanation": "Multiple sources confirm that the iconic Earthrise photograph was taken by astronaut William (Bill) Anders during the Apollo 8 mission on December 24, 1968.",
+          "explanation": "Historical records and NASA documentation confirm that the 'Earthrise' photograph, showing Earth rising over the lunar horizon, was taken by astronaut William (Bill) Anders on December 24, 1968, during the Apollo 8 mission.",
           "evidence_ids": [
-            "E1",
-            "E2",
             "E3",
-            "E4",
-            "E5"
-          ]
-        }
-      ],
-      "limitations": []
-    },
-    "evidence": [
-      {
-        "url": "https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/",
-        "title": "Apollo 8's Iconic Earthrise - NASA Science",
-        "match": "full",
-        "kind": "source_page_excerpt",
-        "excerpt": "Apollo 8's Iconic Earthrise - NASA Science Taken aboard Apollo 8 by Bill Anders, this iconic picture shows Earth peeking out from beyond the",
-        "id": "E1",
-        "retrieved_at": "2026-10-17T09:06:35.265268+00:00",
-        "page_published_at": "2019-02-22T00:00:00-05:00",
-        "fetch_status": "retrieved"
-      },
-      {
-        "url": "https://en.wikipedia.org/wiki/Earthrise",
-        "title": "Earthrise - Wikipedia",
-        "match": "full",
-        "kind": "source_page_excerpt",
-        "excerpt": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968, during the Apollo 8 mission.[1][2][3]",
-        "id": "E2",
-        "retrieved_at": "2026-10-17T09:06:35.825917+00:00",
-        "page_published_at": null,
-        "fetch_status": "retrieved"
-      },
-      {
-        "id": "E3",
-        "title": "wikipedia.org",
-        "url": "https://en.wikipedia.org/wiki/Earthrise",
-        "excerpt": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968, during the Apollo 8 mission.[1][2][3]",
-        "kind": "source_page_excerpt",
-        "retrieved_at": "2026-10-17T09:06:36.543370+00:00",
-        "page_published_at": null,
-        "fetch_status": "retrieved"
-      },
-      {
-        "id": "E4",
-        "title": "astrography.com",
-        "url": "https://astrography.com/blogs/news/earthrise-photo-a-journey-through-earths-iconic-space-portrait",
-        "excerpt": "Photograph Origins: Captured by William Anders during Apollo 8 on December 24, 1968. Astronaut William Anders took the Earthrise photo during the Apollo 8",
-        "kind": "source_page_excerpt",
-        "retrieved_at": "2026-10-17T09:06:38.361091+00:00",
-        "page_published_at": null,
-        "fetch_status": "retrieved"
-      },
-      {
-        "id": "E5",
-        "title": "earthsky.org",
-        "url": "https://earthsky.org/space/apollo-8-earthrise-december-24-1968-new-simulation/",
-        "excerpt": "The iconic Earthrise image of Earth appearing over the moon\u2019s horizon as captured by William Anders from the Apollo 8 spacecraft, taken during a",
-        "kind": "source_page_excerpt",
-        "retrieved_at": "2026-10-17T09:06:38.928598+00:00",
-        "page_published_at": "2025-12-24T12:45:29+00:00",
-        "fetch_status": "retrieved"
-      }
-    ],
-    "media_search": {
-      "status": "retrieved",
-      "pages": [
-        {
-          "url": "https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/",
-          "title": "Apollo 8's Iconic Earthrise - NASA Science",
-          "match": "full",
-          "kind": "image_match_lead",
-          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
-        },
-        {
-          "url": "https://en.wikipedia.org/wiki/Earthrise",
-          "title": "Earthrise - Wikipedia",
-          "match": "full",
-          "kind": "image_match_lead",
-          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
-        },
-        {
-          "url": "https://science.nasa.gov/moon/image-galleries/earthrise-earthset-looking-towards-home/",
-          "title": "Gallery: Earthrise, Earthset - Looking Towards Home - NASA Science",
-          "match": "partial",
-          "kind": "image_match_lead",
-          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
-        },
-        {
-          "url": "https://www.nasa.gov/image-article/earthrise-by-nasa-astronaut-bill-anders/",
-          "title": "\u201cEarthrise\u201d by NASA Astronaut Bill Anders",
-          "match": "full",
-          "kind": "image_match_lead",
-          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
-        }
-      ],
-      "vision_calls": 1,
-      "best_guess_labels": [
-        "high resolution earthrise"
-      ]
-    },
-    "events": [
-      {
-        "stage": "research",
-        "detail": "Retrieved 5 source-linked evidence segments."
-      },
-      {
-        "stage": "assessment",
-        "detail": "Checked schema and evidence references."
-      },
-      {
-        "stage": "challenge",
-        "detail": "Assessment accepted for display."
-      }
-    ],
-    "model_calls": 3,
-    "usage": [
-      {
-        "stage": "research",
-        "prompt_tokens": 1575,
-        "output_tokens": 162,
-        "thinking_tokens": 90,
-        "total_tokens": 1827,
-        "reported_search_queries": 1
-      },
-      {
-        "stage": "assessment",
-        "prompt_tokens": 1860,
-        "output_tokens": 179,
-        "thinking_tokens": null,
-        "total_tokens": 2039,
-        "reported_search_queries": 0
-      },
-      {
-        "stage": "challenge",
-        "prompt_tokens": 1794,
-        "output_tokens": 10,
-        "thinking_tokens": null,
-        "total_tokens": 1804,
-        "reported_search_queries": 0
-      }
-    ],
-    "search_attribution_html": "<style>\n.container {\n  align-items: center;\n  border-radius: 8px;\n  display: flex;\n  font-family: Google Sans, Roboto, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n  padding: 8px 12px;\n}\n.chip {\n  display: inline-block;\n  border: solid 1px;\n  border-radius: 16px;\n  min-width: 14px;\n  padding: 5px 16px;\n  text-align: center;\n  user-select: none;\n  margin: 0 8px;\n  -webkit-tap-highlight-color: transparent;\n}\n.carousel {\n  overflow: auto;\n  scrollbar-width: none;\n  white-space: nowrap;\n  margin-right: -12px;\n}\n.headline {\n  display: flex;\n  margin-right: 4px;\n}\n.gradient-container {\n  position: relative;\n}\n.gradient {\n  position: absolute;\n  transform: translate(3px, -9px);\n  height: 36px;\n  width: 9px;\n}\n@media (prefers-color-scheme: light) {\n  .container {\n    background-color: #fafafa;\n    box-shadow: 0 0 0 1px #0000000f;\n  }\n  .headline-label {\n    color: #1f1f1f;\n  }\n  .chip {\n    background-color: #ffffff;\n    border-color: #d2d2d2;\n    color: #5e5e5e;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #f2f2f2;\n  }\n  .chip:focus {\n    background-color: #f2f2f2;\n  }\n  .chip:active {\n    background-color: #d8d8d8;\n    border-color: #b6b6b6;\n  }\n  .logo-dark {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #fafafa 15%, #fafafa00 100%);\n  }\n}\n@media (prefers-color-scheme: dark) {\n  .container {\n    background-color: #1f1f1f;\n    box-shadow: 0 0 0 1px #ffffff26;\n  }\n  .headline-label {\n    color: #fff;\n  }\n  .chip {\n    background-color: #2c2c2c;\n    border-color: #3c4043;\n    color: #fff;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #353536;\n  }\n  .chip:focus {\n    background-color: #353536;\n  }\n  .chip:active {\n    background-color: #464849;\n    border-color: #53575b;\n  }\n  .logo-light {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #1f1f1f 15%, #1f1f1f00 100%);\n  }\n}\n</style>\n<div class=\"container\">\n  <div class=\"headline\">\n    <svg class=\"logo-light\" width=\"18\" height=\"18\" viewBox=\"9 9 35 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M42.8622 27.0064C42.8622 25.7839 42.7525 24.6084 42.5487 23.4799H26.3109V30.1568H35.5897C35.1821 32.3041 33.9596 34.1222 32.1258 35.3448V39.6864H37.7213C40.9814 36.677 42.8622 32.2571 42.8622 27.0064V27.0064Z\" fill=\"#4285F4\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 43.8555C30.9659 43.8555 34.8687 42.3195 37.7213 39.6863L32.1258 35.3447C30.5898 36.3792 28.6306 37.0061 26.3109 37.0061C21.8282 37.0061 18.0195 33.9811 16.6559 29.906H10.9194V34.3573C13.7563 39.9841 19.5712 43.8555 26.3109 43.8555V43.8555Z\" fill=\"#34A853\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.6559 29.8904C16.3111 28.8559 16.1074 27.7588 16.1074 26.6146C16.1074 25.4704 16.3111 24.3733 16.6559 23.3388V18.8875H10.9194C9.74388 21.2072 9.06992 23.8247 9.06992 26.6146C9.06992 29.4045 9.74388 32.022 10.9194 34.3417L15.3864 30.8621L16.6559 29.8904V29.8904Z\" fill=\"#FBBC05\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 16.2386C28.85 16.2386 31.107 17.1164 32.9095 18.8091L37.8466 13.8719C34.853 11.082 30.9659 9.3736 26.3109 9.3736C19.5712 9.3736 13.7563 13.245 10.9194 18.8875L16.6559 23.3388C18.0195 19.2636 21.8282 16.2386 26.3109 16.2386V16.2386Z\" fill=\"#EA4335\"/>\n    </svg>\n    <svg class=\"logo-dark\" width=\"18\" height=\"18\" viewBox=\"0 0 48 48\" xmlns=\"http://www.w3.org/2000/svg\">\n      <circle cx=\"24\" cy=\"23\" fill=\"#FFF\" r=\"22\"/>\n      <path d=\"M33.76 34.26c2.75-2.56 4.49-6.37 4.49-11.26 0-.89-.08-1.84-.29-3H24.01v5.99h8.03c-.4 2.02-1.5 3.56-3.07 4.56v.75l3.91 2.97h.88z\" fill=\"#4285F4\"/>\n      <path d=\"M15.58 25.77A8.845 8.845 0 0 0 24 31.86c1.92 0 3.62-.46 4.97-1.31l4.79 3.71C31.14 36.7 27.65 38 24 38c-5.93 0-11.01-3.4-13.45-8.36l.17-1.01 4.06-2.85h.8z\" fill=\"#34A853\"/>\n      <path d=\"M15.59 20.21a8.864 8.864 0 0 0 0 5.58l-5.03 3.86c-.98-2-1.53-4.25-1.53-6.64 0-2.39.55-4.64 1.53-6.64l1-.22 3.81 2.98.22 1.08z\" fill=\"#FBBC05\"/>\n      <path d=\"M24 14.14c2.11 0 4.02.75 5.52 1.98l4.36-4.36C31.22 9.43 27.81 8 24 8c-5.93 0-11.01 3.4-13.45 8.36l5.03 3.85A8.86 8.86 0 0 1 24 14.14z\" fill=\"#EA4335\"/>\n    </svg>\n    <div class=\"gradient-container\"><div class=\"gradient\"></div></div>\n  </div>\n  <div class=\"carousel\">\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEks3GNEygQ8Qzok4UDCEthU1_6PWvXndMMwn43G7tjXPufChrH2EASfk_-3l7oEkqFf_UvbIQXE9QeiiCFyWlhwjCrZQmOp8eq1m5ja8YBOYvX7YVeU9Xssm-8TzTTNZQ_LTVvlEa_mXEwcXIxBo0XPgLCOduKfoSpFlUTw-RcDlfHd8kGjl1bwNZaI_7ssaOnV8vXPd49hi-IEryoaWBb9k62qhRNJbByxEo0BuvgP5YfQ5c1A_csoYfam-O2AuE=\">Earthrise photograph William Anders Apollo 8 December 24 1968</a>\n  </div>\n</div>\n",
-    "recorded_example": true,
-    "example_name": "supported_history",
-    "example_image_url": "/assets/earthrise.jpg"
-  },
-  {
-    "id": "6d2c4a15839e34f4115c59d78384dee183cc5a994b644c5febfb856c4f4c8409",
-    "context_key": "6d2c4a15839e34f4115c59d78384dee183cc5a994b644c5febfb856c4f4c8409",
-    "claim": "This Earthrise photograph was taken by the Artemis II crew in 2026, not by Apollo 8 in 1968.",
-    "media": {
-      "sha256": "4185c8f94a52cb368f9266adbd292171337be3ad3e8c92f7c1f1969a2977541a",
-      "dhash": "c0ff03a0a4002000"
-    },
-    "corpus": "live",
-    "created_at": "2026-10-17T09:02:57.146825+00:00",
-    "expires_at": "2026-10-18T09:02:57.146825+00:00",
-    "origin": {
-      "status": "unknown",
-      "explanation": "No provenance or watermark verification has been performed."
-    },
-    "assessment": {
-      "summary": "The claim that the iconic Earthrise photograph was taken by the Artemis II crew in 2026 instead of the Apollo 8 crew in 1968 is contradicted by historical records. Multiple sources confirm the photograph was captured by Apollo 8 astronaut Bill Anders on December 24, 1968.",
-      "findings": [
-        {
-          "claim": "This Earthrise photograph was taken by the Artemis II crew in 2026, not by Apollo 8 in 1968.",
-          "status": "contradicted",
-          "explanation": "The provided evidence clearly establishes that the iconic Earthrise photograph was taken by Apollo 8 astronaut Bill Anders on December 24, 1968, during the first crewed lunar orbit mission. Artemis II, scheduled for 2026, was a separate crewed flyby mission and is not the source of this historic photograph.",
-          "evidence_ids": [
-            "E1",
-            "E2",
-            "E3",
-            "E4",
-            "E5",
-            "E6"
+            "E4"
+          ],
+          "evidence_quotes": [
+            {
+              "evidence_id": "E3",
+              "quote": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968, during the Apollo 8 mission."
+            },
+            {
+              "evidence_id": "E4",
+              "quote": "NASA astronaut Bill Anders took this iconic image of Earth rising over the Moon\u2019s horizon on Dec. 24, 1968."
+            }
           ]
         }
       ],
       "limitations": [
-        "The provided evidence does not contain the visual image itself, but the textual descriptions of the iconic Earthrise photograph are sufficient to verify its historical origin."
+        "The visual match relies on the provided image matching the historical 'Earthrise' photograph, but digital variations or crops of the image may exist."
+      ],
+      "context_checks": [
+        {
+          "dimension": "date",
+          "claimed": "December 24, 1968",
+          "observed": "December 24, 1968",
+          "status": "supported",
+          "evidence_ids": [
+            "E3",
+            "E4"
+          ],
+          "evidence_quotes": [
+            {
+              "evidence_id": "E3",
+              "quote": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968, during the Apollo 8 mission."
+            },
+            {
+              "evidence_id": "E4",
+              "quote": "NASA astronaut Bill Anders took this iconic image of Earth rising over the Moon\u2019s horizon on Dec. 24, 1968."
+            }
+          ]
+        },
+        {
+          "dimension": "media_identity",
+          "claimed": "Earthrise photograph taken by William Anders",
+          "observed": "Earthrise photograph taken by William Anders",
+          "status": "supported",
+          "evidence_ids": [
+            "E3",
+            "E5"
+          ],
+          "evidence_quotes": [
+            {
+              "evidence_id": "E3",
+              "quote": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders"
+            },
+            {
+              "evidence_id": "E5",
+              "quote": "The iconic image of \"Earthrise\" captured by William Anders aboard Apollo 8."
+            }
+          ]
+        }
       ]
     },
     "evidence": [
       {
-        "url": "https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/",
-        "title": "Apollo 8's Iconic Earthrise - NASA Science",
+        "url": "https://pixabay.com/images/search/earth%20from%20space/",
+        "title": "28259 Free images of Earth From Space - Pixabay",
         "match": "full",
-        "kind": "source_page_excerpt",
-        "excerpt": "The rising Earth is about five degrees above the lunar horizon in this telephoto view taken from the Apollo 8 spacecraft near 110 degrees",
+        "kind": "image_match_lead",
+        "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin.",
         "id": "E1",
-        "retrieved_at": "2026-10-17T09:03:07.776685+00:00",
-        "page_published_at": "2019-02-22T00:00:00-05:00",
-        "fetch_status": "retrieved"
+        "fetch_status": "unavailable"
       },
       {
-        "url": "https://en.wikipedia.org/wiki/Earthrise",
-        "title": "Earthrise - Wikipedia",
+        "url": "https://bowlingerika.sk/product/category/33334522021600",
+        "title": "Earth Free Earth From Space Image Earth, Space, Night Download ...",
         "match": "full",
-        "kind": "source_page_excerpt",
-        "excerpt": "In 2013, in commemoration of the 45th anniversary of the Apollo 8 mission, NASA issued a video about the taking of the photograph.[25] This",
+        "kind": "image_match_lead",
+        "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin.",
         "id": "E2",
-        "retrieved_at": "2026-10-17T09:03:08.178494+00:00",
-        "page_published_at": null,
-        "fetch_status": "retrieved"
+        "fetch_status": "unavailable"
       },
       {
         "id": "E3",
         "title": "wikipedia.org",
         "url": "https://en.wikipedia.org/wiki/Earthrise",
-        "excerpt": "In 2013, in commemoration of the 45th anniversary of the Apollo 8 mission, NASA issued a video about the taking of the photograph.[25] This",
+        "excerpt": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968, during the Apollo 8 mission.",
         "kind": "source_page_excerpt",
-        "retrieved_at": "2026-10-17T09:03:08.910894+00:00",
+        "retrieved_at": "2026-10-17T10:11:46.203768+00:00",
         "page_published_at": null,
         "fetch_status": "retrieved"
       },
@@ -242,29 +116,29 @@
         "id": "E4",
         "title": "nasa.gov",
         "url": "https://www.nasa.gov/image-article/earthrise-by-nasa-astronaut-bill-anders/",
-        "excerpt": "NASA astronaut Bill Anders took this iconic image of Earth rising over the Moon\u2019s horizon on Dec. 24, 1968. Anders, lunar module pilot on",
+        "excerpt": "NASA astronaut Bill Anders took this iconic image of Earth rising over the Moon\u2019s horizon on Dec. 24, 1968.",
         "kind": "source_page_excerpt",
-        "retrieved_at": "2026-10-17T09:03:09.996280+00:00",
+        "retrieved_at": "2026-10-17T10:11:46.907146+00:00",
         "page_published_at": null,
         "fetch_status": "retrieved"
       },
       {
         "id": "E5",
-        "title": "astrography.com",
-        "url": "https://astrography.com/blogs/news/earthrise-photo-a-journey-through-earths-iconic-space-portrait",
-        "excerpt": "In such a tumultuous context, the Apollo 8 mission and the Earthrise photograph provided a moment of unity and reflection. Frank Borman later received",
+        "title": "sothebys.com",
+        "url": "https://www.sothebys.com/en/buy/auction/2019/space-exploration/apollo-8-earthrise-vintage-nasa-red-number",
+        "excerpt": "The iconic image of \"Earthrise\" captured by William Anders aboard Apollo 8.",
         "kind": "source_page_excerpt",
-        "retrieved_at": "2026-10-17T09:03:11.341692+00:00",
+        "retrieved_at": "2026-10-17T10:11:49.704933+00:00",
         "page_published_at": null,
         "fetch_status": "retrieved"
       },
       {
         "id": "E6",
-        "title": "wikipedia.org",
-        "url": "https://en.wikipedia.org/wiki/Artemis_program",
-        "excerpt": "Artemis II (April 1, 2026) was the first crewed test flight of SLS and Orion.[16] The four crew members performed extensive testing of the",
+        "title": "astrography.com",
+        "url": "https://astrography.com/blogs/news/earthrise-photo-a-journey-through-earths-iconic-space-portrait",
+        "excerpt": "On December 21, 1968, Apollo 8 embarked on a historic mission, and three astronauts\u2014Frank Borman, Jim Lovell, and Bill Anders\u2014seized a unique moment that",
         "kind": "source_page_excerpt",
-        "retrieved_at": "2026-10-17T09:03:13.458336+00:00",
+        "retrieved_at": "2026-10-17T10:11:51.458632+00:00",
         "page_published_at": null,
         "fetch_status": "retrieved"
       }
@@ -273,8 +147,15 @@
       "status": "retrieved",
       "pages": [
         {
-          "url": "https://science.nasa.gov/resource/apollo-8s-iconic-earthrise/",
-          "title": "Apollo 8's Iconic Earthrise - NASA Science",
+          "url": "https://pixabay.com/images/search/earth%20from%20space/",
+          "title": "28259 Free images of Earth From Space - Pixabay",
+          "match": "full",
+          "kind": "image_match_lead",
+          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
+        },
+        {
+          "url": "https://bowlingerika.sk/product/category/33334522021600",
+          "title": "Earth Free Earth From Space Image Earth, Space, Night Download ...",
           "match": "full",
           "kind": "image_match_lead",
           "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
@@ -287,23 +168,16 @@
           "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
         },
         {
-          "url": "https://science.nasa.gov/moon/image-galleries/earthrise-earthset-looking-towards-home/",
-          "title": "Gallery: Earthrise, Earthset - Looking Towards Home - NASA Science",
+          "url": "https://earthxspacergv.org/",
+          "title": "Earth x Space Celebration 2026 - Rio Grande Valley STEM Event ...",
           "match": "partial",
-          "kind": "image_match_lead",
-          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
-        },
-        {
-          "url": "https://www.nasa.gov/image-article/earthrise-by-nasa-astronaut-bill-anders/",
-          "title": "\u201cEarthrise\u201d by NASA Astronaut Bill Anders",
-          "match": "full",
           "kind": "image_match_lead",
           "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
         }
       ],
       "vision_calls": 1,
       "best_guess_labels": [
-        "high resolution earthrise"
+        "earth from space"
       ]
     },
     "events": [
@@ -324,48 +198,244 @@
     "usage": [
       {
         "stage": "research",
-        "prompt_tokens": 1578,
-        "output_tokens": 196,
-        "thinking_tokens": 500,
-        "total_tokens": 2274,
-        "reported_search_queries": 4
+        "prompt_tokens": 1637,
+        "output_tokens": 180,
+        "thinking_tokens": 105,
+        "total_tokens": 1922,
+        "reported_search_queries": 2
       },
       {
         "stage": "assessment",
-        "prompt_tokens": 2196,
-        "output_tokens": 239,
-        "thinking_tokens": 1326,
-        "total_tokens": 3761,
+        "prompt_tokens": 3550,
+        "output_tokens": 721,
+        "thinking_tokens": 197,
+        "total_tokens": 4468,
         "reported_search_queries": 0
       },
       {
         "stage": "challenge",
-        "prompt_tokens": 2229,
+        "prompt_tokens": 3363,
         "output_tokens": 16,
-        "thinking_tokens": 300,
-        "total_tokens": 2545,
+        "thinking_tokens": 150,
+        "total_tokens": 3529,
         "reported_search_queries": 0
       }
     ],
-    "search_attribution_html": "<style>\n.container {\n  align-items: center;\n  border-radius: 8px;\n  display: flex;\n  font-family: Google Sans, Roboto, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n  padding: 8px 12px;\n}\n.chip {\n  display: inline-block;\n  border: solid 1px;\n  border-radius: 16px;\n  min-width: 14px;\n  padding: 5px 16px;\n  text-align: center;\n  user-select: none;\n  margin: 0 8px;\n  -webkit-tap-highlight-color: transparent;\n}\n.carousel {\n  overflow: auto;\n  scrollbar-width: none;\n  white-space: nowrap;\n  margin-right: -12px;\n}\n.headline {\n  display: flex;\n  margin-right: 4px;\n}\n.gradient-container {\n  position: relative;\n}\n.gradient {\n  position: absolute;\n  transform: translate(3px, -9px);\n  height: 36px;\n  width: 9px;\n}\n@media (prefers-color-scheme: light) {\n  .container {\n    background-color: #fafafa;\n    box-shadow: 0 0 0 1px #0000000f;\n  }\n  .headline-label {\n    color: #1f1f1f;\n  }\n  .chip {\n    background-color: #ffffff;\n    border-color: #d2d2d2;\n    color: #5e5e5e;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #f2f2f2;\n  }\n  .chip:focus {\n    background-color: #f2f2f2;\n  }\n  .chip:active {\n    background-color: #d8d8d8;\n    border-color: #b6b6b6;\n  }\n  .logo-dark {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #fafafa 15%, #fafafa00 100%);\n  }\n}\n@media (prefers-color-scheme: dark) {\n  .container {\n    background-color: #1f1f1f;\n    box-shadow: 0 0 0 1px #ffffff26;\n  }\n  .headline-label {\n    color: #fff;\n  }\n  .chip {\n    background-color: #2c2c2c;\n    border-color: #3c4043;\n    color: #fff;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #353536;\n  }\n  .chip:focus {\n    background-color: #353536;\n  }\n  .chip:active {\n    background-color: #464849;\n    border-color: #53575b;\n  }\n  .logo-light {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #1f1f1f 15%, #1f1f1f00 100%);\n  }\n}\n</style>\n<div class=\"container\">\n  <div class=\"headline\">\n    <svg class=\"logo-light\" width=\"18\" height=\"18\" viewBox=\"9 9 35 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M42.8622 27.0064C42.8622 25.7839 42.7525 24.6084 42.5487 23.4799H26.3109V30.1568H35.5897C35.1821 32.3041 33.9596 34.1222 32.1258 35.3448V39.6864H37.7213C40.9814 36.677 42.8622 32.2571 42.8622 27.0064V27.0064Z\" fill=\"#4285F4\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 43.8555C30.9659 43.8555 34.8687 42.3195 37.7213 39.6863L32.1258 35.3447C30.5898 36.3792 28.6306 37.0061 26.3109 37.0061C21.8282 37.0061 18.0195 33.9811 16.6559 29.906H10.9194V34.3573C13.7563 39.9841 19.5712 43.8555 26.3109 43.8555V43.8555Z\" fill=\"#34A853\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.6559 29.8904C16.3111 28.8559 16.1074 27.7588 16.1074 26.6146C16.1074 25.4704 16.3111 24.3733 16.6559 23.3388V18.8875H10.9194C9.74388 21.2072 9.06992 23.8247 9.06992 26.6146C9.06992 29.4045 9.74388 32.022 10.9194 34.3417L15.3864 30.8621L16.6559 29.8904V29.8904Z\" fill=\"#FBBC05\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 16.2386C28.85 16.2386 31.107 17.1164 32.9095 18.8091L37.8466 13.8719C34.853 11.082 30.9659 9.3736 26.3109 9.3736C19.5712 9.3736 13.7563 13.245 10.9194 18.8875L16.6559 23.3388C18.0195 19.2636 21.8282 16.2386 26.3109 16.2386V16.2386Z\" fill=\"#EA4335\"/>\n    </svg>\n    <svg class=\"logo-dark\" width=\"18\" height=\"18\" viewBox=\"0 0 48 48\" xmlns=\"http://www.w3.org/2000/svg\">\n      <circle cx=\"24\" cy=\"23\" fill=\"#FFF\" r=\"22\"/>\n      <path d=\"M33.76 34.26c2.75-2.56 4.49-6.37 4.49-11.26 0-.89-.08-1.84-.29-3H24.01v5.99h8.03c-.4 2.02-1.5 3.56-3.07 4.56v.75l3.91 2.97h.88z\" fill=\"#4285F4\"/>\n      <path d=\"M15.58 25.77A8.845 8.845 0 0 0 24 31.86c1.92 0 3.62-.46 4.97-1.31l4.79 3.71C31.14 36.7 27.65 38 24 38c-5.93 0-11.01-3.4-13.45-8.36l.17-1.01 4.06-2.85h.8z\" fill=\"#34A853\"/>\n      <path d=\"M15.59 20.21a8.864 8.864 0 0 0 0 5.58l-5.03 3.86c-.98-2-1.53-4.25-1.53-6.64 0-2.39.55-4.64 1.53-6.64l1-.22 3.81 2.98.22 1.08z\" fill=\"#FBBC05\"/>\n      <path d=\"M24 14.14c2.11 0 4.02.75 5.52 1.98l4.36-4.36C31.22 9.43 27.81 8 24 8c-5.93 0-11.01 3.4-13.45 8.36l5.03 3.85A8.86 8.86 0 0 1 24 14.14z\" fill=\"#EA4335\"/>\n    </svg>\n    <div class=\"gradient-container\"><div class=\"gradient\"></div></div>\n  </div>\n  <div class=\"carousel\">\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEbhwLx1aPXbSNqKni_lVPKXr3qp55EubmcGj_XpowLoG4XkIWKsGl8UbfnM533Val9Da3bhF9l4IRH2PEKOIk1epyyAAvh__fIIAjsLs7hE3ynN-zW296WpMCZpH598Fd13rm1Gynqi6hkyTYV0m_O_jgfVOAESiSWKmSgNdc5P2mneTNmIutTeE_BP5qvfS96P85pXmYpxO2e47LzAzgUwx0=\">&quot;Earthrise&quot; Bill Anders 1968</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE-qv0acIVuNGynS4iuyfFUOBQoWs2VENjI6k-0lISTCb1rx_96OVwdwNdkiWS5SP2TtLnu4mPj-3S8W51oatCMlhOLRQmULKbfwhBBJHQtFftX4MdW8Lb9Q5cGXzQfFOEWvAJY6CMuMjt9bRh1UPfz1TvIah3zUORnCiHiZI1WVgRjnIqvpBjqqroXl7eIbvyuoQ5wJ5e8sg_xF1eHoSd_tmL1Fqt2O2GgGw==\">&quot;Earthrise&quot; photograph 1968 Apollo 8</a>\n  </div>\n</div>\n",
-    "recorded_example": true,
-    "example_name": "misleading_caption",
+    "search_attribution_html": "<style>\n.container {\n  align-items: center;\n  border-radius: 8px;\n  display: flex;\n  font-family: Google Sans, Roboto, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n  padding: 8px 12px;\n}\n.chip {\n  display: inline-block;\n  border: solid 1px;\n  border-radius: 16px;\n  min-width: 14px;\n  padding: 5px 16px;\n  text-align: center;\n  user-select: none;\n  margin: 0 8px;\n  -webkit-tap-highlight-color: transparent;\n}\n.carousel {\n  overflow: auto;\n  scrollbar-width: none;\n  white-space: nowrap;\n  margin-right: -12px;\n}\n.headline {\n  display: flex;\n  margin-right: 4px;\n}\n.gradient-container {\n  position: relative;\n}\n.gradient {\n  position: absolute;\n  transform: translate(3px, -9px);\n  height: 36px;\n  width: 9px;\n}\n@media (prefers-color-scheme: light) {\n  .container {\n    background-color: #fafafa;\n    box-shadow: 0 0 0 1px #0000000f;\n  }\n  .headline-label {\n    color: #1f1f1f;\n  }\n  .chip {\n    background-color: #ffffff;\n    border-color: #d2d2d2;\n    color: #5e5e5e;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #f2f2f2;\n  }\n  .chip:focus {\n    background-color: #f2f2f2;\n  }\n  .chip:active {\n    background-color: #d8d8d8;\n    border-color: #b6b6b6;\n  }\n  .logo-dark {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #fafafa 15%, #fafafa00 100%);\n  }\n}\n@media (prefers-color-scheme: dark) {\n  .container {\n    background-color: #1f1f1f;\n    box-shadow: 0 0 0 1px #ffffff26;\n  }\n  .headline-label {\n    color: #fff;\n  }\n  .chip {\n    background-color: #2c2c2c;\n    border-color: #3c4043;\n    color: #fff;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #353536;\n  }\n  .chip:focus {\n    background-color: #353536;\n  }\n  .chip:active {\n    background-color: #464849;\n    border-color: #53575b;\n  }\n  .logo-light {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #1f1f1f 15%, #1f1f1f00 100%);\n  }\n}\n</style>\n<div class=\"container\">\n  <div class=\"headline\">\n    <svg class=\"logo-light\" width=\"18\" height=\"18\" viewBox=\"9 9 35 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M42.8622 27.0064C42.8622 25.7839 42.7525 24.6084 42.5487 23.4799H26.3109V30.1568H35.5897C35.1821 32.3041 33.9596 34.1222 32.1258 35.3448V39.6864H37.7213C40.9814 36.677 42.8622 32.2571 42.8622 27.0064V27.0064Z\" fill=\"#4285F4\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 43.8555C30.9659 43.8555 34.8687 42.3195 37.7213 39.6863L32.1258 35.3447C30.5898 36.3792 28.6306 37.0061 26.3109 37.0061C21.8282 37.0061 18.0195 33.9811 16.6559 29.906H10.9194V34.3573C13.7563 39.9841 19.5712 43.8555 26.3109 43.8555V43.8555Z\" fill=\"#34A853\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.6559 29.8904C16.3111 28.8559 16.1074 27.7588 16.1074 26.6146C16.1074 25.4704 16.3111 24.3733 16.6559 23.3388V18.8875H10.9194C9.74388 21.2072 9.06992 23.8247 9.06992 26.6146C9.06992 29.4045 9.74388 32.022 10.9194 34.3417L15.3864 30.8621L16.6559 29.8904V29.8904Z\" fill=\"#FBBC05\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 16.2386C28.85 16.2386 31.107 17.1164 32.9095 18.8091L37.8466 13.8719C34.853 11.082 30.9659 9.3736 26.3109 9.3736C19.5712 9.3736 13.7563 13.245 10.9194 18.8875L16.6559 23.3388C18.0195 19.2636 21.8282 16.2386 26.3109 16.2386V16.2386Z\" fill=\"#EA4335\"/>\n    </svg>\n    <svg class=\"logo-dark\" width=\"18\" height=\"18\" viewBox=\"0 0 48 48\" xmlns=\"http://www.w3.org/2000/svg\">\n      <circle cx=\"24\" cy=\"23\" fill=\"#FFF\" r=\"22\"/>\n      <path d=\"M33.76 34.26c2.75-2.56 4.49-6.37 4.49-11.26 0-.89-.08-1.84-.29-3H24.01v5.99h8.03c-.4 2.02-1.5 3.56-3.07 4.56v.75l3.91 2.97h.88z\" fill=\"#4285F4\"/>\n      <path d=\"M15.58 25.77A8.845 8.845 0 0 0 24 31.86c1.92 0 3.62-.46 4.97-1.31l4.79 3.71C31.14 36.7 27.65 38 24 38c-5.93 0-11.01-3.4-13.45-8.36l.17-1.01 4.06-2.85h.8z\" fill=\"#34A853\"/>\n      <path d=\"M15.59 20.21a8.864 8.864 0 0 0 0 5.58l-5.03 3.86c-.98-2-1.53-4.25-1.53-6.64 0-2.39.55-4.64 1.53-6.64l1-.22 3.81 2.98.22 1.08z\" fill=\"#FBBC05\"/>\n      <path d=\"M24 14.14c2.11 0 4.02.75 5.52 1.98l4.36-4.36C31.22 9.43 27.81 8 24 8c-5.93 0-11.01 3.4-13.45 8.36l5.03 3.85A8.86 8.86 0 0 1 24 14.14z\" fill=\"#EA4335\"/>\n    </svg>\n    <div class=\"gradient-container\"><div class=\"gradient\"></div></div>\n  </div>\n  <div class=\"carousel\">\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHDNw7ghi9_KEdLidAenMXecQXnYZ35ZRTLbeldBGzUamj8mGrmXU_3KiUyeDTkMoLhkkaV3nDFFN3fUMomDfXRSfVgHoQOYAv4YuuDTtxPaXHzKh5JNPOBU9-bjNheD_Bteh7oB8JCuhzuEp8YmwEakFK1vLj2V7McAw5sy4lVTij0PFHrd02cABS9Lb67SlKli-t0qImpbomz5rzm\">NASA Earthrise AS08-14-2383</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE0solI91LBvWkJkLTo_eNMmrAzaQD9dpGFV3SrtSOxjuq_OCcEyyEcTn1EjZNYJyw40HO44bbU40Ap7L-NRDIVBdBf07Ms7gJSa6FeBc9wucRT9AmaMCIvPDoe7kUHesXB-JioyFD5n-NmInYllKr48ydGPNAyFb7NSw0aBYAl2Nk9GxkbOLGORLpdSdjFwIQH_Esl60xuBexTsVsaRbQUu99Rsd1uOdLPSvlAo9uWSE3BNtuTz_nX4BMJ\">&quot;Earthrise&quot; William Anders Apollo 8 December 24 1968</a>\n  </div>\n</div>\n",
+    "publication_context": {
+      "published_at": null,
+      "source_url": null,
+      "retrieval_date": "2026-10-17",
+      "date_basis": "UTC",
+      "limitation": "Publication time is supplied context, not verified capture time. The author's local timezone may differ; abstain on ambiguous day boundaries."
+    },
+    "example_name": "supported_history",
     "example_image_url": "/assets/earthrise.jpg",
     "qa_notes": [
-      "QA found an incidental wording error: the generated explanation calls Artemis II 'scheduled for 2026', although its cited source describes an April 2026 flight. The historical Earthrise attribution is the assessed claim. This recorded output is retained transparently; the same-model critique missed that wording."
+      "Recorded development evaluation, October 17, 2026. Viewing this example invokes no model. Exact quotation checks are structural; they do not establish independent verification."
     ]
   },
   {
-    "id": "59697a132334c5989df2680eed9b754052ebdb064ee2272fdae2dde2ac3fb9e2",
-    "context_key": "59697a132334c5989df2680eed9b754052ebdb064ee2272fdae2dde2ac3fb9e2",
-    "claim": "An unpublished private photograph taken by an unnamed person at exactly 09:17 UTC on October 16, 2026 shows a garden in Riverton. No image, location coordinates or public source is available.",
+    "id": "de0aa3f5ccfeb1f2af9fb49923f4ebb232e690e9f8714655a4bfa4935bfa88bb",
+    "context_key": "de0aa3f5ccfeb1f2af9fb49923f4ebb232e690e9f8714655a4bfa4935bfa88bb",
+    "claim": "This Earthrise image was photographed today during a new lunar mission.",
+    "media": {
+      "sha256": "4185c8f94a52cb368f9266adbd292171337be3ad3e8c92f7c1f1969a2977541a",
+      "dhash": "c0ff03a0a4002000"
+    },
+    "corpus": "live",
+    "created_at": "2026-10-17T10:11:58.960041+00:00",
+    "expires_at": "2026-10-18T10:11:58.960041+00:00",
+    "origin": {
+      "status": "unknown",
+      "explanation": "No provenance or watermark verification has been performed."
+    },
+    "assessment": {
+      "summary": "The claim that the Earthrise image was photographed today during a new lunar mission is false. The image is the famous 'Earthrise' photograph taken by astronaut William Anders during the Apollo 8 mission on December 24, 1968.",
+      "findings": [
+        {
+          "claim": "This Earthrise image was photographed today during a new lunar mission.",
+          "status": "contradicted",
+          "explanation": "The Earthrise photograph was not taken today (October 17, 2026) during a new lunar mission. It was captured by American astronaut William Anders during the Apollo 8 mission on December 24, 1968.",
+          "evidence_ids": [
+            "E2",
+            "E3"
+          ],
+          "evidence_quotes": [
+            {
+              "evidence_id": "E2",
+              "quote": "Anders took the \u201cEarthrise\u201d photo while in lunar orbit on December 24, 1968."
+            },
+            {
+              "evidence_id": "E3",
+              "quote": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968"
+            }
+          ]
+        }
+      ],
+      "limitations": [
+        "The publication time is supplied context, not verified capture time."
+      ],
+      "context_checks": [
+        {
+          "dimension": "date",
+          "claimed": "2026-10-17",
+          "observed": "1968-12-24",
+          "status": "contradicted",
+          "evidence_ids": [
+            "E2",
+            "E3"
+          ],
+          "evidence_quotes": [
+            {
+              "evidence_id": "E2",
+              "quote": "Anders took the \u201cEarthrise\u201d photo while in lunar orbit on December 24, 1968."
+            },
+            {
+              "evidence_id": "E3",
+              "quote": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968"
+            }
+          ]
+        }
+      ]
+    },
+    "evidence": [
+      {
+        "url": "https://en.wikipedia.org/wiki/Apollo_8",
+        "title": "Apollo 8 - Wikipedia",
+        "match": "full",
+        "kind": "source_page_excerpt",
+        "excerpt": "Originally planned as the second crewed Apollo Lunar Module and command module test, to be flown in an elliptical medium Earth orbit in early",
+        "id": "E1",
+        "retrieved_at": "2026-10-17T10:12:05.643480+00:00",
+        "page_published_at": null,
+        "fetch_status": "retrieved"
+      },
+      {
+        "url": "https://www.nasa.gov/mission/apollo-8/",
+        "title": "Apollo 8 - NASA",
+        "match": "full",
+        "kind": "source_page_excerpt",
+        "excerpt": "Anders took the \u201cEarthrise\u201d photo while in lunar orbit on December 24, 1968.",
+        "id": "E2",
+        "retrieved_at": "2026-10-17T10:12:07.081906+00:00",
+        "page_published_at": null,
+        "fetch_status": "retrieved"
+      },
+      {
+        "id": "E3",
+        "title": "wikipedia.org",
+        "url": "https://en.wikipedia.org/wiki/Earthrise",
+        "excerpt": "Earthrise is a photograph of Earth taken from lunar orbit by American astronaut William Anders on December 24, 1968",
+        "kind": "source_page_excerpt",
+        "retrieved_at": "2026-10-17T10:12:07.900670+00:00",
+        "page_published_at": null,
+        "fetch_status": "retrieved"
+      }
+    ],
+    "media_search": {
+      "status": "retrieved",
+      "pages": [
+        {
+          "url": "https://en.wikipedia.org/wiki/Apollo_8",
+          "title": "Apollo 8 - Wikipedia",
+          "match": "full",
+          "kind": "image_match_lead",
+          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
+        },
+        {
+          "url": "https://www.nasa.gov/mission/apollo-8/",
+          "title": "Apollo 8 - NASA",
+          "match": "full",
+          "kind": "image_match_lead",
+          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
+        },
+        {
+          "url": "https://www.lpi.usra.edu/lunar/missions/apollo/apollo_8/",
+          "title": "Apollo 8 Mission Overview - Lunar and Planetary Institute (LPI)",
+          "match": "full",
+          "kind": "image_match_lead",
+          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Wfd0oC3eFWw",
+          "title": "Apollo 8: Around The Moon and Back - YouTube",
+          "match": "related",
+          "kind": "image_match_lead",
+          "excerpt": "Image match returned by Cloud Vision. This does not verify the caption, capture date, place or origin."
+        }
+      ],
+      "vision_calls": 1,
+      "best_guess_labels": [
+        "apollo 8"
+      ]
+    },
+    "events": [
+      {
+        "stage": "research",
+        "detail": "Retrieved 3 source-linked evidence segments."
+      },
+      {
+        "stage": "assessment",
+        "detail": "Checked schema and evidence references."
+      },
+      {
+        "stage": "challenge",
+        "detail": "Assessment accepted for display."
+      }
+    ],
+    "model_calls": 3,
+    "usage": [
+      {
+        "stage": "research",
+        "prompt_tokens": 1637,
+        "output_tokens": 102,
+        "thinking_tokens": 138,
+        "total_tokens": 1877,
+        "reported_search_queries": 1
+      },
+      {
+        "stage": "assessment",
+        "prompt_tokens": 3005,
+        "output_tokens": 518,
+        "thinking_tokens": 125,
+        "total_tokens": 3648,
+        "reported_search_queries": 0
+      },
+      {
+        "stage": "challenge",
+        "prompt_tokens": 2674,
+        "output_tokens": 10,
+        "thinking_tokens": 129,
+        "total_tokens": 2813,
+        "reported_search_queries": 0
+      }
+    ],
+    "search_attribution_html": "<style>\n.container {\n  align-items: center;\n  border-radius: 8px;\n  display: flex;\n  font-family: Google Sans, Roboto, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n  padding: 8px 12px;\n}\n.chip {\n  display: inline-block;\n  border: solid 1px;\n  border-radius: 16px;\n  min-width: 14px;\n  padding: 5px 16px;\n  text-align: center;\n  user-select: none;\n  margin: 0 8px;\n  -webkit-tap-highlight-color: transparent;\n}\n.carousel {\n  overflow: auto;\n  scrollbar-width: none;\n  white-space: nowrap;\n  margin-right: -12px;\n}\n.headline {\n  display: flex;\n  margin-right: 4px;\n}\n.gradient-container {\n  position: relative;\n}\n.gradient {\n  position: absolute;\n  transform: translate(3px, -9px);\n  height: 36px;\n  width: 9px;\n}\n@media (prefers-color-scheme: light) {\n  .container {\n    background-color: #fafafa;\n    box-shadow: 0 0 0 1px #0000000f;\n  }\n  .headline-label {\n    color: #1f1f1f;\n  }\n  .chip {\n    background-color: #ffffff;\n    border-color: #d2d2d2;\n    color: #5e5e5e;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #f2f2f2;\n  }\n  .chip:focus {\n    background-color: #f2f2f2;\n  }\n  .chip:active {\n    background-color: #d8d8d8;\n    border-color: #b6b6b6;\n  }\n  .logo-dark {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #fafafa 15%, #fafafa00 100%);\n  }\n}\n@media (prefers-color-scheme: dark) {\n  .container {\n    background-color: #1f1f1f;\n    box-shadow: 0 0 0 1px #ffffff26;\n  }\n  .headline-label {\n    color: #fff;\n  }\n  .chip {\n    background-color: #2c2c2c;\n    border-color: #3c4043;\n    color: #fff;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #353536;\n  }\n  .chip:focus {\n    background-color: #353536;\n  }\n  .chip:active {\n    background-color: #464849;\n    border-color: #53575b;\n  }\n  .logo-light {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #1f1f1f 15%, #1f1f1f00 100%);\n  }\n}\n</style>\n<div class=\"container\">\n  <div class=\"headline\">\n    <svg class=\"logo-light\" width=\"18\" height=\"18\" viewBox=\"9 9 35 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M42.8622 27.0064C42.8622 25.7839 42.7525 24.6084 42.5487 23.4799H26.3109V30.1568H35.5897C35.1821 32.3041 33.9596 34.1222 32.1258 35.3448V39.6864H37.7213C40.9814 36.677 42.8622 32.2571 42.8622 27.0064V27.0064Z\" fill=\"#4285F4\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 43.8555C30.9659 43.8555 34.8687 42.3195 37.7213 39.6863L32.1258 35.3447C30.5898 36.3792 28.6306 37.0061 26.3109 37.0061C21.8282 37.0061 18.0195 33.9811 16.6559 29.906H10.9194V34.3573C13.7563 39.9841 19.5712 43.8555 26.3109 43.8555V43.8555Z\" fill=\"#34A853\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.6559 29.8904C16.3111 28.8559 16.1074 27.7588 16.1074 26.6146C16.1074 25.4704 16.3111 24.3733 16.6559 23.3388V18.8875H10.9194C9.74388 21.2072 9.06992 23.8247 9.06992 26.6146C9.06992 29.4045 9.74388 32.022 10.9194 34.3417L15.3864 30.8621L16.6559 29.8904V29.8904Z\" fill=\"#FBBC05\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 16.2386C28.85 16.2386 31.107 17.1164 32.9095 18.8091L37.8466 13.8719C34.853 11.082 30.9659 9.3736 26.3109 9.3736C19.5712 9.3736 13.7563 13.245 10.9194 18.8875L16.6559 23.3388C18.0195 19.2636 21.8282 16.2386 26.3109 16.2386V16.2386Z\" fill=\"#EA4335\"/>\n    </svg>\n    <svg class=\"logo-dark\" width=\"18\" height=\"18\" viewBox=\"0 0 48 48\" xmlns=\"http://www.w3.org/2000/svg\">\n      <circle cx=\"24\" cy=\"23\" fill=\"#FFF\" r=\"22\"/>\n      <path d=\"M33.76 34.26c2.75-2.56 4.49-6.37 4.49-11.26 0-.89-.08-1.84-.29-3H24.01v5.99h8.03c-.4 2.02-1.5 3.56-3.07 4.56v.75l3.91 2.97h.88z\" fill=\"#4285F4\"/>\n      <path d=\"M15.58 25.77A8.845 8.845 0 0 0 24 31.86c1.92 0 3.62-.46 4.97-1.31l4.79 3.71C31.14 36.7 27.65 38 24 38c-5.93 0-11.01-3.4-13.45-8.36l.17-1.01 4.06-2.85h.8z\" fill=\"#34A853\"/>\n      <path d=\"M15.59 20.21a8.864 8.864 0 0 0 0 5.58l-5.03 3.86c-.98-2-1.53-4.25-1.53-6.64 0-2.39.55-4.64 1.53-6.64l1-.22 3.81 2.98.22 1.08z\" fill=\"#FBBC05\"/>\n      <path d=\"M24 14.14c2.11 0 4.02.75 5.52 1.98l4.36-4.36C31.22 9.43 27.81 8 24 8c-5.93 0-11.01 3.4-13.45 8.36l5.03 3.85A8.86 8.86 0 0 1 24 14.14z\" fill=\"#EA4335\"/>\n    </svg>\n    <div class=\"gradient-container\"><div class=\"gradient\"></div></div>\n  </div>\n  <div class=\"carousel\">\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFxIz5PBmGhwcarAdpt1K9ELOJTFYdTVgz8DMDTe2dgMXNwATPpcRcmTsmHdJ0n-OyLl5dwXnsYcfSzyMTzKxQ1GNHP6hGNjuVbktnm8PGeDnzCMlEeef-yEY6DHtvLkfROGDevRYwurQzuUhJvIG1DwYTMPWalDAxTP6M4b2mLFv8_dfVTHok9oekMLbcTFEDq8W0SYs8GYDJETiaT_pfNv2WnKUzta3k1VA==\">&quot;Apollo 8&quot; &quot;Earthrise&quot; date taken</a>\n  </div>\n</div>\n",
+    "publication_context": {
+      "published_at": "2026-10-17T12:00:00+00:00",
+      "source_url": null,
+      "retrieval_date": "2026-10-17",
+      "date_basis": "UTC",
+      "limitation": "Publication time is supplied context, not verified capture time. The author's local timezone may differ; abstain on ambiguous day boundaries."
+    },
+    "example_name": "misleading_caption",
+    "example_image_url": "/assets/earthrise.jpg",
+    "qa_notes": [
+      "Recorded development evaluation, October 17, 2026. Viewing this example invokes no model. Exact quotation checks are structural; they do not establish independent verification."
+    ]
+  },
+  {
+    "id": "63e229be4f89f97660844e78e6238d1f445b6a3cf44b39c25cee7021f37dd48c",
+    "context_key": "63e229be4f89f97660844e78e6238d1f445b6a3cf44b39c25cee7021f37dd48c",
+    "claim": "An unnamed person privately photographed a garden in an unspecified Riverton at 09:17 UTC on October 16, 2026. No image or public record is available.",
     "media": {
       "sha256": null,
       "dhash": null
     },
     "corpus": "live",
-    "created_at": "2026-10-17T09:07:46.126779+00:00",
-    "expires_at": "2026-10-18T09:07:46.126779+00:00",
+    "created_at": "2026-10-17T10:14:27.639506+00:00",
+    "expires_at": "2026-10-18T10:14:27.639506+00:00",
     "origin": {
       "status": "unknown",
       "explanation": "No provenance or watermark verification has been performed."
@@ -374,21 +444,23 @@
       "summary": "No usable source-linked evidence was returned.",
       "findings": [
         {
-          "claim": "An unpublished private photograph taken by an unnamed person at exactly 09:17 UTC on October 16, 2026 shows a garden in Riverton. No image, location coordinates or public source is available.",
+          "claim": "An unnamed person privately photographed a garden in an unspecified Riverton at 09:17 UTC on October 16, 2026. No image or public record is available.",
           "status": "unresolved",
           "explanation": "The investigation cannot substantiate an assessment.",
-          "evidence_ids": []
+          "evidence_ids": [],
+          "evidence_quotes": []
         }
       ],
       "limitations": [
         "No source page could be retrieved. Generated search summaries and image matches alone cannot substantiate a verdict."
-      ]
+      ],
+      "context_checks": []
     },
     "evidence": [],
     "media_search": {
       "status": "not_requested",
       "pages": [],
-      "model_calls": 0
+      "vision_calls": 0
     },
     "events": [
       {
@@ -400,15 +472,24 @@
     "usage": [
       {
         "stage": "research",
-        "prompt_tokens": 174,
-        "output_tokens": 78,
-        "thinking_tokens": 177,
-        "total_tokens": 429,
-        "reported_search_queries": 0
+        "prompt_tokens": 244,
+        "output_tokens": 65,
+        "thinking_tokens": 247,
+        "total_tokens": 556,
+        "reported_search_queries": 2
       }
     ],
-    "search_attribution_html": null,
-    "recorded_example": true,
-    "example_name": "unsupported_no_media"
+    "search_attribution_html": "<style>\n.container {\n  align-items: center;\n  border-radius: 8px;\n  display: flex;\n  font-family: Google Sans, Roboto, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n  padding: 8px 12px;\n}\n.chip {\n  display: inline-block;\n  border: solid 1px;\n  border-radius: 16px;\n  min-width: 14px;\n  padding: 5px 16px;\n  text-align: center;\n  user-select: none;\n  margin: 0 8px;\n  -webkit-tap-highlight-color: transparent;\n}\n.carousel {\n  overflow: auto;\n  scrollbar-width: none;\n  white-space: nowrap;\n  margin-right: -12px;\n}\n.headline {\n  display: flex;\n  margin-right: 4px;\n}\n.gradient-container {\n  position: relative;\n}\n.gradient {\n  position: absolute;\n  transform: translate(3px, -9px);\n  height: 36px;\n  width: 9px;\n}\n@media (prefers-color-scheme: light) {\n  .container {\n    background-color: #fafafa;\n    box-shadow: 0 0 0 1px #0000000f;\n  }\n  .headline-label {\n    color: #1f1f1f;\n  }\n  .chip {\n    background-color: #ffffff;\n    border-color: #d2d2d2;\n    color: #5e5e5e;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #f2f2f2;\n  }\n  .chip:focus {\n    background-color: #f2f2f2;\n  }\n  .chip:active {\n    background-color: #d8d8d8;\n    border-color: #b6b6b6;\n  }\n  .logo-dark {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #fafafa 15%, #fafafa00 100%);\n  }\n}\n@media (prefers-color-scheme: dark) {\n  .container {\n    background-color: #1f1f1f;\n    box-shadow: 0 0 0 1px #ffffff26;\n  }\n  .headline-label {\n    color: #fff;\n  }\n  .chip {\n    background-color: #2c2c2c;\n    border-color: #3c4043;\n    color: #fff;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #353536;\n  }\n  .chip:focus {\n    background-color: #353536;\n  }\n  .chip:active {\n    background-color: #464849;\n    border-color: #53575b;\n  }\n  .logo-light {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #1f1f1f 15%, #1f1f1f00 100%);\n  }\n}\n</style>\n<div class=\"container\">\n  <div class=\"headline\">\n    <svg class=\"logo-light\" width=\"18\" height=\"18\" viewBox=\"9 9 35 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M42.8622 27.0064C42.8622 25.7839 42.7525 24.6084 42.5487 23.4799H26.3109V30.1568H35.5897C35.1821 32.3041 33.9596 34.1222 32.1258 35.3448V39.6864H37.7213C40.9814 36.677 42.8622 32.2571 42.8622 27.0064V27.0064Z\" fill=\"#4285F4\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 43.8555C30.9659 43.8555 34.8687 42.3195 37.7213 39.6863L32.1258 35.3447C30.5898 36.3792 28.6306 37.0061 26.3109 37.0061C21.8282 37.0061 18.0195 33.9811 16.6559 29.906H10.9194V34.3573C13.7563 39.9841 19.5712 43.8555 26.3109 43.8555V43.8555Z\" fill=\"#34A853\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.6559 29.8904C16.3111 28.8559 16.1074 27.7588 16.1074 26.6146C16.1074 25.4704 16.3111 24.3733 16.6559 23.3388V18.8875H10.9194C9.74388 21.2072 9.06992 23.8247 9.06992 26.6146C9.06992 29.4045 9.74388 32.022 10.9194 34.3417L15.3864 30.8621L16.6559 29.8904V29.8904Z\" fill=\"#FBBC05\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 16.2386C28.85 16.2386 31.107 17.1164 32.9095 18.8091L37.8466 13.8719C34.853 11.082 30.9659 9.3736 26.3109 9.3736C19.5712 9.3736 13.7563 13.245 10.9194 18.8875L16.6559 23.3388C18.0195 19.2636 21.8282 16.2386 26.3109 16.2386V16.2386Z\" fill=\"#EA4335\"/>\n    </svg>\n    <svg class=\"logo-dark\" width=\"18\" height=\"18\" viewBox=\"0 0 48 48\" xmlns=\"http://www.w3.org/2000/svg\">\n      <circle cx=\"24\" cy=\"23\" fill=\"#FFF\" r=\"22\"/>\n      <path d=\"M33.76 34.26c2.75-2.56 4.49-6.37 4.49-11.26 0-.89-.08-1.84-.29-3H24.01v5.99h8.03c-.4 2.02-1.5 3.56-3.07 4.56v.75l3.91 2.97h.88z\" fill=\"#4285F4\"/>\n      <path d=\"M15.58 25.77A8.845 8.845 0 0 0 24 31.86c1.92 0 3.62-.46 4.97-1.31l4.79 3.71C31.14 36.7 27.65 38 24 38c-5.93 0-11.01-3.4-13.45-8.36l.17-1.01 4.06-2.85h.8z\" fill=\"#34A853\"/>\n      <path d=\"M15.59 20.21a8.864 8.864 0 0 0 0 5.58l-5.03 3.86c-.98-2-1.53-4.25-1.53-6.64 0-2.39.55-4.64 1.53-6.64l1-.22 3.81 2.98.22 1.08z\" fill=\"#FBBC05\"/>\n      <path d=\"M24 14.14c2.11 0 4.02.75 5.52 1.98l4.36-4.36C31.22 9.43 27.81 8 24 8c-5.93 0-11.01 3.4-13.45 8.36l5.03 3.85A8.86 8.86 0 0 1 24 14.14z\" fill=\"#EA4335\"/>\n    </svg>\n    <div class=\"gradient-container\"><div class=\"gradient\"></div></div>\n  </div>\n  <div class=\"carousel\">\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGf834uMnQaiR-unwQ4M4ej6zyKXzlvR6tWLqtaOo14_vAyRW5VqIFTPM1MetlF6dPvHYXAf5izgUM96rId4ItizLYD9VHU9RPwg-M0vJXZcRGGwJ68jETni1TRM80FhReIz5PQ_GYB5gd0Qs9Hk2X1jUFS-qx9yqypjnz9H77gSnslZmApDSPbUPr9R85LL08e8KvJguDTUdl2FZM2MhbXnOXIIrVsP9keYdiYHraWvsyOhcMPafzTVMuUEqq94qTN6so52zveqjP30Zy-Wl3pB5fXxO0=\">&quot;An unnamed person privately photographed a garden in an unspecified Riverton&quot;</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQECw9L4lkbduMGummsEkWwOcN_p2s0Zssa4Jwl8Xlu31xRBSt4jVwjofwWhXfBIser0QKlpZ9npUQVEjZrm_lWnibaIuq9czrrelITtXpUEzO0dIV9k7wbTkHrC-vPRA11BjFQb6PE4QHIZZgwz-mgx-4-dzoCtEFT2d0VXj5BrpTQHdZbjvz1qsWoTQbAtRsbx_81H1AhULOdVGnn9C60o_yZUI0B9lNnMy_6mpzCfrwbdEPFZcc02QnUNIVihbNobEMs=\">&quot;privately photographed a garden in an unspecified Riverton&quot;</a>\n  </div>\n</div>\n",
+    "publication_context": {
+      "published_at": null,
+      "source_url": null,
+      "retrieval_date": "2026-10-17",
+      "date_basis": "UTC",
+      "limitation": "Publication time is supplied context, not verified capture time. The author's local timezone may differ; abstain on ambiguous day boundaries."
+    },
+    "example_name": "unsupported_no_media",
+    "qa_notes": [
+      "Recorded development evaluation, October 17, 2026. Viewing this example invokes no model. Exact quotation checks are structural; they do not establish independent verification."
+    ]
   }
 ]

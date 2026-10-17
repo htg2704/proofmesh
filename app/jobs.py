@@ -183,7 +183,9 @@ class Jobs:
         except Exception as exc:
             import logging
             logging.getLogger('proofmesh').error('Job failed: %s code=%s', type(exc).__name__, getattr(exc, 'code', None))
-            self.update(key, status='failed', error='Investigation failed. No successful report was published; no automatic paid retry.', completed_at=utc().isoformat())
+            code = getattr(exc, 'code', None)
+            message = ('Google Cloud model capacity is temporarily unavailable (429). The bounded stage retry was exhausted. ' if code == 429 else 'Investigation failed. ')
+            self.update(key, status='failed', error=message + 'No successful report was published; no automatic whole-investigation retry.', error_code=code, completed_at=utc().isoformat())
         finally:
             try:
                 self.image(job['image_key'], delete=True)

@@ -85,3 +85,11 @@ Cloud Tasks delivers queued jobs to an authenticated worker. Uploaded image byte
 The hosted configuration limits new attempts to four per UTC day and twelve across the live window and disables new live submissions after November 17, 2026 at 23:59:59 India time. These are workload controls, not an absolute billing cap. Keep the team API token private. Public demo routes cannot invoke inference or read live reports.
 
 `source_page_excerpt` means an independently fetched passage. `image_match_lead` and `search_grounded_excerpt` remain leads. Non-unresolved findings must cite at least one fetched passage; schema checks still do not guarantee entailment. Source publication dates are not image capture dates.
+
+## v0.4 publication and reviewer access
+
+Submissions accept `published_at` as an ISO 8601 timestamp with an explicit timezone, plus optional public HTTPS `source_url`. English relative-time claims require the publication timestamp for a fresh live/review investigation. This is supplied context, not verified capture time. Reports include `publication_context`, `assessment.context_checks`, exact `evidence_quotes`, and `provider_attempts`. A conclusive finding requires verified passage quotations; otherwise it becomes unresolved.
+
+`POST /api/access/reviewer` accepts `{ "code": "<private reviewer code>" }`, sets an eight-hour signed HttpOnly cookie and returns the review role. The role forces all non-demo submissions/queries to the shared `review` corpus and rejects access to team report/job IDs. Reviewers cannot use the synchronous investigation route. The team bearer token remains separate. The reviewer fragment is exchanged and removed by the portal. No Google credentials are shared.
+
+Only provider 429 triggers one application retry of the failed stage after five seconds; SDK retries are disabled. A failed job returns its numeric `error_code` and a safe message. A new job clears the old on-screen report. Manual whole-job retry remains bounded and consumes another admission.

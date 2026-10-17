@@ -49,9 +49,9 @@ Deployment: `https://proofmesh-2god3tua3a-el.a.run.app` (public access is valida
 4. Visit **http://127.0.0.1:8000/feed** for the two-post fixture.
 5. Test public X posts separately. Local feed uses the demo collection; X uses the live collection.
 
-The development extension sends visible post text and the first supported image to the local server when enabled. It does not read cookies, history or direct messages. It does not automatically launch model investigations. Clicking **Investigate with Google Cloud** sends that post to the live pipeline. Host permissions are limited to localhost, the fixed ProofMesh Cloud Run origin and X image assets. New investigations enqueue a job immediately and open a polling workspace. Reload the unpacked extension after updating to version 0.3.1; changing hosts requires an explicit popup selection.
+The development extension sends visible post text and the first supported image to the local server when enabled. It does not read cookies, history or direct messages. It does not automatically launch model investigations. Clicking **Investigate with Google Cloud** sends that post to the live pipeline. Host permissions are limited to localhost, the fixed ProofMesh Cloud Run origin and X image assets. New investigations enqueue a job immediately and open a polling workspace. Reload the unpacked extension after updating to version 0.4.0; changing hosts requires an explicit popup selection.
 
-The local fixture is a development aid. The installed extension also passed public X extraction checks on October 15. Quoted posts, galleries, video and common English relative-time captions remain explicitly unverified. DOM regression tests cover SPA/private-route handling, recycled nodes and retry; logged-in X variants need further browser QA.
+The local fixture is a development aid. The installed extension also passed public X extraction checks on October 15. Quoted posts, galleries and video remain explicitly unverified. English relative-time captions require an unambiguous publication timestamp; without it they remain unverified. DOM regression tests cover SPA/private-route handling, recycled nodes and retry; logged-in X variants need further browser QA.
 
 ## Enable live investigations
 
@@ -69,7 +69,7 @@ export PROOFMESH_API_TOKEN="$(.venv/bin/python -c 'import secrets; print(secrets
 
 Enter the token through **Connection settings** in the portal, and the extension popup if needed. `.env.example` documents settings. Alternatively, put settings in a Git-ignored repository `.env` and run `.venv/bin/python scripts/dev.py`; this launcher loads plain key/value settings without shell evaluation. Direct uvicorn invocation uses exported environment variables only.
 
-Run `.venv/bin/python scripts/smoke_vertex.py` only when live mode is configured and usage is authorized. It investigates one public NASA claim, records returned token/search-query counts in ignored `data/vertex-smoke-result.json`, and checks that the repeat uses zero model calls. The pipeline uses one HTTP attempt per stage and output-token limits of 4,096/3,072/1,536 for research/assessment/critique. These controls bound this test; they are not a Google billing-account spend cap.
+Run `.venv/bin/python scripts/smoke_vertex.py` only when live mode is configured and usage is authorized. It investigates one public NASA claim, records returned token/search-query counts in ignored `data/vertex-smoke-result.json`, and checks that the repeat uses zero model calls. The pipeline uses one SDK HTTP attempt per stage, with one explicit application retry of a failed stage only for provider 429 and output-token limits of 4,096/3,072/1,536 for research/assessment/critique. These controls bound this test; they are not a Google billing-account spend cap.
 
 Live workflow: Cloud Vision image-match leads -> Google Search research -> bounded source-page retrieval -> structured assessment -> critique. Generated search summaries remain leads. A supported or contradicted finding must cite a fetched source passage. Unknown evidence references are rejected; findings without support remain unresolved. This is a second model review of the supplied evidence, not independent forensic verification. Reports retain Google Search attribution for isolated rendering in the portal.
 
@@ -120,3 +120,9 @@ Do not describe this starter as a reliable real/fake classifier. Report observed
 - [C2PA explainer](https://spec.c2pa.org/specifications/specifications/2.4/explainer/Explainer.html) — possible future provenance integration
 
 License selection remains with the authors; public visibility alone does not grant an open-source license.
+
+## v0.4 evidence and reviewer release
+
+Publication timestamps anchor relative dates and participate in cache identity. Conclusive findings require exact quotations from fetched passages; generated summaries alone cannot support a verdict. New reviewer access uses a separate shared collection and reserved allowance without exposing team credentials or reports. The private reviewer link is in ignored `data/reviewer-access.txt`.
+
+The twelve-case prespecified development evaluation produced 11 expected outcomes, including nine conclusive findings and three abstentions. Three first-pass provider failures required explicit reruns. All twelve completed repeats used zero model calls. This is not representative accuracy. The latest hosted reviewer investigation also failed with provider 429 after its bounded retry; see the full [evaluation](docs/EVALUATION.md). All 74 regression checks pass.

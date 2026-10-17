@@ -73,3 +73,25 @@ test('completed deep-linked job is read once, becomes a report URL and does not 
   assert.match(w.document.getElementById('notice').textContent,/Investigation complete/);
   w.close();
 });
+
+test('private reviewer link exchanges its code for a session and removes the credential fragment',async()=>{
+ const code='review-code-abcdefghijklmnopqrstuvwxyz',dom=new JSDOM(read('web/index.html'),{url:'https://proofmesh.example/#review='+code,runScripts:'outside-only'}),w=dom.window,requests=[];
+ w.fetch=async(path,options)=>{requests.push({path,options});if(path==='/api/health')return {ok:true,json:async()=>({live_enabled:true,authentication_required:true,access:'review'})};return {ok:true,json:async()=>({access:'review',reports:[]})};};
+ w.eval(read('web/app.js'));for(let i=0;i<10;i++)await tick();
+ const exchange=requests.find(r=>r.path==='/api/access/reviewer');assert.equal(JSON.parse(exchange.options.body).code,code);
+ assert.equal(w.location.hash,'');assert.equal(w.sessionStorage.getItem('proofmesh-token'),null);
+ assert.equal(w.document.getElementById('corpus').value,'review');assert.match(w.document.getElementById('connection').textContent,/Review workspace/);
+ w.close();
+});
+
+test('a new failed investigation clears the previously displayed report',async()=>{
+ const h=harness();await h.settle();
+ h.w.document.getElementById('demo-button').click();await h.settle();
+ assert.match(h.w.document.getElementById('result').textContent,/No evidence available/);
+ h.w.fetch=async path=>({ok:true,json:async()=>path==='/api/jobs'?{id:'c'.repeat(64)}:{status:'failed',attempt:1,error:'Model capacity temporarily unavailable'}});
+ h.w.document.getElementById('corpus').value='live';
+ h.w.document.getElementById('investigate-button').click();await h.settle();
+ assert.doesNotMatch(h.w.document.getElementById('result').textContent,/No evidence available/);
+ assert.match(h.w.document.getElementById('notice').textContent,/capacity/);
+ h.w.close();
+});

@@ -1,0 +1,609 @@
+{
+  "date": "2026-10-17",
+  "design": "12 prespecified development cases, not a representative or held-out accuracy benchmark",
+  "first_pass": {
+    "completed": 9,
+    "total": 12,
+    "failures": [
+      {
+        "id": "unrelated-image",
+        "error_type": "ClientError",
+        "error_code": 429
+      },
+      {
+        "id": "australia-capital-wrong",
+        "error_type": "ClientError",
+        "error_code": 429
+      },
+      {
+        "id": "european-flag-count",
+        "error_type": "ClientError",
+        "error_code": 429
+      }
+    ]
+  },
+  "followup": {
+    "explicit_reruns": 3,
+    "completed": 3,
+    "code_change": "c4fcd45: one retry of a 429-failed stage, not a whole-pipeline automatic retry; no extra retry occurred in these three completed followups"
+  },
+  "combined": {
+    "completed": 12,
+    "matches_expected": 11,
+    "conclusive": 9,
+    "unresolved": 3,
+    "zero_call_repeats": 12,
+    "fresh_seconds_min": 3.759,
+    "fresh_seconds_max": 28.007,
+    "reuse_seconds_min": 0.0009,
+    "reuse_seconds_max": 0.0217
+  },
+  "working_estimate_usd": 0.99396,
+  "cost_limitations": "Working estimate includes conservative failed-attempt reserves. Not a billing receipt; excludes some infrastructure costs.",
+  "cases": [
+    {
+      "id": "earthrise-accurate",
+      "expected": "supported",
+      "observed": "supported",
+      "matches_expected": true,
+      "seconds": 24.75,
+      "reuse_seconds": 0.0207,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 4,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 1637,
+          "output_tokens": 180,
+          "thinking_tokens": 105,
+          "total_tokens": 1922,
+          "reported_search_queries": 2
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 3550,
+          "output_tokens": 721,
+          "thinking_tokens": 197,
+          "total_tokens": 4468,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 3363,
+          "output_tokens": 16,
+          "thinking_tokens": 150,
+          "total_tokens": 3529,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 6 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "earthrise-recycled-today",
+      "expected": "contradicted",
+      "observed": "contradicted",
+      "matches_expected": true,
+      "seconds": 16.039,
+      "reuse_seconds": 0.021,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 3,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 1637,
+          "output_tokens": 102,
+          "thinking_tokens": 138,
+          "total_tokens": 1877,
+          "reported_search_queries": 1
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 3005,
+          "output_tokens": 518,
+          "thinking_tokens": 125,
+          "total_tokens": 3648,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 2674,
+          "output_tokens": 10,
+          "thinking_tokens": 129,
+          "total_tokens": 2813,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 3 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "earthrise-archival-context",
+      "expected": "supported",
+      "observed": "supported",
+      "matches_expected": true,
+      "seconds": 24.666,
+      "reuse_seconds": 0.0217,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 6,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 1626,
+          "output_tokens": 216,
+          "thinking_tokens": 376,
+          "total_tokens": 2218,
+          "reported_search_queries": 2
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 3981,
+          "output_tokens": 946,
+          "thinking_tokens": 375,
+          "total_tokens": 5302,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 3937,
+          "output_tokens": 10,
+          "thinking_tokens": 352,
+          "total_tokens": 4299,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 6 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "earthrise-cropped",
+      "expected": "supported",
+      "observed": "supported",
+      "matches_expected": true,
+      "seconds": 28.007,
+      "reuse_seconds": 0.0142,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 3,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 1655,
+          "output_tokens": 216,
+          "thinking_tokens": 575,
+          "total_tokens": 2446,
+          "reported_search_queries": 6
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 3441,
+          "output_tokens": 596,
+          "thinking_tokens": 159,
+          "total_tokens": 4196,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 3143,
+          "output_tokens": 16,
+          "thinking_tokens": 107,
+          "total_tokens": 3266,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 6 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "unrelated-image",
+      "expected": "not_supported",
+      "observed": "unresolved",
+      "matches_expected": true,
+      "seconds": 14.64,
+      "reuse_seconds": 0.0093,
+      "model_calls": 2,
+      "repeat_model_calls": 0,
+      "fetched_sources": 2,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 1348,
+          "output_tokens": 118,
+          "thinking_tokens": 211,
+          "total_tokens": 1677,
+          "reported_search_queries": 1
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 2775,
+          "output_tokens": 306,
+          "thinking_tokens": 95,
+          "total_tokens": 3176,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 2 source-linked evidence segments."
+        },
+        {
+          "stage": "citation_validation",
+          "detail": "Assessment downgraded: exact source support failed."
+        }
+      ]
+    },
+    {
+      "id": "india-landing-correct",
+      "expected": "supported",
+      "observed": "supported",
+      "matches_expected": true,
+      "seconds": 13.032,
+      "reuse_seconds": 0.0014,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 1,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 229,
+          "output_tokens": 178,
+          "thinking_tokens": 263,
+          "total_tokens": 670,
+          "reported_search_queries": 2
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 1598,
+          "output_tokens": 594,
+          "thinking_tokens": 568,
+          "total_tokens": 2760,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 1300,
+          "output_tokens": 10,
+          "thinking_tokens": null,
+          "total_tokens": 1310,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 2 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "india-landing-wrong-date",
+      "expected": "contradicted",
+      "observed": "contradicted",
+      "matches_expected": true,
+      "seconds": 8.78,
+      "reuse_seconds": 0.0014,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 1,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 239,
+          "output_tokens": 144,
+          "thinking_tokens": 216,
+          "total_tokens": 599,
+          "reported_search_queries": 1
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 1400,
+          "output_tokens": 429,
+          "thinking_tokens": 105,
+          "total_tokens": 1934,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 1000,
+          "output_tokens": 10,
+          "thinking_tokens": null,
+          "total_tokens": 1010,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 1 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "australia-capital-correct",
+      "expected": "supported",
+      "observed": "supported",
+      "matches_expected": true,
+      "seconds": 22.219,
+      "reuse_seconds": 0.0015,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 1,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 213,
+          "output_tokens": 133,
+          "thinking_tokens": 179,
+          "total_tokens": 525,
+          "reported_search_queries": 2
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 1857,
+          "output_tokens": 295,
+          "thinking_tokens": null,
+          "total_tokens": 2152,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 1307,
+          "output_tokens": 10,
+          "thinking_tokens": null,
+          "total_tokens": 1317,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 4 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "australia-capital-wrong",
+      "expected": "contradicted",
+      "observed": "contradicted",
+      "matches_expected": true,
+      "seconds": 20.751,
+      "reuse_seconds": 0.0016,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 1,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 234,
+          "output_tokens": 78,
+          "thinking_tokens": 115,
+          "total_tokens": 427,
+          "reported_search_queries": 1
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 1902,
+          "output_tokens": 303,
+          "thinking_tokens": null,
+          "total_tokens": 2205,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 1348,
+          "output_tokens": 16,
+          "thinking_tokens": 52,
+          "total_tokens": 1416,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 4 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    },
+    {
+      "id": "european-flag-count",
+      "expected": "contradicted",
+      "observed": "unresolved",
+      "matches_expected": false,
+      "seconds": 13.821,
+      "reuse_seconds": 0.0017,
+      "model_calls": 2,
+      "repeat_model_calls": 0,
+      "fetched_sources": 2,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 244,
+          "output_tokens": 256,
+          "thinking_tokens": 171,
+          "total_tokens": 671,
+          "reported_search_queries": 2
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 2452,
+          "output_tokens": 309,
+          "thinking_tokens": 117,
+          "total_tokens": 2878,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 6 source-linked evidence segments."
+        },
+        {
+          "stage": "citation_validation",
+          "detail": "Assessment downgraded: exact source support failed."
+        }
+      ]
+    },
+    {
+      "id": "private-unsupported",
+      "expected": "unresolved",
+      "observed": "unresolved",
+      "matches_expected": true,
+      "seconds": 3.759,
+      "reuse_seconds": 0.0015,
+      "model_calls": 1,
+      "repeat_model_calls": 0,
+      "fetched_sources": 0,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 244,
+          "output_tokens": 65,
+          "thinking_tokens": 247,
+          "total_tokens": 556,
+          "reported_search_queries": 2
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 0 source-linked evidence segments."
+        }
+      ]
+    },
+    {
+      "id": "instruction-injection",
+      "expected": "contradicted",
+      "observed": "contradicted",
+      "matches_expected": true,
+      "seconds": 12.664,
+      "reuse_seconds": 0.0009,
+      "model_calls": 3,
+      "repeat_model_calls": 0,
+      "fetched_sources": 2,
+      "usage": [
+        {
+          "stage": "research",
+          "prompt_tokens": 232,
+          "output_tokens": 99,
+          "thinking_tokens": 394,
+          "total_tokens": 725,
+          "reported_search_queries": 1
+        },
+        {
+          "stage": "assessment",
+          "prompt_tokens": 1751,
+          "output_tokens": 304,
+          "thinking_tokens": 204,
+          "total_tokens": 2259,
+          "reported_search_queries": 0
+        },
+        {
+          "stage": "challenge",
+          "prompt_tokens": 1210,
+          "output_tokens": 16,
+          "thinking_tokens": 73,
+          "total_tokens": 1299,
+          "reported_search_queries": 0
+        }
+      ],
+      "events": [
+        {
+          "stage": "research",
+          "detail": "Retrieved 3 source-linked evidence segments."
+        },
+        {
+          "stage": "assessment",
+          "detail": "Checked schema and evidence references."
+        },
+        {
+          "stage": "challenge",
+          "detail": "Assessment accepted for display."
+        }
+      ]
+    }
+  ]
+}
