@@ -27,7 +27,9 @@ Twelve prespecified development cases produced 11 expected outcomes, nine conclu
 - Repository: https://github.com/htg2704/proofmesh
 - Hosted portal: https://proofmesh-2god3tua3a-el.a.run.app
 - Deck: `proofmesh-submission.pptx` / `proofmesh-official.pdf`
-- Demo video: https://proofmesh-2god3tua3a-el.a.run.app/assets/demo.mp4 (3:20, edited UI walkthrough with synthetic narration and recorded model results; local portal and hosted extension footage). Mirror to YouTube, Vimeo or public Google Drive as listed by the organizer.
+- Final demo video: **User will record and supply the final link.**
+- Draft reference only: https://drive.google.com/file/d/1XFfp6bKjPRfR-LIW3-YX574ly6-6Nizc/view?usp=sharing
+- Draft MP4 reference: https://proofmesh-2god3tua3a-el.a.run.app/assets/demo.mp4 (3:20, edited UI walkthrough with synthetic narration and recorded model results; local portal and hosted extension footage). The approved Google Drive file is shared with anyone holding the link as Viewer.
 - Team name: Hounds of Singularity. Member details: enter the exact names from your registration.
 - Portal-verified cutoff: October 18, 2026 at 11:59 PM IST. Deck must follow the official template, PDF under 5 MB; video must be 3–4 minutes. The form is left for the user to submit.
 
@@ -38,3 +40,5 @@ No watermark or universal AI detector, semantic claim reuse, video support or mu
 ## Integration roadmap
 
 Future SDK/MCP adapters could let agents consume the same context-bound evidence. Social-platform and Android/Gemini integrations are proposed consumers, not existing integrations or partnerships. The prototype does not yet provide production tenant isolation, a stable versioned external API or a moderation workflow. See `docs/RAIL.md`.
+
+Demo/voiceover work is frozen at the user's request. The existing draft uses screen captures, slides and synthetic narration, not a continuous screen recording. Do not use it as the final submission video without the user's decision.

@@ -56,6 +56,9 @@ This is a working hackathon prototype, not a reliable universal real/fake or AI-
 - [x] Refresh the three public examples from actual v0.4 runs.
 - [x] Record and review the updated narrated walkthrough; refresh the official template deck and evaluation evidence.
 - [x] User reloaded extension 0.4.0; hosted fixture and public report link verified.
-- [ ] User: review final materials, choose a supported video host and submit the hackathon form.
+- [x] Upload the final video to the user-approved Drive account and verify Anyone with the link / Viewer.
+- [ ] User: record their own final demo, replace the draft video link, review final materials and submit the hackathon form.
 
 Fresh hosted reviewer inference hit provider 429 twice and failed safely. This remains an availability limitation; passing local live cases and regression tests do not erase that failure.
+
+Demo production is frozen at the user's request. The existing reference video is a draft; no further agent voiceover or video work is pending.
