@@ -35,3 +35,11 @@ Fresh hosted inference remains subject to Vertex capacity: the latest reviewer j
 ## Current release
 
 Code and assets: `8d70762`, deployed as Cloud Run revision `proofmesh-00009-ph7`. Health and range playback were checked; three public examples retain recorded-run labels. [GitHub CI](https://github.com/htg2704/proofmesh/actions/runs/39044370607) passed. Action explanations work on hover/focus/tap, and the live portal presents the shared evidence rail with current versus proposed clients distinguished. SDK/MCP and platform integrations are not implemented.
+
+## v0.5 app and rail access
+
+The main app no longer asks judges for a reviewer code or sends them to a separate demo. Examples prefill the same workspace. A limited, isolated browser session opens automatically on demand; `/developers` issues limited REST keys. The legacy reviewer path is hidden and retained for compatibility only. Use the normal prototype URL for judging.
+
+Team rate exemptions use distinct credentials from ignored `data/TEAM_ACCESS.md`; use the assigned key in Connection settings. Existing owner credentials remain exempt. The shared financial guard is still in force under the existing US$5 approval. Third-party request limits, errors, isolation and local setup are documented in `THIRD_PARTY.md`.
+
+New editable architecture: `docs/diagrams/proofmesh-architecture.drawio`, with matching PNG/SVG previews and embedded official service icons. This supersedes the older diagram in the existing presentation; the user can import the supplied PNG or edit the native file. Demo and voiceover work remains frozen.

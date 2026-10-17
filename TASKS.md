@@ -62,3 +62,13 @@ This is a working hackathon prototype, not a reliable universal real/fake or AI-
 Fresh hosted reviewer inference hit provider 429 twice and failed safely. This remains an availability limitation; passing local live cases and regression tests do not erase that failure.
 
 Demo production is frozen at the user's request. The existing reference video is a draft; no further agent voiceover or video work is pending.
+
+## v0.5 rail access and architecture
+
+- [x] Replace visible reviewer-code gating with automatic limited browser workspaces.
+- [x] Add versioned third-party REST access, scoped/revocable keys and persistent per-client limits.
+- [x] Isolate client jobs, reports and related-media results; share only deliberately published examples.
+- [x] Exempt Harshwardhan, Chennika and authorized Codex tests from application rate limits while preserving financial guards.
+- [x] Put fresh local and hosted inference behind the common durable admission path.
+- [x] Add an editable draw.io architecture with cylinders, embedded service logos and current/future boundaries.
+- [x] Document browser flow, third-party setup, key revocation and remaining production limitations.

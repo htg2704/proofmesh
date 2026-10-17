@@ -25,8 +25,8 @@ class SQLiteStore:
 
     def all(self, corpus: str):
         with self.connect() as db:
-            rows = db.execute("SELECT body FROM investigations ORDER BY rowid DESC LIMIT 1000").fetchall()
-        return [r for (body,) in rows if (r := json.loads(body))["corpus"] == corpus]
+            rows = db.execute("SELECT body FROM investigations WHERE json_extract(body, '$.corpus')=? ORDER BY rowid DESC LIMIT 1000", (corpus,)).fetchall()
+        return [json.loads(body) for (body,) in rows]
 
 
 class FirestoreStore:
@@ -45,4 +45,3 @@ class FirestoreStore:
     def all(self, corpus: str):
         from google.cloud.firestore_v1.base_query import FieldFilter
         return [doc.to_dict() for doc in self.collection.where(filter=FieldFilter("corpus", "==", corpus)).limit(1000).stream()]
-

@@ -8,6 +8,7 @@ from pathlib import Path
 from app.fingerprints import context_key, image_identity
 from app.models import Submission
 from app.context import publication_stamp, require_publication_context
+from app.clients import RateLimited, SpendingLimit
 
 
 def utc():
@@ -48,19 +49,23 @@ class Jobs:
                 body = json.loads(row[0]); body.update(changes)
                 db.execute('UPDATE jobs SET body=? WHERE id=?', (json.dumps(body), key))
 
-    def reserve(self, submission, retry_failed=False):
-        cutoff = os.getenv('PROOFMESH_LIVE_UNTIL')
-        if cutoff and utc() > datetime.fromisoformat(cutoff):
-            raise ValueError('Live demo window ended; matching existing evidence remains available.')
+    def reserve(self, submission, retry_failed=False, *, bypass_rate_limits=False, requested_by=None):
         if submission.corpus not in {'live', 'review'}:
             raise ValueError('New jobs require the live corpus')
         require_publication_context(submission)
         identity = image_identity(submission.image_base64)
-        key = context_key(submission.claim, identity, submission.corpus, utc().date().isoformat(), publication_stamp(submission))
+        key = context_key(submission.claim, identity, submission.namespace, utc().date().isoformat(), publication_stamp(submission))
         cached = self.service.match(submission)['report']
         if cached:
             return {'id': key, 'status': 'succeeded', 'report_id': key, 'reused': True, 'model_calls': 0}, False
-        job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim, 'corpus': submission.corpus, 'published_at': publication_stamp(submission), 'source_url': submission.source_url,
+        cutoff = os.getenv('PROOFMESH_LIVE_UNTIL')
+        if cutoff and utc() > datetime.fromisoformat(cutoff):
+            raise SpendingLimit('Live demo window ended; matching existing evidence remains available.')
+        client_id = submission._client_id
+        day = utc().date().isoformat()
+        reset = int((utc().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1) - utc()).total_seconds())
+        job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim, 'corpus': submission.namespace, 'published_at': publication_stamp(submission), 'source_url': submission.source_url,
+               'requested_by': requested_by, 'client_id': client_id,
                'attempt': 1, 'image_key': None, 'report_id': None, 'reused': False, 'model_calls': None, 'error': None}
         review_cap = int(os.getenv('PROOFMESH_REVIEW_JOBS', '6')) if len(os.getenv('PROOFMESH_REVIEW_TOKEN', '')) >= 32 else 0
         is_review = submission.corpus == 'review'
@@ -71,12 +76,14 @@ class Jobs:
             budget = self.store.client.collection('proofmesh_limits').document(utc().date().isoformat())
             total_ref = self.store.client.collection('proofmesh_limits').document('window_total')
             review_ref = self.store.client.collection('proofmesh_limits').document('review_total')
+            client_ref = self.store.client.collection('proofmesh_client_daily').document(client_id) if client_id else None
             @firestore.transactional
             def take(transaction):
                 old = ref.get(transaction=transaction)
                 limit = budget.get(transaction=transaction)
                 total_doc = total_ref.get(transaction=transaction)
                 review_doc = review_ref.get(transaction=transaction)
+                client_doc = client_ref.get(transaction=transaction) if client_ref else None
                 if old.exists:
                     previous = old.to_dict()
                     if not retry_failed or previous['status'] != 'failed' or previous.get('attempt', 1) >= 2:
@@ -85,15 +92,23 @@ class Jobs:
                 count = limit.to_dict().get('count', 0) if limit.exists else 0
                 total_count = total_doc.to_dict().get('count', 0) if total_doc.exists else count
                 review_used = review_doc.to_dict().get('count', 0) if review_doc.exists else 0
-                self.check_review_budget(is_review, review_cap, review_used, total_count)
+                if not bypass_rate_limits:
+                    self.check_review_budget(is_review, review_cap, review_used, total_count)
                 if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
-                    raise ValueError('Live-window investigation cap reached')
-                if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
-                    raise ValueError('Daily investigation cap reached')
+                    raise SpendingLimit('Live-window investigation cap reached: shared spending guard applies to every caller, including trusted testing.')
+                client_body = client_doc.to_dict() if client_doc and client_doc.exists else {}
+                client_count = client_body.get('count', 0) if client_body.get('day') == day else 0
+                if not bypass_rate_limits:
+                    if client_id and client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', '2')):
+                        raise RateLimited('Client daily investigation limit reached. Cached evidence remains available.', reset)
+                    if not client_id and count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
+                        raise RateLimited('Daily investigation cap reached', reset)
                 transaction.set(budget, {'count': count + 1})
                 transaction.set(total_ref, {'count': total_count + 1})
                 if is_review:
                     transaction.set(review_ref, {'count': review_used + 1})
+                if client_ref:
+                    transaction.set(client_ref, {'day': day, 'count': client_count + 1})
                 transaction.set(ref, job)
                 return job, True
             return take(self.store.client.transaction())
@@ -108,21 +123,27 @@ class Jobs:
             count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs WHERE json_extract(body, "$.created_at") LIKE ?', (utc().date().isoformat() + '%',)).fetchone()[0]
             total_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs').fetchone()[0]
             review_used = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.corpus")="review"').fetchone()[0]
-            self.check_review_budget(is_review, review_cap, review_used, total_count)
+            if not bypass_rate_limits:
+                self.check_review_budget(is_review, review_cap, review_used, total_count)
             if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
-                raise ValueError('Live-window investigation cap reached')
-            if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
-                raise ValueError('Daily investigation cap reached')
+                raise SpendingLimit('Live-window investigation cap reached: shared spending guard applies to every caller, including trusted testing.')
+            if not bypass_rate_limits:
+                if client_id:
+                    client_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.client_id")=? AND json_extract(body, "$.created_at") LIKE ?', (client_id, day + '%')).fetchone()[0]
+                    if client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', '2')):
+                        raise RateLimited('Client daily investigation limit reached. Cached evidence remains available.', reset)
+                elif count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
+                    raise RateLimited('Daily investigation cap reached', reset)
             db.execute('INSERT OR REPLACE INTO jobs VALUES (?,?)', (key, json.dumps(job)))
         return job, True
 
     @staticmethod
     def check_review_budget(is_review, cap, used, total):
         if is_review and used >= cap:
-            raise ValueError('Reviewer investigation allowance reached. Existing reports remain readable.')
+            raise RateLimited('Reviewer investigation allowance reached. Existing reports remain readable.', 3600)
         reserved = max(0, cap - used)
         if not is_review and reserved and total >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')) - reserved:
-            raise ValueError('Remaining investigation allowance is reserved for reviewers.')
+            raise SpendingLimit('Remaining investigation allowance is reserved for reviewers.')
 
     def save_image(self, key, encoded):
         if not encoded:
@@ -178,7 +199,10 @@ class Jobs:
             return
         job = self.get(key)
         try:
-            result = self.service.investigate(Submission(claim=job['claim'], image_base64=self.image(job['image_key']), corpus=job.get('corpus', 'live'), published_at=job.get('published_at'), source_url=job.get('source_url')))
+            submission = Submission(claim=job['claim'], image_base64=self.image(job['image_key']), corpus='live' if job.get('client_id') else job.get('corpus', 'live'), published_at=job.get('published_at'), source_url=job.get('source_url'))
+            if job.get('client_id'):
+                submission = submission.for_client(job['client_id'])
+            result = self.service.investigate(submission)
             self.update(key, status='succeeded', report_id=result['report']['id'], model_calls=result['model_calls'], reused=result['reused'], completed_at=utc().isoformat())
         except Exception as exc:
             import logging

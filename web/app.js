@@ -4,6 +4,7 @@ let alternateClaim = '';
 let currentReport = null;
 let imageVersion = 0;
 let accessRole = 'none';
+let authenticationRequired = false;
 function node(tag, text, className) { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (className) n.className = className; return n; }
 function notice(text, error = false) { $('notice').hidden = false; $('notice').textContent = text; $('notice').className = error ? 'error' : ''; }
 function busy(value) { document.querySelectorAll('button, #claim, #image, #corpus, #token, #published-at, #review-code').forEach(b => b.disabled = value); document.querySelector('.workspace').setAttribute('aria-busy', String(value)); }
@@ -67,13 +68,18 @@ function renderMatch(result) {
   notice(`${result.related.length} related investigation${result.related.length === 1 ? '' : 's'}. No verdict transferred. Zero model calls.`);
 }
 async function refresh() {
+  if (authenticationRequired && accessRole === 'none' && !sessionStorage.getItem('proofmesh-token') && $('corpus').value !== 'demo') { $('registry-list').replaceChildren(node('p', 'Your investigations will appear here.', 'muted')); return; }
   const data = $('corpus').value === 'demo' ? {reports: [(await api('/api/demo', {})).report]} : await api(`/api/investigations?corpus=${accessRole === 'review' ? 'review' : $('corpus').value}`); const root = $('registry-list'); root.replaceChildren();
   if (!data.reports.length) root.append(node('p', 'No investigations in this collection yet.', 'muted'));
   for (const report of data.reports) { const row = node('div', undefined, 'registry-row'); const button = node('button', report.claim, 'text-button'); button.addEventListener('click', () => { renderReport(report); notice('Viewing a stored investigation for the claim shown in its report.'); }); row.append(button, node('small', `${report.corpus.toUpperCase()} · ${new Date(report.created_at).toLocaleDateString()}`)); root.append(row); }
 }
+async function ensureAccess() {
+  if (!authenticationRequired || !['none','review'].includes(accessRole) || sessionStorage.getItem('proofmesh-token') || $('corpus').value === 'demo') return;
+  const session = await api('/api/access/guest', {}); accessRole = session.access; $('connection').textContent = 'Your workspace';
+}
 async function run(action) { busy(true); try { await action(); } catch (e) { notice(e.message, true); } finally { busy(false); } }
-$('investigation-form').addEventListener('submit', e => { e.preventDefault(); run(async () => { notice('Checking the shared evidence registry…'); renderMatch(await api($('corpus').value === 'demo' ? '/api/demo/matches' : '/api/matches', payload())); }); });
-$('investigate-button').addEventListener('click', () => { if (!$('investigation-form').reportValidity()) return; run(async () => { notice('Researching sources, assessing the claim, and challenging the assessment. This may take a few minutes…'); const submitted = payload(); $('result').replaceChildren(); const job = await api('/api/jobs', submitted); sessionStorage.setItem('proofmesh-job', job.id); await pollJob(job.id, submitted); }); });
+$('investigation-form').addEventListener('submit', e => { e.preventDefault(); run(async () => { await ensureAccess(); notice('Checking the shared evidence registry…'); renderMatch(await api($('corpus').value === 'demo' ? '/api/demo/matches' : '/api/matches', payload())); }); });
+$('investigate-button').addEventListener('click', () => { if (!$('investigation-form').reportValidity()) return; run(async () => { await ensureAccess(); notice('Researching sources, assessing the claim, and challenging the assessment. This may take a few minutes…'); const submitted = payload(); $('result').replaceChildren(); const job = await api('/api/jobs', submitted); sessionStorage.setItem('proofmesh-job', job.id); await pollJob(job.id, submitted); }); });
 $('demo-button').addEventListener('click', () => run(async () => { const data = await api('/api/demo', {}); $('claim').value = data.claim; $('published-at').value = ''; $('corpus').value = 'demo'; showImage(data.image_base64); alternateClaim = data.alternate_claim; $('alternate-button').hidden = false; renderReport(data.report); notice('Synthetic example loaded. Check shared evidence, then try the alternate caption.'); await refresh(); }));
 $('alternate-button').addEventListener('click', () => run(async () => { $('claim').value = alternateClaim; $('corpus').value = 'demo'; renderMatch(await api($('corpus').value === 'demo' ? '/api/demo/matches' : '/api/matches', payload())); }));
 $('image').addEventListener('change', async e => {
@@ -122,14 +128,15 @@ async function connectReview(code) {
   await refresh(); notice('Reviewer access ready. Enter a claim and optional image to run a real investigation.');
 }
 $('connect-review').addEventListener('click', () => run(() => connectReview($('review-code').value.trim())));
-$('save-token').addEventListener('click', () => { sessionStorage.setItem('proofmesh-token', $('token').value.trim()); $('token').value = ''; run(async () => { await refresh(); notice('Connected. The API token is kept only for this browser session.'); await loadRouteReport(); }); });
+$('save-token').addEventListener('click', () => { sessionStorage.setItem('proofmesh-token', $('token').value.trim()); $('token').value = ''; run(async () => { const health=await api('/api/health'); accessRole=health.access || 'none'; if (accessRole === 'team') { $('corpus').value='live'; $('connection').textContent='Team workspace · rate limits exempt'; } await refresh(); notice('Connected. The API token is kept only for this browser session.'); await loadRouteReport(); }); });
 $('refresh-button').addEventListener('click', () => run(refresh));
 $('corpus').addEventListener('change', () => run(refresh));
-(async () => { try { const review = new URLSearchParams(location.hash.slice(1)).get('review'); if (review) { history.replaceState(null, '', location.pathname + location.search); await connectReview(review); } const health = await api('/api/health'); accessRole=health.access || 'none'; if (accessRole === 'review') { $('review-option').hidden=false; $('corpus').value='review'; $('connection').textContent='Review workspace connected'; } $('connection').textContent = accessRole === 'review' ? 'Review workspace connected' : health.live_enabled ? 'Live pipeline enabled' : 'Local · demo ready'; if (health.authentication_required && accessRole !== 'review' && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'demo'; notice('Public synthetic demo ready. Live investigations require your team API token in Connection settings.'); await refresh(); await loadRouteReport(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
+(async () => { try { const review = new URLSearchParams(location.hash.slice(1)).get('review'); if (review) { history.replaceState(null, '', location.pathname + location.search); await connectReview(review); } const health = await api('/api/health'); accessRole=health.access || 'none'; authenticationRequired=health.authentication_required; if (accessRole === 'review') { $('review-option').hidden=false; $('corpus').value='review'; $('connection').textContent='Review workspace connected'; } $('connection').textContent = accessRole === 'review' ? 'Review workspace connected' : accessRole === 'team' ? 'Team workspace · rate limits exempt' : accessRole === 'client' ? 'Your workspace' : health.live_enabled ? 'Ready to investigate' : 'Local · demo ready'; if (health.authentication_required && accessRole !== 'review' && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'live'; notice('Ready. Enter a claim or try an example. Your limited workspace opens automatically when you check it.'); await refresh(); await loadRouteReport(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
 
 async function loadExamples() {
   const {reports} = await api('/api/examples');
   const root = $('recorded-examples');
+  if (reports.length) { $('judge-example').disabled=false; $('judge-example').addEventListener('click', () => $('recorded-examples').querySelector('button')?.click()); }
   for (const report of reports) {
     const label = {supported_history:'Accurate historical caption', misleading_caption:'Same image, misleading caption', unsupported_no_media:'Insufficient evidence'}[report.example_name] || 'Recorded case';
     const button=node('button', label, 'text-button');
@@ -139,7 +146,7 @@ async function loadExamples() {
         const response = await fetch(report.example_image_url); if (!response.ok) throw new Error('Recorded example image unavailable.');
         const bytes = new Uint8Array(await response.arrayBuffer()); let binary=''; for (let i=0;i<bytes.length;i+=16384) binary+=String.fromCharCode(...bytes.subarray(i,i+16384)); showImage(btoa(binary), 'image/jpeg');
       }
-      renderReport(report); notice('Recorded live run. Viewing this case makes zero model calls; its report belongs to the claim shown.'); })); root.append(button);
+      renderReport(report); $('notice').scrollIntoView?.({block:'start',behavior:'smooth'}); notice('Recorded live run. Viewing this case makes zero model calls; its report belongs to the claim shown.'); })); root.append(button);
   }
 }
 loadExamples().catch(() => {});

@@ -16,8 +16,8 @@ class ProofMesh:
         identity = image_identity(submission.image_base64)
         if submission.corpus != "demo" and RELATIVE_TIME.search(submission.claim) and not submission.published_at:
             return {"status": "unknown", "report": None, "related": [], "model_calls": 0, "needs_publication_time": True, "message": "Publication time is required to interpret this caption."}
-        key = context_key(submission.claim, identity, submission.corpus, now().date().isoformat(), publication_stamp(submission))
-        records = self.store.all(submission.corpus)
+        key = context_key(submission.claim, identity, submission.namespace, now().date().isoformat(), publication_stamp(submission))
+        records = self.store.all(submission.namespace)
         exact = self.store.get(key)
         if exact and datetime.fromisoformat(exact["expires_at"]) <= now():
             exact = None
@@ -36,9 +36,9 @@ class ProofMesh:
         require_publication_context(submission)
         identity = image_identity(submission.image_base64)
         stamp = now()
-        key = context_key(submission.claim, identity, submission.corpus, stamp.date().isoformat(), publication_stamp(submission))
+        key = context_key(submission.claim, identity, submission.namespace, stamp.date().isoformat(), publication_stamp(submission))
         result = self.investigator.investigate(submission, stamp.date().isoformat())
-        report = self.make_report(submission.claim, identity, key, submission.corpus, result, stamp)
+        report = self.make_report(submission.claim, identity, key, submission.namespace, result, stamp)
         report["publication_context"] = context_record(submission, stamp.date().isoformat())
         self.store.put(report)
         return {"report": report, "reused": False, "model_calls": result["model_calls"]}
@@ -48,4 +48,3 @@ class ProofMesh:
         return {"id": key, "context_key": key, "claim": normalize_claim(claim), "media": identity, "corpus": corpus,
                 "created_at": stamp.isoformat(), "expires_at": (stamp + timedelta(hours=24)).isoformat(),
                 "origin": {"status": "unknown", "explanation": "No provenance or watermark verification has been performed."}, **copy.deepcopy(result)}
-

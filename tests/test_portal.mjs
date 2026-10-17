@@ -95,3 +95,13 @@ test('a new failed investigation clears the previously displayed report',async()
  assert.match(h.w.document.getElementById('notice').textContent,/capacity/);
  h.w.close();
 });
+
+test('a visitor starts work without entering a reviewer code or developer key',async()=>{
+ const dom=new JSDOM(read('web/index.html'),{url:'https://proofmesh.example/',runScripts:'outside-only'}),w=dom.window,paths=[];
+ w.fetch=async(path,options)=>{paths.push(path);if(path==='/api/health')return {ok:true,json:async()=>({live_enabled:true,authentication_required:true,access:'none'})};if(path==='/api/access/guest')return {ok:true,json:async()=>({access:'client'})};if(path==='/api/jobs')return {ok:true,json:async()=>({id:'c'.repeat(64)})};if(path.startsWith('/api/jobs/'))return {ok:true,json:async()=>({status:'succeeded',report_id:report.id,model_calls:0,reused:true})};if(path.startsWith('/api/investigations/'))return {ok:true,json:async()=>report};return {ok:true,json:async()=>({reports:[]})};};
+ w.eval(read('web/app.js'));for(let i=0;i<6;i++)await tick();
+ w.document.getElementById('claim').value='A visitor supplied claim';w.document.getElementById('investigate-button').click();for(let i=0;i<12;i++)await tick();
+ assert.ok(paths.indexOf('/api/access/guest')<paths.indexOf('/api/jobs'));
+ assert.match(w.document.getElementById('notice').textContent,/Investigation complete/);
+ assert.equal(w.document.getElementById('review-access').hidden,true);assert.equal(w.sessionStorage.getItem('proofmesh-token'),null);w.close();
+});

@@ -50,7 +50,8 @@ def test_review_workspace_cannot_read_team_reports_or_jobs(client):
     assert job['status']=='succeeded'
     reports=client.get('/api/investigations?corpus=live').json()['reports']
     assert len(reports)==1 and reports[0]['corpus']=='review'
-    assert client.post('/api/investigations',json=body).status_code==409
+    assert client.post('/api/investigations',json=body).json()['model_calls']==0
+    assert client.post('/api/investigations',json={'claim':'A distinct uncached claim'}).status_code==409
     assert client.post('/internal/jobs/'+team_id).status_code==401
 
 def test_bad_reviewer_code_does_not_grant_access(client):

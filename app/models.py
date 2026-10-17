@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, Field, ConfigDict, AwareDatetime, field_validator
+from pydantic import BaseModel, Field, ConfigDict, AwareDatetime, field_validator, PrivateAttr
 
 
 class Submission(BaseModel):
@@ -9,6 +9,20 @@ class Submission(BaseModel):
     corpus: Literal["live", "demo", "review"] = "live"
     published_at: AwareDatetime | None = None
     source_url: str | None = Field(default=None, max_length=2000)
+    _client_id: str | None = PrivateAttr(default=None)
+
+    @property
+    def namespace(self):
+        return 'client:' + self._client_id if self._client_id else self.corpus
+
+    def for_client(self, identifier):
+        import re
+        if not re.fullmatch(r'[0-9a-f]{24}', identifier):
+            raise ValueError('Invalid client identifier')
+        scoped = self.model_copy(deep=True)
+        scoped.corpus = 'live'
+        scoped._client_id = identifier
+        return scoped
 
     @field_validator("source_url")
     @classmethod
@@ -61,4 +75,3 @@ class Assessment(BaseModel):
 class Review(BaseModel):
     accepted: bool
     issues: list[str]
-

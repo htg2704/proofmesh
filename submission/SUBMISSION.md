@@ -42,3 +42,7 @@ No watermark or universal AI detector, semantic claim reuse, video support or mu
 Future SDK/MCP adapters could let agents consume the same context-bound evidence. Social-platform and Android/Gemini integrations are proposed consumers, not existing integrations or partnerships. The prototype does not yet provide production tenant isolation, a stable versioned external API or a moderation workflow. See `docs/RAIL.md`.
 
 Demo/voiceover work is frozen at the user's request. The existing draft uses screen captures, slides and synthetic narration, not a continuous screen recording. Do not use it as the final submission video without the user's decision.
+
+## v0.5 judging and developer access
+
+Use the ordinary prototype URL. Judges do not need a reviewer code or a separate demo page: examples prefill the same workspace, and limited browser access is created automatically. Third-party REST keys are available under `/developers`; reports are isolated per key. Trusted team testing is exempt from application rate limits, while the shared financial guard and provider capacity still apply. The new editable architecture and PNG preview are in `docs/diagrams/`. The older presentation screenshot/diagram predates this access update; use the supplied new architecture when revising it. Demo recording remains with the user.

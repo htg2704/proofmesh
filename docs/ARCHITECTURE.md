@@ -23,8 +23,18 @@ The same Gemini model performs research, assessment and critique. This is a boun
 
 Jobs and daily admission counts are transactional. Cloud Tasks retries delivery, while a persistent worker claim prevents duplicate inference. Terminal or interrupted model work is not automatically repeated. A user can explicitly retry a failed job once; each attempt consumes admission budget. Uploaded images are stored privately, deleted after work, and subject to a one-day lifecycle backstop.
 
-The rail consists of the lookup API, investigation jobs, report contract and shared registry. The web workspace and X extension are clients of those APIs. Public access consists of the synthetic demo and frozen, deliberately published evaluation examples. Team reports require the team API token; a separate reviewer session accesses only a shared review collection. The internal worker requires a different secret and receives a Cloud Tasks OIDC token. Runtime credentials come from the attached service account; no service-account keys are deployed.
+The rail consists of the lookup API, investigation jobs, report contract and shared registry. The web workspace and X extension are clients of those APIs. Public access consists of the synthetic demo and frozen, deliberately published evaluation examples. Team reports require trusted credentials. Ordinary visitors receive scoped guest cookies, and developer keys receive private client namespaces. A legacy reviewer session remains for backward compatibility only. The internal worker requires a different secret and receives a Cloud Tasks OIDC token. Runtime credentials come from the attached service account; no service-account keys are deployed.
 
 Cloud Run, Firestore, task queue and storage use Mumbai (`asia-south1`). Gemini uses `global`; this build makes no India-only data residency claim. Zero minimum instances and one maximum instance bound serving capacity but do not impose an absolute dollar cap.
 
 The API is a prototype contract, not yet a stable versioned integration product. Social-platform clients, Android/Gemini experiences, SDKs and an MCP adapter are roadmap options described in `RAIL.md`, not current integrations.
+
+## Current access architecture (v0.5)
+
+[Editable draw.io source](diagrams/proofmesh-architecture.drawio) · [SVG](diagrams/proofmesh-architecture.svg) · [PNG](diagrams/proofmesh-architecture.png)
+
+![ProofMesh evidence rail](diagrams/proofmesh-architecture.png)
+
+The normal browser flow creates a limited guest session on demand. Developer keys use the same per-client namespace and admission policy. Team credentials for Harshwardhan, Chennika and authorized Codex tests bypass application request/daily limits; financial guards still apply. The earlier reviewer-code path remains only for backward compatibility and is hidden from the main app. The selected public examples are intentionally shared; arbitrary client reports are not.
+
+The diagram uses native editable component boundaries, orthogonal connectors and cylinders for Firestore and image storage. Service logos are embedded, so the draw.io file has no external image dependency. Icons come from the [official Google Cloud icon library](https://cloud.google.com/icons), using its legacy downloadable collection. Logos identify services and imply no endorsement. The SVG/PNG preview is generated from the same layout; no claim of a native diagrams.net export is made.

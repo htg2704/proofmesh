@@ -1,3 +1,5 @@
+> Current consumer access: v0.5. Normal browser use needs no access code. Start with [THIRD_PARTY.md](THIRD_PARTY.md) for scoped keys, limits and versioned routes; earlier reviewer-only examples below describe compatibility behavior.
+
 # API contract v0.2
 
 Development origin: `http://127.0.0.1:8000`. Machine-readable schema: `/openapi.json`. No third-party documentation scripts are loaded.
@@ -93,3 +95,9 @@ Submissions accept `published_at` as an ISO 8601 timestamp with an explicit time
 `POST /api/access/reviewer` accepts `{ "code": "<private reviewer code>" }`, sets an eight-hour signed HttpOnly cookie and returns the review role. The role forces all non-demo submissions/queries to the shared `review` corpus and rejects access to team report/job IDs. Reviewers cannot use the synchronous investigation route. The team bearer token remains separate. The reviewer fragment is exchanged and removed by the portal. No Google credentials are shared.
 
 Only provider 429 triggers one application retry of the failed stage after five seconds; SDK retries are disabled. A failed job returns its numeric `error_code` and a safe message. A new job clears the old on-screen report. Manual whole-job retry remains bounded and consumes another admission.
+
+## v0.5 consumer contract
+
+The `/api/v1` aliases provide health, matches, jobs, reports, developer registration and owner key administration. See [the integration guide](THIRD_PARTY.md) for examples and response policy. Browser visitors use an on-demand HttpOnly guest cookie; developer clients use scoped bearer credentials. Submitted namespace or bypass fields are forbidden. API read/job IDs are checked against the authenticated namespace; only the deliberately published example library crosses those boundaries.
+
+Default limits are 60 requests/fixed minute and two new jobs/UTC day per client. 429 includes Retry-After; successful limited requests include X-RateLimit headers. Trusted team credentials bypass those application limits. Shared spending guards return 503 and still apply to trusted callers. The old synchronous POST now serves cached results only and directs all fresh work to the durable job path.

@@ -29,23 +29,21 @@ python3 -m venv .venv
 
 Open **http://127.0.0.1:8000**. The default mode makes no Google model calls and requires no cloud credentials.
 
-1. Click **Load synthetic example**.
-2. Click **Check shared evidence**: the same image and claim retrieve an existing report with zero model calls.
-3. Click **Try the alternate caption**: the same image produces a related-media match, with no inherited verdict.
-4. Open the source fixture and download the report.
-5. Restart the server: reports persist in `data/proofmesh.sqlite3` (ignored by Git).
-
-The bridge image is a generated geometric illustration and all associated events are fictional. No demo result is represented as a real fact-check. The live and demo collections cannot match one another.
+1. Click **Try an example** to prefill the workspace and inspect a labeled recorded investigation.
+2. Check shared evidence to retrieve a fresh exact-context result without inference, or inspect related media without inheriting its verdict. Archived recorded reports remain readable but cannot silently satisfy fresh lookups.
+3. Edit the caption: a familiar image remains a separate question.
+4. Configure Vertex AI before requesting any new live investigation. Default demo mode makes no paid model calls.
+5. Reports and credentials persist in the ignored local `data/` directory. The optional `/feed` route is a synthetic extension regression fixture, not the main user experience.
 
 ## Hosted demo
 
-Deployment: `https://proofmesh-2god3tua3a-el.a.run.app` (public access is validated in the deployment record). The public synthetic demo and three recorded live cases make no inference calls. New live jobs require a team token or a separate scoped reviewer session; the team registry remains protected by its own token. The token is in the project's Secret Manager, never GitHub.
+Deployment: https://proofmesh-2god3tua3a-el.a.run.app/. Enter a claim/image or prefill an example in the same workspace. No reviewer code or separate demo page is required. On first use, a visitor receives an isolated, rate-limited browser session automatically. `/developers` provides scoped keys for third-party integrations. The team uses separate trusted credentials; none are in GitHub.
 
 ## Chrome extension
 
 1. Open `chrome://extensions`, enable Developer mode, choose **Load unpacked**, and select this repository's `extension/` directory.
 2. Open the extension popup and explicitly enable visible-post lookups.
-3. Select **Local development** or **Google Cloud demo** in the popup. Local development needs the server at **127.0.0.1:8000**; hosted mode uses the fixed Cloud Run origin. Existing local tokens and hosted tokens are stored separately. Load the synthetic example in the selected portal first.
+3. Select **Local development** or **Google Cloud demo** in the popup. Local development needs the server at **127.0.0.1:8000**; hosted mode uses the fixed Cloud Run origin. Existing local tokens and hosted tokens are stored separately. Fixture lookups seed their own clearly labeled synthetic evidence.
 4. Visit **http://127.0.0.1:8000/feed** for the two-post fixture.
 5. Test public X posts separately. Local feed uses the demo collection; X uses the live collection.
 
@@ -130,3 +128,11 @@ The twelve-case prespecified development evaluation produced 11 expected outcome
 ## Evidence rail and future clients
 
 The current REST API exposes lookup, queued investigation and report retrieval. The web workspace and Chrome extension consume that shared contract. [The rail roadmap](docs/RAIL.md) separates this working prototype from future SDK, MCP, platform and Android/Gemini integrations. No integration or partnership with those platforms is claimed.
+
+## Third-party access and team testing (v0.5)
+
+The normal hosted app works without a reviewer code: limited browser access is created automatically when needed. Examples prefill that same workspace. `/developers` provides scoped keys for REST integrations, with 60 requests/minute and two new investigations/UTC day per credential. Keys and reports are isolated between clients; selected public examples can be reused when the exact context is fresh.
+
+Harshwardhan, Chennika and authorized Codex tests have distinct trusted credentials. Their application rate limits are removed; the shared trial spending guard and provider limits still apply. Private credentials are in ignored `data/TEAM_ACCESS.md`, never this repository. Existing owner API credentials also receive the exemption.
+
+See [third-party setup and limits](docs/THIRD_PARTY.md) and the new [editable architecture](docs/diagrams/proofmesh-architecture.drawio). All new inference uses durable jobs, including local deployments; the legacy synchronous endpoint directs fresh work to `/api/jobs`. Current checks: 61 Python + 28 JavaScript.
