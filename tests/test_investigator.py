@@ -59,3 +59,29 @@ def test_rejected_assessment_is_not_published_as_supported(monkeypatch):
         result = GeminiInvestigator(fetcher=lambda url, claim: {"url": url, "excerpt": "Perseverance landed on 18 February 2021.", "kind": "source_page_excerpt"}).investigate(Submission(claim="A disputed claim"), "2026-10-15")
     assert result["assessment"]["findings"][0]["status"] == "unresolved"
     assert result["assessment"]["limitations"] == ["The source does not support the entire claim."]
+
+
+def test_rate_limit_retries_only_the_failed_stage_once(monkeypatch):
+    configure(monkeypatch)
+    from google.genai.errors import ClientError
+    assessment={"summary":"Supported","findings":[{"claim":"Perseverance landed in 2021","status":"supported","explanation":"Source","evidence_ids":["E1"],"evidence_quotes":[{"evidence_id":"E1","quote":"Perseverance landed on 18 February 2021."}]}],"limitations":[]}
+    client=MagicMock()
+    client.models.generate_content.side_effect=[response(grounded=True),ClientError(429,{"error":{"message":"capacity"}}),response(json.dumps(assessment)),response('{"accepted":true,"issues":[]}')]
+    with patch("google.auth.default",return_value=(object(),None)),patch("google.genai.Client") as constructor,patch('time.sleep') as sleep:
+        constructor.return_value.__enter__.return_value=client
+        result=GeminiInvestigator(fetcher=lambda url,claim:{"url":url,"excerpt":"Perseverance landed on 18 February 2021.","kind":"source_page_excerpt"}).investigate(Submission(claim='Perseverance landed in 2021'),'2026-10-17')
+    assert result['model_calls']==3 and result['provider_attempts']=={'research':1,'assessment':2,'challenge':1}
+    assert client.models.generate_content.call_count==4
+    sleep.assert_called_once_with(5)
+
+
+def test_persistent_rate_limit_stops_after_two_attempts(monkeypatch):
+    configure(monkeypatch)
+    import pytest
+    from google.genai.errors import ClientError
+    client=MagicMock();client.models.generate_content.side_effect=ClientError(429,{"error":{"message":"capacity"}})
+    with patch("google.auth.default",return_value=(object(),None)),patch("google.genai.Client") as constructor,patch('time.sleep') as sleep:
+        constructor.return_value.__enter__.return_value=client
+        with pytest.raises(ClientError):GeminiInvestigator().investigate(Submission(claim='A factual claim'),'2026-10-17')
+    assert client.models.generate_content.call_count==2
+    sleep.assert_called_once_with(5)

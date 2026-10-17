@@ -107,13 +107,19 @@ class GeminiInvestigator:
         with genai.Client(vertexai=True, project=project, location=os.getenv("GOOGLE_CLOUD_LOCATION", "global"),
                           credentials=credentials,
                           http_options=types.HttpOptions(timeout=60000, retry_options=types.HttpRetryOptions(attempts=1))) as client:
+            provider_attempts = {}
             def generate(stage, **kwargs):
-                try:
-                    return client.models.generate_content(**kwargs)
-                except Exception as exc:
-                    import logging
-                    logging.getLogger("proofmesh").error("Provider stage=%s type=%s code=%s", stage, type(exc).__name__, getattr(exc, "code", None))
-                    raise
+                for attempt in range(2):
+                    provider_attempts[stage] = attempt + 1
+                    try:
+                        return client.models.generate_content(**kwargs)
+                    except Exception as exc:
+                        import logging
+                        logging.getLogger("proofmesh").error("Provider stage=%s type=%s code=%s attempt=%s", stage, type(exc).__name__, getattr(exc, "code", None), attempt + 1)
+                        if getattr(exc, "code", None) != 429 or attempt:
+                            raise
+                        import time
+                        time.sleep(5)
             parts = [types.Part.from_text(text=json.dumps({"claim": submission.claim, "reference_date": reference_date, "image_match_leads": media_search["pages"], "publication_context": context_record(submission, reference_date)}))]
             if submission.image_base64:
                 # Strip metadata and normalize image format before the model receives it.
@@ -141,7 +147,7 @@ class GeminiInvestigator:
                 assessment = Assessment(summary="No usable source-linked evidence was returned.", findings=[{
                     "claim": submission.claim, "status": "unresolved", "explanation": "The investigation cannot substantiate an assessment.", "evidence_ids": []}],
                     limitations=["No source page could be retrieved. Generated search summaries and image matches alone cannot substantiate a verdict."])
-                return {"assessment": assessment.model_dump(), "evidence": public_evidence(assessment, evidence), "media_search": media_search, "events": events, "model_calls": 1, "usage": usage, "search_attribution_html": search_html}
+                return {"assessment": assessment.model_dump(), "evidence": public_evidence(assessment, evidence), "media_search": media_search, "events": events, "model_calls": 1, "provider_attempts": provider_attempts, "usage": usage, "search_attribution_html": search_html}
             content = json.dumps({"claim": submission.claim, "reference_date": reference_date, "publication_context": context_record(submission, reference_date), "evidence": evidence})
             assessment_parts = [types.Part.from_text(text=content)]
             if submission.image_base64:
@@ -158,7 +164,7 @@ class GeminiInvestigator:
             except ValueError:
                 assessment = Assessment(summary="The claim remains unresolved because its source quotations could not be verified.", findings=[{"claim": submission.claim, "status": "unresolved", "explanation": "The generated assessment failed exact source-quotation validation.", "evidence_ids": []}], limitations=["No conclusive assessment was published. Matching a quotation is a structural check, not independent fact verification."])
                 events.append({"stage": "citation_validation", "detail": "Assessment downgraded: exact source support failed."})
-                return {"assessment": assessment.model_dump(), "evidence": public_evidence(assessment, evidence), "media_search": media_search, "events": events, "model_calls": 2, "usage": usage, "search_attribution_html": search_html}
+                return {"assessment": assessment.model_dump(), "evidence": public_evidence(assessment, evidence), "media_search": media_search, "events": events, "model_calls": 2, "provider_attempts": provider_attempts, "usage": usage, "search_attribution_html": search_html}
             events.append({"stage": "assessment", "detail": "Checked schema and evidence references."})
             challenge_parts = [types.Part.from_text(text=json.dumps({"input": json.loads(content), "assessment": assessment.model_dump()}))]
             if submission.image_base64:
@@ -175,4 +181,4 @@ class GeminiInvestigator:
                     "claim": submission.claim, "status": "unresolved", "explanation": "The challenge pass rejected the initial assessment.", "evidence_ids": []}],
                     limitations=review.issues or ["Review did not accept the initial assessment."])
             events.append({"stage": "challenge", "detail": "Assessment accepted for display." if review.accepted else "Assessment downgraded to unresolved."})
-            return {"assessment": assessment.model_dump(), "evidence": public_evidence(assessment, evidence), "media_search": media_search, "events": events, "model_calls": 3, "usage": usage, "search_attribution_html": search_html}
+            return {"assessment": assessment.model_dump(), "evidence": public_evidence(assessment, evidence), "media_search": media_search, "events": events, "model_calls": 3, "provider_attempts": provider_attempts, "usage": usage, "search_attribution_html": search_html}
