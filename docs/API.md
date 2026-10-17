@@ -1,4 +1,4 @@
-# API contract v0.1
+# API contract v0.2
 
 Development origin: `http://127.0.0.1:8000`. Machine-readable schema: `/openapi.json`. No third-party documentation scripts are loaded.
 
@@ -23,7 +23,11 @@ Development origin: `http://127.0.0.1:8000`. Machine-readable schema: `/openapi.
 |---|---|
 | `GET /api/health` | Public readiness/configuration flags; no secrets. |
 | `POST /api/matches` | Read-only registry lookup; **zero model calls**. |
-| `POST /api/investigations` | Exact reuse or a new bounded live pipeline. |
+| `POST /api/jobs` | Create or reuse a persistent live investigation job; returns 202. |
+| `GET /api/jobs/{id}` | Poll queued, running, succeeded or failed status. |
+| `POST /api/investigations` | Local synchronous compatibility route; hosted service returns 409. |
+| `POST /api/demo/matches` | Public synthetic lookup, zero model calls. |
+| `GET /api/demo/reports/{id}` | Public synthetic report only. |
 | `GET /api/investigations?corpus=live` | List up to 1,000 records in the selected collection. |
 | `GET /api/investigations/{id}` | Read a source-linked report. |
 | `POST /api/demo` with `{}` | Idempotently load the synthetic demonstration for the current UTC date. |
@@ -72,4 +76,12 @@ A report contains `id`, `context_key`, `claim`, `media`, `corpus`, `created_at`,
 - `502`: provider/pipeline failure; no successful report published.
 - `503`: live pipeline is not configured.
 
-The first slice is synchronous. If job polling is added, version the contract and agree on it before changing extension behavior.
+## Persistent jobs
+
+POST the shared live submission to `/api/jobs`; persist its `id` and poll `GET /api/jobs/{id}` every three seconds. A succeeded job returns `report_id`, `reused` and `model_calls`; fetch the protected report separately. Failed jobs return a generic error without provider details. Submission and worker claims are transactional, so duplicates do not repeat the pipeline. A killed running worker becomes failed after six minutes and is not automatically reinvoked because it may already have incurred usage.
+
+Cloud Tasks delivers queued jobs to an authenticated worker. Uploaded image bytes live in a private temporary bucket, are deleted after execution, and have a one-day lifecycle cleanup backstop. Local SQLite jobs survive process restarts before execution; run pending jobs explicitly when restarting local development. Cloud Tasks handles hosted delivery independently of browser lifetime.
+
+The hosted configuration limits new jobs to ten per UTC day and disables new live submissions after October 17, 2026 at 23:59:59 India time. These are workload controls, not an absolute billing cap. Keep the team API token private. Public demo routes cannot invoke inference or read live reports.
+
+`source_page_excerpt` means an independently fetched passage. `image_match_lead` and `search_grounded_excerpt` remain leads. Non-unresolved findings must cite at least one fetched passage; schema checks still do not guarantee entailment. Source publication dates are not image capture dates.

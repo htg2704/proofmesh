@@ -1,0 +1,14 @@
+.gcloudignore
+.git
+.venv
+node_modules
+.env
+.env.*
+data
+__pycache__
+.pytest_cache
+*.sqlite*
+tests
+docs
+extension
+submission

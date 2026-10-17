@@ -27,7 +27,7 @@ def test_live_pipeline_bounds_calls_and_scopes_quota(monkeypatch):
     client.models.generate_content.side_effect = [response(grounded=True), response(json.dumps(assessment)), response('{"accepted":true,"issues":[]}')]
     with patch("google.auth.default", return_value=(object(), "other-default-project")) as auth, patch("google.genai.Client") as constructor:
         constructor.return_value.__enter__.return_value = client
-        result = GeminiInvestigator().investigate(Submission(claim="Perseverance landed in 2021"), "2026-10-15")
+        result = GeminiInvestigator(fetcher=lambda url, claim: {"url": url, "excerpt": "Perseverance landed on 18 February 2021.", "kind": "source_page_excerpt"}).investigate(Submission(claim="Perseverance landed in 2021"), "2026-10-15")
     auth.assert_called_once_with(quota_project_id="test-project")
     assert constructor.call_args.kwargs["project"] == "test-project"
     assert constructor.call_args.kwargs["http_options"].retry_options.attempts == 1
@@ -43,7 +43,7 @@ def test_no_grounding_stops_after_one_call_and_abstains(monkeypatch):
     client.models.generate_content.return_value = response("An uncited answer")
     with patch("google.auth.default", return_value=(object(), None)), patch("google.genai.Client") as constructor:
         constructor.return_value.__enter__.return_value = client
-        result = GeminiInvestigator().investigate(Submission(claim="A claim lacking retrieved evidence"), "2026-10-15")
+        result = GeminiInvestigator(fetcher=lambda url, claim: {"url": url, "excerpt": "Perseverance landed on 18 February 2021.", "kind": "source_page_excerpt"}).investigate(Submission(claim="A claim lacking retrieved evidence"), "2026-10-15")
     assert client.models.generate_content.call_count == 1
     assert result["assessment"]["findings"][0]["status"] == "unresolved"
     assert result["evidence"] == [] and result["model_calls"] == 1
@@ -56,6 +56,6 @@ def test_rejected_assessment_is_not_published_as_supported(monkeypatch):
     client.models.generate_content.side_effect = [response(grounded=True), response(json.dumps(assessment)), response('{"accepted":false,"issues":["The source does not support the entire claim."]}')]
     with patch("google.auth.default", return_value=(object(), None)), patch("google.genai.Client") as constructor:
         constructor.return_value.__enter__.return_value = client
-        result = GeminiInvestigator().investigate(Submission(claim="A disputed claim"), "2026-10-15")
+        result = GeminiInvestigator(fetcher=lambda url, claim: {"url": url, "excerpt": "Perseverance landed on 18 February 2021.", "kind": "source_page_excerpt"}).investigate(Submission(claim="A disputed claim"), "2026-10-15")
     assert result["assessment"]["findings"][0]["status"] == "unresolved"
     assert result["assessment"]["limitations"] == ["The source does not support the entire claim."]

@@ -15,7 +15,9 @@ class ProofMesh:
         identity = image_identity(submission.image_base64)
         key = context_key(submission.claim, identity, submission.corpus, now().date().isoformat())
         records = self.store.all(submission.corpus)
-        exact = next((r for r in records if r["context_key"] == key and datetime.fromisoformat(r["expires_at"]) > now()), None)
+        exact = self.store.get(key)
+        if exact and datetime.fromisoformat(exact["expires_at"]) <= now():
+            exact = None
         related = [{"id": r["id"], "claim": r["claim"], "match": "same_media" if identity["sha256"] == r["media"]["sha256"] else "similar_media"}
                    for r in records if identity["sha256"] and similar(identity, r["media"]) and (not exact or r["id"] != exact["id"])]
         return {"status": "exact_context" if exact else "related_media" if related else "unknown", "report": exact,

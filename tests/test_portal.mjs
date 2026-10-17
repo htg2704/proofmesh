@@ -16,7 +16,7 @@ function harness({auth=false, offline=false, bitmap}={}) {
     if(path==='/api/health') return {ok:true,json:async()=>({live_enabled:false,authentication_required:auth})};
     if(auth && options.headers.Authorization!=='Bearer good-test-token') return {ok:false,json:async()=>({detail:'API token required'})};
     if(path==='/api/demo') return {ok:true,json:async()=>({claim:'A synthetic claim about a bridge.',alternate_claim:'A different bridge caption.',image_base64:'c3ludGhldGlj',report})};
-    if(path==='/api/matches') return {ok:true,json:async()=>({status:'unknown',report:null,related:[]})};
+    if((path==='/api/matches'||path==='/api/demo/matches')) return {ok:true,json:async()=>({status:'unknown',report:null,related:[]})};
     return {ok:true,json:async()=>({reports:[report]})};
   };
   w.eval(read('web/app.js'));
@@ -29,7 +29,7 @@ test('oversized replacement clears both preview and submitted image identity',as
   h.file({size:5_000_001,type:'image/png'}); await h.settle();
   assert.equal(h.w.document.getElementById('image-wrap').hidden,true);
   h.w.document.getElementById('investigation-form').dispatchEvent(new h.w.Event('submit',{cancelable:true})); await h.settle();
-  const request=h.requests.find(r=>r.path==='/api/matches');
+  const request=h.requests.find(r=>r.path==='/api/demo/matches');
   assert.equal(JSON.parse(request.options.body).image_base64,null); h.w.close();
 });
 test('pixel limit rejects an image before base64 submission',async()=>{

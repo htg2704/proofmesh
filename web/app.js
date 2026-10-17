@@ -38,7 +38,7 @@ function renderReport(report, reused = false) {
     const card = node('div', undefined, 'source-card'); const href = safeLink(evidence.url);
     const title = node(href ? 'a' : 'span', `${evidence.id} / ${evidence.title}`);
     if (href) { title.href = href; title.target = '_blank'; title.rel = 'noopener noreferrer'; }
-    card.append(title, node('p', evidence.excerpt), node('small', evidence.kind === 'demo_fixture' ? 'SYNTHETIC FIXTURE' : 'SEARCH-GROUNDED MODEL SUMMARY · NOT A VERBATIM SOURCE QUOTE')); root.append(card);
+    card.append(title, node('p', evidence.excerpt), node('small', ({demo_fixture:'SYNTHETIC FIXTURE', source_page_excerpt:'FETCHED SOURCE PASSAGE', image_match_lead:'IMAGE MATCH LEAD · CAPTION UNVERIFIED', search_grounded_excerpt:'SEARCH-GROUNDED MODEL SUMMARY · NOT A VERBATIM SOURCE QUOTE'})[evidence.kind] || 'SOURCE LEAD')); if (evidence.retrieved_at) card.append(node('small', `Retrieved ${new Date(evidence.retrieved_at).toLocaleString()}${evidence.page_published_at ? ' · Page date: ' + evidence.page_published_at + ' (not capture date)' : ''}`, 'muted')); root.append(card);
   }
   root.append(node('h4', 'What remains uncertain', 'report-subhead'));
   const limits = node('ul', undefined, 'limit'); report.assessment.limitations.forEach(t => limits.append(node('li', t))); root.append(limits);
@@ -55,19 +55,19 @@ function renderMatch(result) {
   if (result.report) { renderReport(result.report, true); notice('Exact image-and-claim context found. Retrieved with zero model calls.'); return; }
   const root = $('result'); root.replaceChildren(); const box = node('div', undefined, 'unknown-card');
   box.append(node('span', 'Unverified', 'tag'), node('h3', result.status === 'related_media' ? 'Familiar image. New question.' : 'An open question.'), node('p', result.status === 'related_media' ? 'Related media exists in the registry, but its assessment does not apply to this caption. Investigate this claim separately.' : 'No matching investigation exists in this collection. That does not establish whether the content is true or false.')); root.append(box);
-  for (const item of result.related) { const button = node('button', `View related investigation: ${item.claim}`, 'text-button related-link'); button.addEventListener('click', async () => { try { renderReport(await api(`/api/investigations/${item.id}`)); notice('Viewing a related report. Its assessment is not an assessment of your current caption.'); } catch (e) { notice(e.message, true); } }); root.append(button); }
+  for (const item of result.related) { const button = node('button', `View related investigation: ${item.claim}`, 'text-button related-link'); button.addEventListener('click', async () => { try { renderReport(await api($('corpus').value === 'demo' ? `/api/demo/reports/${item.id}` : `/api/investigations/${item.id}`)); notice('Viewing a related report. Its assessment is not an assessment of your current caption.'); } catch (e) { notice(e.message, true); } }); root.append(button); }
   notice(`${result.related.length} related investigation${result.related.length === 1 ? '' : 's'}. No verdict transferred. Zero model calls.`);
 }
 async function refresh() {
-  const data = await api(`/api/investigations?corpus=${$('corpus').value}`); const root = $('registry-list'); root.replaceChildren();
+  const data = $('corpus').value === 'demo' ? {reports: [(await api('/api/demo', {})).report]} : await api('/api/investigations?corpus=live'); const root = $('registry-list'); root.replaceChildren();
   if (!data.reports.length) root.append(node('p', 'No investigations in this collection yet.', 'muted'));
   for (const report of data.reports) { const row = node('div', undefined, 'registry-row'); const button = node('button', report.claim, 'text-button'); button.addEventListener('click', () => { renderReport(report); notice('Viewing a stored investigation for the claim shown in its report.'); }); row.append(button, node('small', `${report.corpus.toUpperCase()} · ${new Date(report.created_at).toLocaleDateString()}`)); root.append(row); }
 }
 async function run(action) { busy(true); try { await action(); } catch (e) { notice(e.message, true); } finally { busy(false); } }
-$('investigation-form').addEventListener('submit', e => { e.preventDefault(); run(async () => { notice('Checking the shared evidence registry…'); renderMatch(await api('/api/matches', payload())); }); });
-$('investigate-button').addEventListener('click', () => { if (!$('investigation-form').reportValidity()) return; run(async () => { notice('Researching sources, assessing the claim, and challenging the assessment. This may take a few minutes…'); const data = await api('/api/investigations', payload()); renderReport(data.report, data.reused); notice(`${data.reused ? 'Retrieved existing report' : 'Investigation complete'} · ${data.model_calls} model calls for this request.`); await refresh(); }); });
+$('investigation-form').addEventListener('submit', e => { e.preventDefault(); run(async () => { notice('Checking the shared evidence registry…'); renderMatch(await api($('corpus').value === 'demo' ? '/api/demo/matches' : '/api/matches', payload())); }); });
+$('investigate-button').addEventListener('click', () => { if (!$('investigation-form').reportValidity()) return; run(async () => { notice('Researching sources, assessing the claim, and challenging the assessment. This may take a few minutes…'); const job = await api('/api/jobs', payload()); sessionStorage.setItem('proofmesh-job', job.id); await pollJob(job.id); }); });
 $('demo-button').addEventListener('click', () => run(async () => { const data = await api('/api/demo', {}); $('claim').value = data.claim; $('corpus').value = 'demo'; showImage(data.image_base64); alternateClaim = data.alternate_claim; $('alternate-button').hidden = false; renderReport(data.report); notice('Synthetic example loaded. Check shared evidence, then try the alternate caption.'); await refresh(); }));
-$('alternate-button').addEventListener('click', () => run(async () => { $('claim').value = alternateClaim; $('corpus').value = 'demo'; renderMatch(await api('/api/matches', payload())); }));
+$('alternate-button').addEventListener('click', () => run(async () => { $('claim').value = alternateClaim; $('corpus').value = 'demo'; renderMatch(await api($('corpus').value === 'demo' ? '/api/demo/matches' : '/api/matches', payload())); }));
 $('image').addEventListener('change', async e => {
   const version = ++imageVersion; const file = e.target.files[0]; showImage(null);
   if (!file) return;
@@ -83,8 +83,21 @@ $('image').addEventListener('change', async e => {
   finally { if (version === imageVersion) busy(false); }
 });
 $('remove-image').addEventListener('click', () => { imageVersion++; showImage(null); $('image').value = ''; });
-async function loadRouteReport() { const id = new URLSearchParams(location.search).get('report'); if (id) renderReport(await api(`/api/investigations/${encodeURIComponent(id)}`)); }
+async function pollJob(id) {
+  for (let count = 0; count < 120; count++) {
+    const job = await api(`/api/jobs/${encodeURIComponent(id)}`);
+    notice(`Investigation ${job.status}. You can close this page and return; the job is saved.`);
+    if (job.status === 'failed') { sessionStorage.removeItem('proofmesh-job'); throw new Error(job.error || 'Investigation failed.'); }
+    if (job.status === 'succeeded') {
+      renderReport(await api(`/api/investigations/${job.report_id}`), job.reused);
+      sessionStorage.removeItem('proofmesh-job'); notice(`Investigation complete · ${job.model_calls} model calls.`); await refresh(); return;
+    }
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  }
+  throw new Error('Investigation is taking longer than expected. Reload to check the saved job.');
+}
+async function loadRouteReport() { const id = new URLSearchParams(location.search).get('report'); if (id) renderReport(await api(`/api/investigations/${encodeURIComponent(id)}`)); const job = new URLSearchParams(location.search).get('job') || sessionStorage.getItem('proofmesh-job'); if (job) await pollJob(job); }
 $('save-token').addEventListener('click', () => { sessionStorage.setItem('proofmesh-token', $('token').value.trim()); $('token').value = ''; run(async () => { await refresh(); notice('Connected. The API token is kept only for this browser session.'); await loadRouteReport(); }); });
 $('refresh-button').addEventListener('click', () => run(refresh));
 $('corpus').addEventListener('change', () => run(refresh));
-(async () => { try { const health = await api('/api/health'); $('connection').textContent = health.live_enabled ? 'Live pipeline enabled' : 'Local · demo ready'; if (health.authentication_required && !sessionStorage.getItem('proofmesh-token')) { notice('This server requires an API token. Open Connection settings to continue.'); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
+(async () => { try { const health = await api('/api/health'); $('connection').textContent = health.live_enabled ? 'Live pipeline enabled' : 'Local · demo ready'; if (health.authentication_required && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'demo'; notice('Public synthetic demo ready. Live investigations require your team API token in Connection settings.'); await refresh(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();

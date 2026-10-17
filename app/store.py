@@ -32,7 +32,8 @@ class SQLiteStore:
 class FirestoreStore:
     def __init__(self, project: str, collection: str):
         from google.cloud import firestore
-        self.collection = firestore.Client(project=project).collection(collection)
+        self.client = firestore.Client(project=project)
+        self.collection = self.client.collection(collection)
 
     def put(self, report: dict):
         self.collection.document(report["id"]).set(report)

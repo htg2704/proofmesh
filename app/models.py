@@ -14,7 +14,7 @@ class Evidence(BaseModel):
     title: str
     url: str
     excerpt: str
-    kind: Literal["search_grounded_excerpt", "demo_fixture"]
+    kind: Literal["search_grounded_excerpt", "demo_fixture", "source_page_excerpt", "image_match_lead"]
 
 
 class Finding(BaseModel):
