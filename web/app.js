@@ -143,3 +143,13 @@ async function loadExamples() {
   }
 }
 loadExamples().catch(() => {});
+
+// Help is available on hover, keyboard focus and tap; Escape dismisses it.
+for (const help of document.querySelectorAll('.action-help')) {
+  const button = help.querySelector('.info-button');
+  button.addEventListener('focus', () => { delete help.dataset.dismissed; });
+  button.addEventListener('click', () => { delete help.dataset.dismissed; help.dataset.open = ''; });
+  help.addEventListener('keydown', event => { if (event.key === 'Escape') { delete help.dataset.open; help.dataset.dismissed = ''; button.blur(); } });
+  help.addEventListener('mouseleave', () => { delete help.dataset.dismissed; delete help.dataset.open; });
+  help.addEventListener('focusout', () => { delete help.dataset.open; });
+}

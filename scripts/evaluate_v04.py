@@ -18,14 +18,16 @@ ROOT=Path(__file__).resolve().parent.parent
 out=ROOT/'data/evaluation-v04';out.mkdir(exist_ok=True)
 service=ProofMesh(SQLiteStore(str(out/'reports.sqlite3')),GeminiInvestigator())
 cases=json.loads((ROOT/'evaluation/cases-v04.json').read_text())
-# Fixed admission ceiling for this script: <=12 pipelines, no retries. Failures
+# Twelve prespecified cases; --recheck-failures permits one explicit rerun per failed case. Failures
 # conservatively reserve $0.15 in the working estimate; billing can differ.
 spent=0; results=[]
 for case in cases:
     path=out/(case['id']+'.json')
+    prior=out/(case['id']+'-first-attempt.json')
+    if prior.exists():
+        spent+=json.loads(prior.read_text()).get('working_cost_usd',0.15)
     if path.exists():
         row=json.loads(path.read_text())
-        prior=out/(case['id']+'-first-attempt.json')
         if '--recheck-failures' not in sys.argv or 'error_type' not in row or prior.exists():
             results.append(row);spent+=row.get('working_cost_usd',0.15);continue
         path.rename(prior);spent+=row.get('working_cost_usd',0.15)

@@ -60,3 +60,9 @@ Chrome version: 155.0.8059.80. The installed extension used its fixed Cloud Run 
 Public portal recorded cases were inspected with their own caption/image, source links, page-date labels, unresolved state and the visible QA note about an incidental model date error. The selected examples are frozen outputs, not live inference triggered by opening them. `docs/EVALUATION.md` and `docs/DEPLOYMENT.md` contain the fresh cloud-job evidence.
 
 Broader logged-in X variants, complete keyboard/screen-reader behavior, Instagram and other browsers remain unverified. Version 0.4.0 contains the final public synthetic deep-link and popup workspace-link fixes; reload the unpacked extension after updating its files.
+
+## v0.4 action clarity and installed-extension verification
+
+Both actions now have information controls that expose explanations on hover, focus or tap, with Escape dismissal. Permanent helper text distinguishes zero-model lookup from new AI work that consumes the cloud allowance. Click/focus behavior and dismissal were checked in Chrome; full screen-reader coverage is not claimed. The portal presents the web workspace and extension as clients of a shared evidence rail, with SDK/MCP, platform and Android/Gemini integrations explicitly marked as proposals.
+
+After the user reloaded version 0.4.0, the hosted synthetic feed retrieved an existing report for the first caption, left the second as related media/unverified, and opened the corrected `demo_report` public link successfully. These checks made no model calls. Current regression suite: 47 Python + 27 JavaScript.

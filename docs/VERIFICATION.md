@@ -56,3 +56,7 @@ The deterministic first slice demonstrates separate image and caption identity, 
 Current suite: 36 Python + 23 JavaScript tests. Public hosted portal, private live API boundary, durable text/image jobs, Cloud Storage cleanup and Firestore persistence after revision restart are verified in `DEPLOYMENT.md`. The installed hosted extension was checked on the synthetic feed and actual public X in Chrome 155.0.8059.80. Selected model outcomes, initial provider failures and an incidental temporal wording error are documented in `EVALUATION.md`; no accuracy percentage is claimed.
 
 The official submission template was downloaded from the organizer's linked Google Slides, adapted locally, rendered and exported to a PDF under 5 MB. The captioned video is 3:20. The organizer's form was read only; no form fields, uploads or Submit action were performed.
+
+## v0.4 gap-fix verification — October 17
+
+47 Python and 27 JavaScript tests pass. Prespecified evaluation, publication context, exact quotation checks and first-pass failures are recorded in `EVALUATION.md`. Reviewer login and team/report collection isolation passed against Cloud Run. Fresh reviewer inference failed with provider 429 on both bounded research attempts; no report was published. The previous report being left on screen was fixed and regression-tested. The user reloaded extension 0.4.0; hosted exact/changed-caption behavior and its corrected public report link were verified directly. The public frozen samples were refreshed from v0.4 runs and keep explicit recorded-example labels.

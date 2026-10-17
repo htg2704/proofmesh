@@ -2,9 +2,9 @@
 
 **Investigate once. Inform everywhere.**
 
-ProofMesh is a hackathon prototype for context-aware misinformation investigations. A source-linked report belongs to a particular claim and media context. Recognizing an image must never transfer a verdict to a different caption.
+ProofMesh is a prototype evidence rail: an API and shared registry for context-aware misinformation investigations. The web workspace and X extension are its first clients. A source-linked report belongs to a particular claim and media context. Recognizing an image must never transfer a verdict to a different caption.
 
-**Status: working local prototype.** One live Gemini on Vertex AI investigation and zero-call repeat reuse are verified. The installed Chrome extension is tested on the synthetic feed and public X markup; portal desktop/mobile edge states are checked. Broader X compatibility, investigation accuracy and Google Cloud deployment remain work in progress.
+**Status: deployed hackathon prototype.** Cloud Run, Firestore and queued investigations are implemented. The twelve-case development evaluation and public X extension checks are documented below. Fresh inference can fail with provider capacity errors; broader compatibility and production readiness are not established.
 
 ## Start here
 
@@ -39,7 +39,7 @@ The bridge image is a generated geometric illustration and all associated events
 
 ## Hosted demo
 
-Deployment: `https://proofmesh-2god3tua3a-el.a.run.app` (public access is validated in the deployment record). The public synthetic demo and three recorded live cases make no inference calls. New live jobs and the live registry require a separate team API token. The token is in the project's Secret Manager, never GitHub.
+Deployment: `https://proofmesh-2god3tua3a-el.a.run.app` (public access is validated in the deployment record). The public synthetic demo and three recorded live cases make no inference calls. New live jobs require a team token or a separate scoped reviewer session; the team registry remains protected by its own token. The token is in the project's Secret Manager, never GitHub.
 
 ## Chrome extension
 
@@ -126,3 +126,7 @@ License selection remains with the authors; public visibility alone does not gra
 Publication timestamps anchor relative dates and participate in cache identity. Conclusive findings require exact quotations from fetched passages; generated summaries alone cannot support a verdict. New reviewer access uses a separate shared collection and reserved allowance without exposing team credentials or reports. The private reviewer link is in ignored `data/reviewer-access.txt`.
 
 The twelve-case prespecified development evaluation produced 11 expected outcomes, including nine conclusive findings and three abstentions. Three first-pass provider failures required explicit reruns. All twelve completed repeats used zero model calls. This is not representative accuracy. The latest hosted reviewer investigation also failed with provider 429 after its bounded retry; see the full [evaluation](docs/EVALUATION.md). All 74 regression checks pass.
+
+## Evidence rail and future clients
+
+The current REST API exposes lookup, queued investigation and report retrieval. The web workspace and Chrome extension consume that shared contract. [The rail roadmap](docs/RAIL.md) separates this working prototype from future SDK, MCP, platform and Android/Gemini integrations. No integration or partnership with those platforms is claimed.

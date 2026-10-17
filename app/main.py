@@ -89,7 +89,7 @@ def create_app(store=None, investigator=None):
     @app.get("/api/health")
     def health(request: Request):
         return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "access": request.state.role,
-                "review_enabled": len(reviewer_token) >= 32, "version": "0.4.0"}
+                "review_enabled": len(reviewer_token) >= 32, "version": "0.4.0", "release": os.getenv("PROOFMESH_RELEASE", "local")}
 
     @app.get("/api/investigations")
     def list_reports(request: Request, corpus: str = "live"):

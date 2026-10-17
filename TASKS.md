@@ -54,7 +54,8 @@ This is a working hackathon prototype, not a reliable universal real/fake or AI-
 - [x] Run the prespecified twelve-case development set; publish the 11/12 result and original provider failures.
 - [x] Add one bounded retry of a 429-failed stage, with attempt accounting.
 - [x] Refresh the three public examples from actual v0.4 runs.
-- [ ] Record and review the updated narrated walkthrough, refresh the official deck, and publish the final release.
-- [ ] User: reload extension 0.4.0; review final materials and submit the hackathon form.
+- [x] Record and review the updated narrated walkthrough; refresh the official template deck and evaluation evidence.
+- [x] User reloaded extension 0.4.0; hosted fixture and public report link verified.
+- [ ] User: review final materials, choose a supported video host and submit the hackathon form.
 
 Fresh hosted reviewer inference hit provider 429 twice and failed safely. This remains an availability limitation; passing local live cases and regression tests do not erase that failure.

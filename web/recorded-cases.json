@@ -233,7 +233,8 @@
     "example_image_url": "/assets/earthrise.jpg",
     "qa_notes": [
       "Recorded development evaluation, October 17, 2026. Viewing this example invokes no model. Exact quotation checks are structural; they do not establish independent verification."
-    ]
+    ],
+    "recorded_example": true
   },
   {
     "id": "de0aa3f5ccfeb1f2af9fb49923f4ebb232e690e9f8714655a4bfa4935bfa88bb",
@@ -423,7 +424,8 @@
     "example_image_url": "/assets/earthrise.jpg",
     "qa_notes": [
       "Recorded development evaluation, October 17, 2026. Viewing this example invokes no model. Exact quotation checks are structural; they do not establish independent verification."
-    ]
+    ],
+    "recorded_example": true
   },
   {
     "id": "63e229be4f89f97660844e78e6238d1f445b6a3cf44b39c25cee7021f37dd48c",
@@ -490,6 +492,7 @@
     "example_name": "unsupported_no_media",
     "qa_notes": [
       "Recorded development evaluation, October 17, 2026. Viewing this example invokes no model. Exact quotation checks are structural; they do not establish independent verification."
-    ]
+    ],
+    "recorded_example": true
   }
 ]
