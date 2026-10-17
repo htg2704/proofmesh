@@ -29,3 +29,9 @@ def test_html_scripts_are_data_not_executed_or_cited():
     parser=PageText(); parser.feed('<script>invented proof</script><p>Actual source passage.</p><meta property="article:published_time" content="2020-01-02">')
     assert 'invented proof' not in ''.join(parser.parts)
     assert parser.published=='2020-01-02'
+
+
+def test_redirected_duplicate_sources_do_not_inflate_evidence():
+    leads=[{'url':'https://example.org/'+str(i),'title':'Lead','kind':'search_grounded_excerpt','excerpt':'Summary'} for i in range(2)]
+    result=enrich_evidence(leads,'A claim',lambda url,claim:{'url':'https://source.org/article','kind':'source_page_excerpt','excerpt':'Actual passage'})
+    assert len(result)==1

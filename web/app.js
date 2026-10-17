@@ -41,7 +41,7 @@ function renderReport(report, reused = false) {
     card.append(title, node('p', evidence.excerpt), node('small', ({demo_fixture:'SYNTHETIC FIXTURE', source_page_excerpt:'FETCHED SOURCE PASSAGE', image_match_lead:'IMAGE MATCH LEAD · CAPTION UNVERIFIED', search_grounded_excerpt:'SEARCH-GROUNDED MODEL SUMMARY · NOT A VERBATIM SOURCE QUOTE'})[evidence.kind] || 'SOURCE LEAD')); if (evidence.retrieved_at) card.append(node('small', `Retrieved ${new Date(evidence.retrieved_at).toLocaleString()}${evidence.page_published_at ? ' · Page date: ' + evidence.page_published_at + ' (not capture date)' : ''}`, 'muted')); root.append(card);
   }
   root.append(node('h4', 'What remains uncertain', 'report-subhead'));
-  const limits = node('ul', undefined, 'limit'); report.assessment.limitations.forEach(t => limits.append(node('li', t))); root.append(limits);
+  const limits = node('ul', undefined, 'limit'); [...(report.qa_notes || []), ...(report.assessment.limitations.length ? report.assessment.limitations : ['Automated assessment; source links and a second model pass do not establish independent verification. Media origin remains unknown.'])].forEach(t => limits.append(node('li', t))); root.append(limits);
   const events = node('ol', undefined, 'timeline'); (report.events || []).forEach(e => events.append(node('li', `${e.stage}: ${e.detail}`))); root.append(events);
   if (report.search_attribution_html) {
     const frame = document.createElement('iframe'); frame.className = 'attribution'; frame.title = 'Google Search attribution'; frame.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
@@ -115,7 +115,13 @@ async function loadExamples() {
   for (const report of reports) {
     const label = {supported_history:'Accurate historical caption', misleading_caption:'Same image, misleading caption', unsupported_no_media:'Insufficient evidence'}[report.example_name] || 'Recorded case';
     const button=node('button', label, 'text-button');
-    button.addEventListener('click', () => { renderReport(report); notice('Recorded live run. Viewing this case makes zero model calls; it does not assess the text currently in the input.'); }); root.append(button);
+    button.addEventListener('click', () => run(async () => {
+      $('claim').value = report.claim; $('corpus').value = 'live'; showImage(null); $('image').value = '';
+      if (report.example_image_url) {
+        const response = await fetch(report.example_image_url); if (!response.ok) throw new Error('Recorded example image unavailable.');
+        const bytes = new Uint8Array(await response.arrayBuffer()); let binary=''; for (let i=0;i<bytes.length;i+=16384) binary+=String.fromCharCode(...bytes.subarray(i,i+16384)); showImage(btoa(binary), 'image/jpeg');
+      }
+      renderReport(report); notice('Recorded live run. Viewing this case makes zero model calls; its report belongs to the claim shown.'); })); root.append(button);
   }
 }
 loadExamples().catch(() => {});

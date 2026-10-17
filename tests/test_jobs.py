@@ -78,3 +78,13 @@ def test_explicit_retry_is_bounded_and_counts_against_quota(tmp_path):
     assert created and retried['attempt']==2
     jobs.update(job['id'],status='failed')
     assert jobs.reserve(sub,retry_failed=True)[1] is False
+
+
+def test_window_cap_covers_previous_days(tmp_path,monkeypatch):
+    monkeypatch.setenv('PROOFMESH_TOTAL_JOBS','1')
+    jobs,_=make(tmp_path)
+    job,_=jobs.reserve(Submission(claim='A claim on an earlier day'))
+    jobs.update(job['id'],created_at='2020-01-01T00:00:00+00:00')
+    import pytest
+    with pytest.raises(ValueError,match='Live-window'):
+        jobs.reserve(Submission(claim='A distinct claim the next day'))

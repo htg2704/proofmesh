@@ -37,15 +37,19 @@ Open **http://127.0.0.1:8000**. The default mode makes no Google model calls and
 
 The bridge image is a generated geometric illustration and all associated events are fictional. No demo result is represented as a real fact-check. The live and demo collections cannot match one another.
 
+## Hosted demo
+
+Deployment: `https://proofmesh-2god3tua3a-el.a.run.app` (public access is validated in the deployment record). The public synthetic demo and three recorded live cases make no inference calls. New live jobs and the live registry require a separate team API token. The token is in the project's Secret Manager, never GitHub.
+
 ## Chrome extension
 
 1. Open `chrome://extensions`, enable Developer mode, choose **Load unpacked**, and select this repository's `extension/` directory.
 2. Open the extension popup and explicitly enable visible-post lookups.
-3. Keep the backend running at **127.0.0.1:8000**. Load the synthetic example in the portal first.
+3. Select **Local development** or **Google Cloud demo** in the popup. Local development needs the server at **127.0.0.1:8000**; hosted mode uses the fixed Cloud Run origin. Existing local tokens and hosted tokens are stored separately. Load the synthetic example in the selected portal first.
 4. Visit **http://127.0.0.1:8000/feed** for the two-post fixture.
 5. Test public X posts separately. Local feed uses the demo collection; X uses the live collection.
 
-The development extension sends visible post text and the first supported image to the local server when enabled. It does not read cookies, history or direct messages. It does not automatically launch model investigations. Clicking **Investigate with Google Cloud** sends that post to the live pipeline. The endpoint and host permissions are deliberately limited to localhost; configure a deployed origin before distribution.
+The development extension sends visible post text and the first supported image to the local server when enabled. It does not read cookies, history or direct messages. It does not automatically launch model investigations. Clicking **Investigate with Google Cloud** sends that post to the live pipeline. Host permissions are limited to localhost, the fixed ProofMesh Cloud Run origin and X image assets. New investigations enqueue a job immediately and open a polling workspace. Reload the unpacked extension after updating to version 0.3.0; changing hosts requires an explicit popup selection.
 
 The local fixture is a development aid. The installed extension also passed public X extraction checks on October 15. Quoted posts, galleries, video and common English relative-time captions remain explicitly unverified. DOM regression tests cover SPA/private-route handling, recycled nodes and retry; logged-in X variants need further browser QA.
 
@@ -67,7 +71,7 @@ Enter the token through **Connection settings** in the portal, and the extension
 
 Run `.venv/bin/python scripts/smoke_vertex.py` only when live mode is configured and usage is authorized. It investigates one public NASA claim, records returned token/search-query counts in ignored `data/vertex-smoke-result.json`, and checks that the repeat uses zero model calls. The pipeline uses one HTTP attempt per stage and output-token limits of 4,096/3,072/1,536 for research/assessment/critique. These controls bound this test; they are not a Google billing-account spend cap.
 
-Live workflow: Google Search-grounded research -> structured assessment -> critique. Only source-linked grounding segments can become evidence. Unknown evidence references are rejected; findings without support remain unresolved. This is a second model review of the supplied evidence, not independent forensic verification. Reports retain Google Search attribution for isolated rendering in the portal.
+Live workflow: Cloud Vision image-match leads -> Google Search research -> bounded source-page retrieval -> structured assessment -> critique. Generated search summaries remain leads. A supported or contradicted finding must cite a fetched source passage. Unknown evidence references are rejected; findings without support remain unresolved. This is a second model review of the supplied evidence, not independent forensic verification. Reports retain Google Search attribution for isolated rendering in the portal.
 
 If credentials, model access or evidence retrieval fail, the application returns an explicit failure or unresolved result. It never substitutes a synthetic report.
 
@@ -99,11 +103,11 @@ Dockerfile    Cloud Run container starter
 
 - Exact normalized claim + decoded image identity + UTC reference date supports reuse. A 24-hour expiry bounds reuse. Semantic claim matching is not implemented.
 - dHash retrieves candidate related media only; crops, overlays and visually similar unrelated images can miss or collide.
-- Source evidence in live mode consists of **search-grounded model excerpts**, not independently fetched, verbatim article text. Check their supporting pages before a public demonstration.
-- No reverse-image web search, C2PA inspection, SynthID verification, video investigation or universal AI detector is implemented. Media origin remains unknown.
-- Local persistence uses SQLite. Firestore is implemented as a deployment adapter but requires a real project and validation. Registry scans are capped at 1,000 records and are not a production search index.
-- Synchronous investigations are serialized per process and limited to 10 attempts/hour per process. Distributed quotas, durable jobs, identity, abuse controls, retention/deletion and public contribution moderation are future work.
-- The public GitHub repository contains only code and synthetic fixtures. The application registry is not published by Git.
+- Live evidence distinguishes fetched source passages from generated search summaries and image-match leads. Fetching a page and validating an ID do not prove factual entailment; the selected evaluation is in `docs/EVALUATION.md`.
+- Cloud Vision Web Detection is integrated. C2PA inspection, SynthID verification, video investigation and universal AI-origin detection are not implemented. Media origin remains unknown.
+- Local persistence uses SQLite; hosted reports and job state use Firestore. Exact reuse looks up the context document directly. Related-media scans are capped at 1,000 records and are not a production search index.
+- Hosted jobs use transactional deduplication, a persisted daily cap and a single-dispatch Cloud Tasks queue. One explicit retry is allowed for a failed job; interrupted workers are not automatically reinvoked. New hosted live submissions stop after November 17 at 23:59:59 India time. Matching and public recorded demos remain available. Full multi-user identity and contribution moderation remain future work.
+- The public repository includes code, synthetic fixtures and three deliberately published recorded evaluation reports. Private user submissions, credentials and the live application registry are excluded.
 
 Do not describe this starter as a reliable real/fake classifier. Report observed evidence, limitations and evaluation results.
 
@@ -112,7 +116,7 @@ Do not describe this starter as a reliable real/fake classifier. Report observed
 - [Google Gen AI SDK](https://googleapis.github.io/python-genai/)
 - [Chrome extension network requests](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests)
 - [Chrome content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)
-- [Google Cloud Vision Web Detection](https://docs.cloud.google.com/vision/docs/detecting-web) — planned retrieval integration
+- [Google Cloud Vision Web Detection](https://docs.cloud.google.com/vision/docs/detecting-web) — integrated retrieval source
 - [C2PA explainer](https://spec.c2pa.org/specifications/specifications/2.4/explainer/Explainer.html) — possible future provenance integration
 
 License selection remains with the authors; public visibility alone does not grant an open-source license.

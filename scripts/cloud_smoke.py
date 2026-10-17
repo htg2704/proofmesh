@@ -14,7 +14,7 @@ session=requests.Session();session.headers.update(headers)
 result={'url':URL,'unauthenticated_status':requests.get(URL+'/api/health',timeout=20).status_code}
 health=session.get(URL+'/api/health',timeout=30);health.raise_for_status();result['health']=health.json(); print(json.dumps(result),flush=True)
 body={'claim':"NASA's Perseverance rover landed on Mars on February 18, 2021.", 'corpus':'live'}
-start=time.perf_counter(); response=session.post(URL+'/api/jobs',json=body,timeout=25);response.raise_for_status();job=response.json()
+start=time.perf_counter(); response=session.post(URL+'/api/jobs?retry_failed=true',json=body,timeout=25);response.raise_for_status();job=response.json()
 result['job_id']=job['id'];print('Job '+job['id']+' queued',flush=True)
 for _ in range(120):
     response=session.get(URL+'/api/jobs/'+job['id'],timeout=20);response.raise_for_status();job=response.json()
@@ -27,4 +27,4 @@ if job['status']=='succeeded':
     start=time.perf_counter(); match=session.post(URL+'/api/matches',json=body,timeout=20);match.raise_for_status();matched=match.json()
     result.update(match_status=matched['status'],match_model_calls=matched['model_calls'],match_seconds=round(time.perf_counter()-start,4))
     (ROOT/'data/cloud-smoke-report.json').write_text(json.dumps(report.json(),indent=2))
-(ROOT/'data/cloud-smoke-result.json').write_text(json.dumps(result,indent=2)); print(json.dumps(result),flush=True)
+(ROOT/'data/cloud-smoke-result-final.json').write_text(json.dumps(result,indent=2)); print(json.dumps(result),flush=True)

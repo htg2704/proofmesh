@@ -65,19 +65,25 @@ class Jobs:
             from google.cloud import firestore
             ref = self.collection.document(key)
             budget = self.store.client.collection('proofmesh_limits').document(utc().date().isoformat())
+            total_ref = self.store.client.collection('proofmesh_limits').document('window_total')
             @firestore.transactional
             def take(transaction):
                 old = ref.get(transaction=transaction)
                 limit = budget.get(transaction=transaction)
+                total_doc = total_ref.get(transaction=transaction)
                 if old.exists:
                     previous = old.to_dict()
                     if not retry_failed or previous['status'] != 'failed' or previous.get('attempt', 1) >= 2:
                         return previous, False
                     job['attempt'] = previous.get('attempt', 1) + 1
                 count = limit.to_dict().get('count', 0) if limit.exists else 0
-                if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '10')):
+                total_count = total_doc.to_dict().get('count', 0) if total_doc.exists else count
+                if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
+                    raise ValueError('Live-window investigation cap reached')
+                if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
                     raise ValueError('Daily investigation cap reached')
                 transaction.set(budget, {'count': count + 1})
+                transaction.set(total_ref, {'count': total_count + 1})
                 transaction.set(ref, job)
                 return job, True
             return take(self.store.client.transaction())
@@ -90,7 +96,10 @@ class Jobs:
                     return previous, False
                 job['attempt'] = previous.get('attempt', 1) + 1
             count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs WHERE json_extract(body, "$.created_at") LIKE ?', (utc().date().isoformat() + '%',)).fetchone()[0]
-            if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '10')):
+            total_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs').fetchone()[0]
+            if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
+                raise ValueError('Live-window investigation cap reached')
+            if count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
                 raise ValueError('Daily investigation cap reached')
             db.execute('INSERT OR REPLACE INTO jobs VALUES (?,?)', (key, json.dumps(job)))
         return job, True

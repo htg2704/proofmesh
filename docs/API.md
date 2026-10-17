@@ -82,6 +82,6 @@ POST the shared live submission to `/api/jobs`; persist its `id` and poll `GET /
 
 Cloud Tasks delivers queued jobs to an authenticated worker. Uploaded image bytes live in a private temporary bucket, are deleted after execution, and have a one-day lifecycle cleanup backstop. Local SQLite jobs survive process restarts before execution; run pending jobs explicitly when restarting local development. Cloud Tasks handles hosted delivery independently of browser lifetime.
 
-The hosted configuration limits new jobs to ten per UTC day and disables new live submissions after October 17, 2026 at 23:59:59 India time. These are workload controls, not an absolute billing cap. Keep the team API token private. Public demo routes cannot invoke inference or read live reports.
+The hosted configuration limits new attempts to four per UTC day and twelve across the live window and disables new live submissions after November 17, 2026 at 23:59:59 India time. These are workload controls, not an absolute billing cap. Keep the team API token private. Public demo routes cannot invoke inference or read live reports.
 
 `source_page_excerpt` means an independently fetched passage. `image_match_lead` and `search_grounded_excerpt` remain leads. Non-unresolved findings must cite at least one fetched passage; schema checks still do not guarantee entailment. Source publication dates are not image capture dates.

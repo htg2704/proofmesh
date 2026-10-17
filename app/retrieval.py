@@ -101,6 +101,8 @@ def enrich_evidence(leads, claim, fetcher=fetch_page):
         item = {**lead, 'id': f'E{len(evidence)+1}'}
         try:
             item.update(fetcher(lead['url'], claim))
+            if any(e['url'] == item['url'] for e in evidence):
+                continue
             item['fetch_status'] = 'retrieved'
         except Exception:
             item['fetch_status'] = 'unavailable'

@@ -17,7 +17,9 @@ The supported case initially failed with a provider ClientError, and the first p
 
 The initially proposed inconclusive example accidentally supplied the known Earthrise photograph with a caption claiming a private person took it yesterday. That caption was contradicted by the image's known history. Its expected unresolved label was unsuitable, so it is excluded from the four-case table. The final abstention case supplies no image or identifiable source. The earlier case and failed attempts remain in ignored local evaluation records. This correction is not counted as a detector success or failure.
 
-A private Cloud Run job was durably enqueued and delivered, then failed with a provider ServerError. Its failure is retained in the deployment record. A terminal failure does not cause an automatic paid retry.
+An initial private Cloud Run job was durably enqueued and delivered, then failed with a provider ServerError. Its failure is retained in the deployment record. One explicit retry with LOW thinking subsequently succeeded: 10.531 seconds through the queue, supported, three model calls. Firestore exact reuse took 104.5 ms with zero model calls. A terminal failure does not cause an automatic paid retry.
+
+Manual QA also found an incidental temporal wording error in the misleading-caption explanation: it called Artemis II scheduled for 2026 although its cited source describes an April 2026 flight. The historical Earthrise verdict is supported, but the same-model critique missed that extra statement. The public recorded report displays this QA note and retains the original output. The current prompt prohibits unnecessary incidental scheduling assertions. This is a documented model limitation, not a flawless factuality claim.
 
 ## Source and media use
 
