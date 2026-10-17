@@ -97,17 +97,17 @@ async function pollJob(id) {
     }
     if (job.status === 'succeeded') {
       renderReport(await api(`/api/investigations/${job.report_id}`), job.reused);
-      sessionStorage.removeItem('proofmesh-job'); notice(`Investigation complete · ${job.model_calls} model calls.`); await refresh(); return;
+      sessionStorage.removeItem('proofmesh-job'); notice(`Investigation complete · ${job.model_calls} model calls.`); await refresh(); await loadRouteReport(); return;
     }
     await new Promise(resolve => setTimeout(resolve, 3000));
   }
   throw new Error('Investigation is taking longer than expected. Reload to check the saved job.');
 }
-async function loadRouteReport() { const id = new URLSearchParams(location.search).get('report'); if (id) renderReport(await api(`/api/investigations/${encodeURIComponent(id)}`)); const job = new URLSearchParams(location.search).get('job') || sessionStorage.getItem('proofmesh-job'); if (job) await pollJob(job); }
+async function loadRouteReport() { const demo = new URLSearchParams(location.search).get('demo_report'); if (demo) renderReport(await api(`/api/demo/reports/${encodeURIComponent(demo)}`)); const id = new URLSearchParams(location.search).get('report'); if (id) renderReport(await api(`/api/investigations/${encodeURIComponent(id)}`)); const job = new URLSearchParams(location.search).get('job') || sessionStorage.getItem('proofmesh-job'); if (job) await pollJob(job); }
 $('save-token').addEventListener('click', () => { sessionStorage.setItem('proofmesh-token', $('token').value.trim()); $('token').value = ''; run(async () => { await refresh(); notice('Connected. The API token is kept only for this browser session.'); await loadRouteReport(); }); });
 $('refresh-button').addEventListener('click', () => run(refresh));
 $('corpus').addEventListener('change', () => run(refresh));
-(async () => { try { const health = await api('/api/health'); $('connection').textContent = health.live_enabled ? 'Live pipeline enabled' : 'Local · demo ready'; if (health.authentication_required && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'demo'; notice('Public synthetic demo ready. Live investigations require your team API token in Connection settings.'); await refresh(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
+(async () => { try { const health = await api('/api/health'); $('connection').textContent = health.live_enabled ? 'Live pipeline enabled' : 'Local · demo ready'; if (health.authentication_required && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'demo'; notice('Public synthetic demo ready. Live investigations require your team API token in Connection settings.'); await refresh(); await loadRouteReport(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
 
 async function loadExamples() {
   const {reports} = await api('/api/examples');

@@ -18,9 +18,9 @@
     if (!response || response.error) throw new Error(response?.error || 'The extension connection was interrupted. Reload this page.');
     return response.data;
   }
-  function portalLink(text, reportId, origin = core.API) {
+  function portalLink(text, reportId, origin = core.API, demo = false) {
     const link = document.createElement('a'); link.textContent = text;
-    link.href = reportId ? `${origin}/?report=${encodeURIComponent(reportId)}` : origin;
+    link.href = reportId ? `${origin}/?${demo ? "demo_report" : "report"}=${encodeURIComponent(reportId)}` : origin;
     link.target = '_blank'; link.rel = 'noopener noreferrer'; return link;
   }
   function render(article, state, data) {
@@ -30,7 +30,7 @@
     const exact = data.status === 'exact_context' && data.report;
     label.textContent = exact ? 'ProofMesh · existing investigation available' : data.status === 'related_media' ? 'ProofMesh · related image, different claim — unverified' : 'ProofMesh · no matching investigation — unverified';
     el.append(label);
-    if (exact) { el.append(portalLink(data.report.corpus === 'demo' ? 'Read synthetic report ↗' : 'Read the evidence ↗', data.report.id, data.api_origin || core.API)); return; }
+    if (exact) { el.append(portalLink(data.report.corpus === 'demo' ? 'Read synthetic report ↗' : 'Read the evidence ↗', data.report.id, data.api_origin || core.API, data.report.corpus === "demo")); return; }
     if ([core.API,core.CLOUD].includes(location.origin)) { el.append(portalLink('Review the new caption in the workspace ↗', null, data.api_origin || core.API)); return; }
     const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Investigate with Google Cloud';
     button.addEventListener('click', async event => {
