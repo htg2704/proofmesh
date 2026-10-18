@@ -28,7 +28,7 @@ test('oversized replacement clears both preview and submitted image identity',as
   assert.equal(h.w.document.getElementById('image-wrap').hidden,false);
   h.file({size:5_000_001,type:'image/png'}); await h.settle();
   assert.equal(h.w.document.getElementById('image-wrap').hidden,true);
-  h.w.document.getElementById('investigation-form').dispatchEvent(new h.w.Event('submit',{cancelable:true})); await h.settle();
+  h.w.document.getElementById('match-button').click(); await h.settle();
   const request=h.requests.find(r=>r.path==='/api/demo/matches');
   assert.equal(JSON.parse(request.options.body).image_base64,null); h.w.close();
 });
@@ -125,7 +125,7 @@ test('personal Gemini key is memory-only, sent only to new jobs and clearable',a
  d.getElementById('gemini-key').value=key;d.getElementById('use-gemini-key').click();
  assert.equal(d.getElementById('gemini-key').value,'');assert.equal(w.sessionStorage.length,0);assert.equal(w.localStorage.length,0);
  d.getElementById('claim').value='A browser personal key claim';
- d.getElementById('investigation-form').dispatchEvent(new w.Event('submit',{cancelable:true}));await h.settle();
+ d.getElementById('match-button').click();await h.settle();
  const lookup=h.requests.find(r=>r.path==='/api/matches');assert.ok(!lookup.options.body.includes(key));
  d.getElementById('investigate-button').click();await h.settle();
  const posted=h.requests.filter(r=>r.path==='/api/jobs');assert.equal(JSON.parse(posted[0].options.body).provider_api_key,key);
@@ -135,4 +135,38 @@ test('personal Gemini key is memory-only, sent only to new jobs and clearable',a
  d.getElementById('investigate-button').click();await h.settle();
  const last=h.requests.filter(r=>r.path==='/api/jobs').at(-1);assert.equal(JSON.parse(last.options.body).provider_api_key,undefined);
  assert.match(d.getElementById('gemini-key-status').textContent,/cleared/);w.close();
+});
+
+test('primary form submission investigates and lookup miss explains the exact blocker',async()=>{
+ const h=harness();await h.settle();const w=h.w,d=w.document;
+ assert.equal(d.getElementById('investigate-button').type,'submit');assert.ok(d.getElementById('investigate-button').classList.contains('primary'));
+ assert.equal(d.getElementById('match-button').type,'button');assert.ok(d.getElementById('investigate-button').compareDocumentPosition(d.getElementById('match-button')) & w.Node.DOCUMENT_POSITION_FOLLOWING);
+ d.getElementById('claim').value='A claim that needs an investigation';
+ w.fetch=async(path,options)=>{h.requests.push({path,options});if(path==='/api/jobs')return {ok:true,json:async()=>({id:'f'.repeat(64)})};if(path.startsWith('/api/jobs/'))return {ok:true,json:async()=>({status:'succeeded',report_id:report.id,model_calls:3})};if(path.startsWith('/api/investigations/'))return {ok:true,json:async()=>report};if(path==='/api/matches')return {ok:true,json:async()=>({status:'related_media',report:null,related:[{id:'a'.repeat(64),claim:'A previous claim',reuse_blockers:['assessment_policy_changed','publication_time_changed']}]})};return {ok:true,json:async()=>({reports:[],size:0,capacity:200})};};
+ d.getElementById('investigation-form').dispatchEvent(new w.Event('submit',{cancelable:true}));await h.settle();
+ const job=h.requests.find(r=>r.path==='/api/jobs');assert.ok(job);assert.equal(JSON.parse(job.options.body).share_publicly,true);
+ d.getElementById('share-publicly').checked=false;d.getElementById('match-button').click();await h.settle();
+ const text=d.getElementById('result').textContent;assert.match(text,/Not assessed for this context/);assert.match(text,/older assessment policy/);assert.match(text,/publication time differs/);assert.doesNotMatch(text,/Unverified/);
+ const start=[...d.querySelectorAll('#result button')].find(b=>b.textContent==='Start investigation for this context');assert.ok(start);start.click();await h.settle();
+ const last=h.requests.filter(r=>r.path==='/api/jobs').at(-1);assert.equal(JSON.parse(last.options.body).share_publicly,false);w.close();
+});
+
+test('public registry browsing is accessible without a private workspace and report links use its public endpoint',async()=>{
+ const dom=new JSDOM(read('web/index.html'),{url:'https://proofmesh.example/?public_report='+report.id,runScripts:'outside-only'}),w=dom.window,paths=[];
+ w.fetch=async(path,options)=>{paths.push(path);if(path==='/api/health')return {ok:true,json:async()=>({authentication_required:true,access:'none',live_enabled:true,client_daily_jobs:10,client_requests_per_minute:120})};if(path.startsWith('/api/registry?'))return {ok:true,json:async()=>({reports:[{...report,corpus:'public',public_registry:true}],size:1,capacity:200})};if(path==='/api/registry/'+report.id)return {ok:true,json:async()=>({...report,corpus:'public',public_registry:true})};return {ok:true,json:async()=>({reports:[]})};};
+ w.eval(read('web/app.js'));for(let i=0;i<10;i++)await tick();
+ assert.match(w.document.getElementById('registry-capacity').textContent,/1 \/ 200/);
+ assert.match(w.document.getElementById('result').textContent,/Public registry/);
+ assert.ok(paths.includes('/api/registry/'+report.id));assert.ok(!paths.includes('/api/access/guest'));w.close();
+});
+
+test('judge entry is discoverable and info popovers state client limits and judge exemptions',async()=>{
+ const h=harness();await h.settle();const d=h.w.document;
+ d.getElementById('open-judge-access').click();assert.equal(d.getElementById('access-settings').open,true);assert.equal(d.activeElement.id,'token');
+ h.w.fetch=async path=>({ok:true,json:async()=>path==='/api/health'?{access:'judge',authentication_required:true,rate_limits_exempt:true,client_daily_jobs:10,client_requests_per_minute:120,personal_gemini_key_enabled:true}:{reports:[],size:0,capacity:200}});
+ d.getElementById('token').value='judge-fixture-not-a-real-key';d.getElementById('save-token').click();await h.settle();
+ assert.match(d.getElementById('connection').textContent,/Judge workspace/);
+ assert.match(d.getElementById('trial-limits').textContent,/Judge access.*waived/);
+ assert.match(d.getElementById('investigate-help').textContent,/10 new investigations/);assert.match(d.getElementById('investigate-help').textContent,/120 API requests/);assert.match(d.getElementById('investigate-help').textContent,/judge\/team tester access is exempt/);
+ assert.match(d.getElementById('match-help').textContent,/120 API requests/);h.w.close();
 });

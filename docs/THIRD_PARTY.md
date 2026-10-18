@@ -6,7 +6,7 @@ The browser workspace and X extension use the same evidence API. Third parties c
 
 Open https://proofmesh-2god3tua3a-el.a.run.app/. Enter a claim and optional image; check existing evidence or start an investigation. No reviewer code, sign-in or developer key is needed in the normal browser flow. On first use the server creates a scoped browser credential in a 30-day HttpOnly, Secure, SameSite=Strict cookie. It is not exposed to JavaScript. Prefilled examples live in the same workspace and clearly identify recorded results.
 
-New reports are isolated by client. Deliberately published examples can be reused only for exact fresh context; related images never transfer a verdict. Clearing cookies loses access to that browser workspace. This is credential-based isolation, not verified human identity or full account recovery.
+Private reports are isolated by client. Eligible reports shared to the 200-snapshot public registry can be reused across clients only for exact fresh context; related images never transfer a verdict. The web app exposes a sharing checkbox, while API requests stay private unless `share_publicly=true`. See [registry policy and endpoints](REGISTRY.md). Clearing cookies loses access to that browser workspace. This is credential-based isolation, not verified human identity or full account recovery.
 
 ## Integrate a third-party application
 
@@ -80,3 +80,9 @@ Set `PROOFMESH_SELF_REGISTRATION=false` to require owner-issued keys. This also 
 ## Run your own instance
 
 Follow the root README's Python or Docker setup. Demo mode needs no Google credentials and makes no new model calls. For live work, configure a strong team token and explicitly enable live mode. Use Vertex project/model/ADC for trial-funded work, or set a Fernet encryption key and `GEMINI_API_MODEL` for personal-key work (no Vertex ADC is required for that path). Use SQLite locally; use Firestore, Cloud Tasks, private image storage and attached service identities on Cloud Run. Review `.env.example`, configure your own limits and budget, and enable self-registration only when you intend to accept public users.
+
+## Judge access
+
+A separately issued judge token is available through **Use a judge token** in the normal app. Paste it into the ProofMesh access-token field and connect for the browser session; do not paste it into the Gemini provider-key field. The judge role bypasses application request and daily-check caps, while keeping an isolated judge namespace. It cannot read team/client private reports, issue/revoke keys or perform admin operations. It can read public registry snapshots and publish/withdraw its own eligible reports. Google quotas, project-funded usage approval and configured expiry still apply. Trusted team testers also retain their application-limit exemptions.
+
+The owner keeps the actual token and submission instructions in ignored `data/JUDGE_ACCESS.md`; no credential is published in this repository or placed in URLs. The application's info buttons display the ordinary trial limits (10 new checks/UTC day and 120 API requests/minute by default), cached-reuse behavior and the current judge/tester exemption.

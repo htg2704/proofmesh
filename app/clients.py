@@ -30,11 +30,11 @@ class Principal:
 
     @property
     def exempt(self):
-        return self.role == 'team'
+        return self.role in {'team', 'judge'}
 
     @property
     def namespace(self):
-        return 'client:' + self.identifier if self.role == 'client' else 'review' if self.role == 'review' else 'live'
+        return 'client:' + self.identifier if self.role in {'client', 'judge'} else 'review' if self.role == 'review' else 'live'
 
 
 def trusted_credentials():

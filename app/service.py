@@ -4,6 +4,8 @@ from app.context import publication_stamp, context_record, require_publication_c
 from app.fingerprints import image_identity, context_key, normalize_claim, similar
 from app.fingerprints import EVIDENCE_POLICY
 from app.origin import origin_from_result
+from app.registry import PublicRegistry
+from app.reuse import reuse_blockers
 
 
 def now():
@@ -13,6 +15,7 @@ def now():
 class ProofMesh:
     def __init__(self, store, investigator):
         self.store, self.investigator = store, investigator
+        self.registry = PublicRegistry(store)
 
     def match(self, submission):
         identity = image_identity(submission.image_base64)
@@ -23,7 +26,14 @@ class ProofMesh:
         exact = self.store.get(key)
         if exact and datetime.fromisoformat(exact["expires_at"]) <= now():
             exact = None
-        related = [{"id": r["id"], "claim": r["claim"], "match": "same_media" if identity["sha256"] == r["media"]["sha256"] else "similar_media"}
+        if submission.corpus != 'demo':
+            public = self.registry.all()
+            public_key = context_key(submission.claim, identity, 'public', now().date().isoformat(), publication_stamp(submission))
+            if not exact:
+                exact = next((r for r in public if r['id'] == public_key and not reuse_blockers(submission, identity, r, now())), None)
+            public_ids = {r['id'] for r in public}
+            records = [r for r in records if r.get('registry_publication', {}).get('id') not in public_ids] + public
+        related = [{"reuse_blockers": reuse_blockers(submission, identity, r, now()), "public_registry": r.get('public_registry', False), "id": r["id"], "claim": r["claim"], "match": "same_media" if identity["sha256"] == r["media"]["sha256"] else "similar_media"}
                    for r in records if identity["sha256"] and similar(identity, r["media"]) and (not exact or r["id"] != exact["id"])]
         return {"status": "exact_context" if exact else "related_media" if related else "unknown", "report": exact,
                 "related": related[:10], "model_calls": 0,
@@ -32,6 +42,8 @@ class ProofMesh:
     def investigate(self, submission):
         cached = self.match(submission)
         if cached["report"]:
+            if submission.share_publicly and cached["report"].get("corpus") not in {"demo", "public"}:
+                self.share(cached["report"])
             return {"report": cached["report"], "reused": True, "model_calls": 0}
         if submission.corpus not in {"live", "review"}:
             raise ValueError("Demo investigations are fixed fixtures. Use the live corpus for new investigations.")
@@ -43,7 +55,22 @@ class ProofMesh:
         report = self.make_report(submission.claim, identity, key, submission.namespace, result, stamp)
         report["publication_context"] = context_record(submission, stamp.date().isoformat())
         self.store.put(report)
+        if submission.share_publicly:
+            self.share(report)
         return {"report": report, "reused": False, "model_calls": result["model_calls"]}
+
+    def share(self, report):
+        try:
+            public = self.registry.publish(report)
+            report['registry_publication'] = {'status': 'published', 'id': public['id']}
+        except ValueError:
+            report['registry_publication'] = {'status': 'not_eligible', 'message': 'Only fresh, complete assessments with validated source citations can be published.'}
+        except Exception as exc:
+            import logging
+            logging.getLogger('proofmesh').error('Registry publication failed: %s', type(exc).__name__)
+            report['registry_publication'] = {'status': 'unavailable', 'message': 'Report saved privately. Public registry publication is temporarily unavailable.'}
+        self.store.put(report)
+        return report['registry_publication']
 
     @staticmethod
     def make_report(claim, identity, key, corpus, result, stamp):

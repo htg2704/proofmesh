@@ -30,7 +30,7 @@ python3 -m venv .venv
 Open **http://127.0.0.1:8000**. The default mode makes no Google model calls and requires no cloud credentials.
 
 1. Click **Try an example** to prefill the workspace and inspect a labeled recorded investigation.
-2. Check shared evidence to retrieve a fresh exact-context result without inference, or inspect related media without inheriting its verdict. Archived recorded reports remain readable but cannot silently satisfy fresh lookups.
+2. Start a new investigation. The app first reuses an exact fresh report when available; otherwise it researches your claim. “Find an existing report” performs lookup only. Archived reports remain readable but cannot silently satisfy fresh lookups.
 3. Edit the caption: a familiar image remains a separate question.
 4. Configure Vertex AI before requesting any new live investigation. Default demo mode makes no paid model calls.
 5. Reports and credentials persist in the ignored local `data/` directory. The optional `/feed` route is a synthetic extension regression fixture, not the main user experience.
@@ -140,3 +140,13 @@ See [third-party setup and limits](docs/THIRD_PARTY.md) and the new [editable ar
 ## Personal Gemini keys (v0.6)
 
 The main workspace displays the trial allowance: **10 new investigations/client/UTC day, 120 API requests/minute**. There is **no shared investigation-count cap**. Open **Use your own Gemini API key** to run without a daily ProofMesh check cap, billed to your Google account. Keys are held in page memory and encrypted temporarily while queued, then removed after processing. Google quotas and request limits still apply. Personal-key work uses Gemini with Search and skips the project-funded Cloud Vision lookup. The approved US$10 project trial funds remain a separate monetary safeguard for project-funded work. See [integration and key handling](docs/THIRD_PARTY.md) and [deployment settings](docs/DEPLOYMENT.md).
+
+## Shared public registry (v0.7)
+
+The public evidence registry is now shared across users and capped at **200 report snapshots**. New browser investigations show a checked sharing choice with a public-disclosure explanation; uncheck it for private work. API submissions remain private unless `share_publicly=true`. Existing private reports are not migrated. A fresh, complete report with validated source citations can also be published from its report view.
+
+Exact fresh claim/image/publication-context matches can reuse a public snapshot across clients with zero model calls. Similar media, altered captions/times, expired reports and older assessment policies do not transfer verdicts; lookup results explain why reuse was blocked. Publishing retains the private copy and strips owner IDs, credentials, input image bytes and user-supplied source URLs from the public snapshot. At capacity, expired entries are pruned first, then the oldest public snapshot is replaced. The publisher or team can withdraw it. Automated reports are not independent verification.
+
+`/api/v1/registry` lists public summaries; `/api/v1/registry/{id}` reads a public report without a credential. Private report history stays separate. See [registry API and policy](docs/REGISTRY.md). The primary action is **Start a new investigation**; the secondary **Find an existing report** runs lookup only.
+
+Judges can use a separate scoped token through **Use a judge token** on the normal app. It waives application rate/daily limits without granting team-report or administrative access. The actual token and submission instructions are in ignored `data/JUDGE_ACCESS.md`. Info popovers show the exact ordinary client limits and tester/judge exemptions. Provider quotas and project-funded usage approval remain separate.

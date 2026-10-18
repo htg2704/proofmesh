@@ -25,3 +25,5 @@ A pilot needs tenant isolation, scoped and revocable credentials, API versioning
 Social apps could show evidence inline before sharing. Android or Gemini experiences could retrieve context through an authorized integration. AI agents and model applications could query the rail through REST or an MCP adapter and cite the report with its limitations. These are proposed interfaces, not partnerships, deployed integrations, model-training feeds or claims that any platform currently uses ProofMesh.
 
 The rail carries context-bound evidence, not a universal real/fake label. A report must retain its exact claim, media identity, publication context, source passages, timestamps, policy version and limitations wherever it appears.
+
+The MVP now implements a genuinely cross-client public registry capped at 200 snapshots, alongside private workspaces. Eligible reports shared by one client can be reused by another for exact fresh context. This implements a small shared evidence layer; human moderation, semantic claim matching, platform integrations and production abuse resistance remain future work. See REGISTRY.md.

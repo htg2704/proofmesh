@@ -1,8 +1,10 @@
+import hashlib
 import hmac
 import logging
 import os
 import re
 from pathlib import Path
+from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, FileResponse, Response, PlainTextResponse
 from fastapi.exceptions import RequestValidationError
@@ -26,6 +28,13 @@ ROOT = Path(__file__).resolve().parent.parent
 def create_app(store=None, investigator=None):
     token = os.getenv("PROOFMESH_API_TOKEN", "")
     reviewer_token = os.getenv("PROOFMESH_REVIEW_TOKEN", "")
+    judge_token = os.getenv('PROOFMESH_JUDGE_TOKEN', '')
+    judge_until_text = os.getenv('PROOFMESH_JUDGE_UNTIL') or os.getenv('PROOFMESH_LIVE_UNTIL')
+    judge_until = datetime.fromisoformat(judge_until_text) if judge_until_text else None
+    if judge_until and not judge_until.tzinfo:
+        raise RuntimeError('Judge expiry must include a timezone')
+    if judge_token and len(judge_token) < 32:
+        raise RuntimeError('Judge token must have at least 32 characters')
     trusted = trusted_credentials()
     live = os.getenv("PROOFMESH_ENABLE_LIVE", "false").lower() == "true"
     if live and len(token) < 24:
@@ -36,7 +45,7 @@ def create_app(store=None, investigator=None):
         store = (FirestoreStore(os.environ["GOOGLE_CLOUD_PROJECT"], os.getenv("PROOFMESH_FIRESTORE_COLLECTION", "proofmesh_investigations"))
                  if os.getenv("PROOFMESH_STORE") == "firestore" else SQLiteStore(os.getenv("PROOFMESH_DB", str(ROOT / "data/proofmesh.sqlite3"))))
     service = ProofMesh(store, investigator or GeminiInvestigator())
-    app = FastAPI(title="ProofMesh", version="0.6.0", docs_url=None, redoc_url=None)
+    app = FastAPI(title="ProofMesh", version="0.7.0", docs_url=None, redoc_url=None)
     app.state.service = service
     jobs = Jobs(store, service)
     app.state.jobs = jobs
@@ -60,13 +69,16 @@ def create_app(store=None, investigator=None):
                 if hmac.compare_digest(header, f'Bearer {credential}'):
                     principal = Principal('team', name)
                     break
+            if principal.role == 'none' and len(judge_token) >= 32 and (not judge_until or datetime.now(timezone.utc) < judge_until) and hmac.compare_digest(header, f'Bearer {judge_token}'):
+                principal = Principal('judge', hashlib.sha256(judge_token.encode()).hexdigest()[:24])
             client_credential = header[7:] if header.startswith('Bearer pm_client_') else request.cookies.get('proofmesh_client', '') if not header else ''
             if principal.role == 'none' and client_credential:
                 principal = await run_in_threadpool(clients.authenticate, client_credential) or principal
             if principal.role == 'none' and len(reviewer_token) >= 32 and (hmac.compare_digest(header, f"Bearer {reviewer_token}") or (not header and valid_cookie(request.cookies.get(COOKIE), reviewer_token))):
                 principal = Principal('review', 'review')
         request.state.principal, request.state.role = principal, principal.role
-        public = request.url.path in {"/api/health", "/api/v1/health", "/api/access/guest", "/api/access/register", "/api/v1/access/register", "/api/access/reviewer", "/api/examples", "/api/demo", "/api/demo/matches"} or request.url.path.startswith("/api/demo/reports/")
+        registry_read = request.method == 'GET' and (request.url.path in {'/api/registry', '/api/v1/registry'} or request.url.path.startswith(('/api/registry/', '/api/v1/registry/')))
+        public = registry_read or request.url.path in {"/api/health", "/api/v1/health", "/api/access/guest", "/api/access/register", "/api/v1/access/register", "/api/access/reviewer", "/api/examples", "/api/demo", "/api/demo/matches"} or request.url.path.startswith("/api/demo/reports/")
         if request.url.path.startswith("/api/") and not public and request.state.role == "none":
             return JSONResponse({"detail": "A developer key, team credential or reviewer session is required"}, status_code=401, headers={'Cache-Control': 'no-store'})
         rate_headers = {}
@@ -102,14 +114,14 @@ def create_app(store=None, investigator=None):
                        expose_headers=['Retry-After', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'])
 
     def scope(submission, request):
-        if request.state.role == 'client' and submission.corpus != 'demo':
+        if request.state.role in {'client', 'judge'} and submission.corpus != 'demo':
             return submission.for_client(request.state.principal.identifier)
         if request.state.role == "review" and submission.corpus != "demo":
             return submission.model_copy(update={"corpus": "review"})
         return submission
 
     def can_read(corpus, request):
-        return request.state.role == 'team' or corpus == request.state.principal.namespace
+        return corpus == 'public' or request.state.role == 'team' or corpus == request.state.principal.namespace
 
     def examples():
         import json
@@ -117,7 +129,7 @@ def create_app(store=None, investigator=None):
         return json.loads(path.read_text()) if path.exists() else []
 
     def published_report(identifier):
-        return next((r for r in examples() if r.get('recorded_example') and r['id'] == identifier), None)
+        return service.registry.get(identifier) or next((r for r in examples() if r.get('recorded_example') and r['id'] == identifier), None)
 
     class ClientLabel(BaseModel):
         label: str = Field(min_length=3, max_length=60, pattern=r'^[\w .-]+$')
@@ -135,7 +147,7 @@ def create_app(store=None, investigator=None):
 
     @app.post('/api/access/guest')
     def guest_session(request: Request):
-        if request.state.role in {'team', 'client'}:
+        if request.state.role in {'team', 'client', 'judge'}:
             return {'access': request.state.role}
         issued = register_client(ClientLabel(label='Browser workspace'))
         response = JSONResponse({'access': 'client', 'message': 'Your limited workspace is ready'})
@@ -181,22 +193,72 @@ def create_app(store=None, investigator=None):
     @app.get("/api/health")
     def health(request: Request):
         return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "access": request.state.role,
-                "review_enabled": len(reviewer_token) >= 32, "version": "0.6.0", "release": os.getenv("PROOFMESH_RELEASE", "local"),
+                "review_enabled": len(reviewer_token) >= 32, "judge_enabled": len(judge_token) >= 32 and (not judge_until or datetime.now(timezone.utc) < judge_until), "version": "0.7.0", "release": os.getenv("PROOFMESH_RELEASE", "local"),
                 "self_registration": os.getenv('PROOFMESH_SELF_REGISTRATION', 'false').lower() == 'true',
                 "rate_limits_exempt": request.state.principal.exempt,
                 "client_requests_per_minute": int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', str(DEFAULT_CLIENT_RPM))),
                 "client_daily_jobs": int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))),
                 "registrations_per_hour": int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))),
-                "shared_investigation_cap": False,
+                "public_registry_cap": service.registry.capacity, "shared_investigation_cap": False,
                 "personal_gemini_key_enabled": bool(os.getenv("PROOFMESH_CREDENTIAL_ENCRYPTION_KEY")),
                 "personal_key_daily_cap": None}
+
+    @app.get('/api/v1/registry')
+    @app.get('/api/registry')
+    def public_registry(limit: int = 20, offset: int = 0):
+        if not 1 <= limit <= 50 or not 0 <= offset < 200:
+            raise HTTPException(400, 'Use limit 1–50 and offset 0–199')
+        reports = service.registry.all()
+        fields = {'id', 'claim', 'created_at', 'expires_at', 'registry_published_at', 'corpus', 'public_registry', 'assessment_status'}
+        return {'capacity': service.registry.capacity, 'size': len(reports), 'reports': [{k: v for k, v in r.items() if k in fields} for r in reports[offset:offset+limit]]}
+
+    @app.get('/api/v1/registry/{report_id}')
+    @app.get('/api/registry/{report_id}')
+    def read_public_report(report_id: str):
+        if not re.fullmatch(r'[a-f0-9]{64}', report_id):
+            raise HTTPException(404, 'Public report not found')
+        report = service.registry.get(report_id)
+        if not report:
+            raise HTTPException(404, 'Public report not found or replaced by the registry capacity policy')
+        return report
+
+    @app.post('/api/v1/investigations/{report_id}/publish')
+    @app.post('/api/investigations/{report_id}/publish')
+    def publish_report(report_id: str, request: Request):
+        if not re.fullmatch(r'[a-f0-9]{64}', report_id):
+            raise HTTPException(404, 'Investigation not found')
+        report = store.get(report_id)
+        if not report or not can_read(report.get('corpus'), request):
+            raise HTTPException(404, 'Investigation not found')
+        result = service.share(report)
+        if result['status'] != 'published':
+            raise HTTPException(409 if result['status'] == 'not_eligible' else 503, result['message'])
+        return result
+
+    @app.post('/api/v1/registry/{report_id}/withdraw')
+    @app.post('/api/registry/{report_id}/withdraw')
+    def withdraw_report(report_id: str, request: Request):
+        if not re.fullmatch(r'[a-f0-9]{64}', report_id):
+            raise HTTPException(404, 'Public report not found')
+        record = service.registry.record(report_id)
+        try:
+            removed = service.registry.withdraw(report_id, request.state.principal.namespace, request.state.role == 'team')
+        except PermissionError as exc:
+            raise HTTPException(403, str(exc)) from exc
+        if not removed:
+            raise HTTPException(404, 'Public report not found')
+        source = store.get(record['source_report_id']) if record else None
+        if source:
+            source['registry_publication'] = {'status': 'withdrawn'}
+            store.put(source)
+        return {'withdrawn': True}
 
     @app.get("/api/v1/investigations")
     @app.get("/api/investigations")
     def list_reports(request: Request, corpus: str = "live"):
         if request.state.role == "review":
             corpus = "review"
-        if request.state.role == 'client':
+        if request.state.role in {'client', 'judge'}:
             return {'reports': service.store.all(request.state.principal.namespace)}
         if corpus not in {"live", "demo", "review"}:
             raise HTTPException(400, "Unknown corpus")
@@ -256,6 +318,8 @@ def create_app(store=None, investigator=None):
             if submission.corpus != 'demo':
                 cached = match(submission, request).get('report')
                 if cached:
+                    if submission.share_publicly and cached.get('corpus') not in {'demo', 'public'}:
+                        service.share(cached)
                     return {'id': cached['id'], 'status': 'succeeded', 'report_id': cached['id'], 'reused': True, 'model_calls': 0}
             job, created = jobs.reserve(submission, retry_failed=retry_failed, bypass_rate_limits=request.state.principal.exempt, requested_by=request.state.principal.identifier)
             if created:

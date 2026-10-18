@@ -72,7 +72,7 @@ class Jobs:
         client_id = submission._client_id
         day = utc().date().isoformat()
         reset = int((utc().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1) - utc()).total_seconds())
-        job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim, 'corpus': submission.namespace, 'published_at': publication_stamp(submission), 'source_url': submission.source_url,
+        job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim, 'corpus': submission.namespace, 'published_at': publication_stamp(submission), 'source_url': submission.source_url, 'share_publicly': submission.share_publicly,
                'requested_by': requested_by, 'client_id': client_id,
                'funding': 'personal_gemini_key' if byok else 'project_trial',
                'provider_key_ciphertext': seal(submission.provider_api_key) if byok else None,
@@ -203,7 +203,7 @@ class Jobs:
         try:
             if job.get('funding') == 'personal_gemini_key' and not job.get('provider_key_ciphertext'):
                 raise ValueError('Personal Gemini key expired')
-            submission = Submission(claim=job['claim'], image_base64=self.image(job['image_key']), corpus='live' if job.get('client_id') else job.get('corpus', 'live'), published_at=job.get('published_at'), source_url=job.get('source_url'), provider_api_key=open_key(job.get('provider_key_ciphertext')))
+            submission = Submission(claim=job['claim'], image_base64=self.image(job['image_key']), corpus='live' if job.get('client_id') else job.get('corpus', 'live'), published_at=job.get('published_at'), source_url=job.get('source_url'), provider_api_key=open_key(job.get('provider_key_ciphertext')), share_publicly=job.get('share_publicly', False))
             if job.get('client_id'):
                 submission = submission.for_client(job['client_id'])
             result = self.service.investigate(submission)
