@@ -11,6 +11,7 @@ function allowedImage(url) {
 async function imageBytes(url) {
   if (!url) return null;
   if (!allowedImage(url)) throw new Error('Unsupported image host; open the portal to upload this image.');
+  const parsed = new URL(url); if(parsed.hostname === 'pbs.twimg.com')parsed.searchParams.set('name','large'); url=parsed.href;
   const cached = imageCache.get(url); if (cached && Date.now() - cached.at < 300_000) return cached.data;
   const response = await fetch(url, { credentials: 'omit', redirect: 'error', signal:AbortSignal.timeout(12_000) });
   if (!response.ok || !/^image\/(png|jpeg|webp)/.test(response.headers.get('content-type') || '')) throw new Error('Image unavailable.');
@@ -27,7 +28,7 @@ async function handle(message, sender) {
   const API = settings.apiOrigin === 'cloud' ? CLOUD : LOCAL;
   const corpus = [LOCAL,CLOUD].includes(new URL(sender.url).origin) ? 'demo' : 'live';
   const token = settings.apiOrigin === 'cloud' ? settings.cloudToken : settings.apiToken;
-  const body = { claim: message.claim, image_base64: await imageBytes(message.imageUrl), corpus, published_at:message.publishedAt || null, source_url:message.sourceUrl || null };
+  const body = { claim: message.claim, image_base64: await imageBytes(message.imageUrl), corpus, published_at:message.publishedAt || null, source_url:message.sourceUrl || null, ...(message.type === 'investigate' && corpus === 'live' ? {share_publicly:true} : {}) };
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
   let response;

@@ -61,7 +61,7 @@ test('same image with different caption keeps separate extension assessments', a
   const h=harness(legacy('Original archive claim.')+legacy('A different caption about that image.'), async message=>({data:message.claim.startsWith('Original') ? {status:'exact_context',report:{id:'a'.repeat(64),corpus:'demo'}} : {status:'related_media',report:null,related:[{id:'a'.repeat(64)}]}}));
   await h.flush(); const posts=h.w.document.querySelectorAll('article');
   assert.match(posts[0].textContent,/existing investigation available/);
-  assert.match(posts[1].textContent,/different claim — unverified/);
+  assert.match(posts[1].textContent,/this context needs investigation/);
   assert.equal(posts[1].querySelector('a[href*="report="]'),null); assert.equal(h.calls.length,2); h.w.close();
 });
 test('a delayed response cannot attach to a recycled post node', async () => {
@@ -71,13 +71,13 @@ test('a delayed response cannot attach to a recycled post node', async () => {
   pending[0]({data:{status:'exact_context',report:{id:'a'.repeat(64),corpus:'demo'}}});
   await h.flush(); assert.equal(h.w.document.querySelector('a[href*="report="]'),null);
   pending[1]({data:{status:'unknown',report:null,related:[]}}); await h.flush();
-  assert.match(h.w.document.body.textContent,/no matching investigation — unverified/); h.w.close();
+  assert.match(h.w.document.body.textContent,/no stored report for this context/); h.w.close();
 });
 test('an error exposes a retry and recovers when the server returns', async () => {
   let attempt=0; const h=harness(legacy(),async()=>++attempt===1 ? {error:'Offline'} : {data:{status:'unknown',report:null,related:[]}});
   await h.flush(); assert.match(h.w.document.body.textContent,/lookup unavailable/);
   h.w.document.querySelector('.proofmesh-context button').click(); await h.flush();
-  assert.equal(h.calls.length,2); assert.match(h.w.document.body.textContent,/no matching investigation — unverified/); h.w.close();
+  assert.equal(h.calls.length,2); assert.match(h.w.document.body.textContent,/no stored report for this context/); h.w.close();
 });
 test('disable removes indicators and ignores pending responses', async () => {
   let finish; const h=harness(legacy(),()=>new Promise(resolve=>finish=resolve)); await h.flush();
@@ -140,4 +140,23 @@ test('relative-time caption uses an explicit timestamp and detects timestamp rec
   dom.window.document.querySelector('time').setAttribute('datetime','2026-10-18T00:00:00Z');
   assert.notEqual(result.signature,dom.window.ProofMeshCore.extractPost(dom.window.document.querySelector('article'),'https://x.com/Example').signature);
   dom.window.close();
+});
+
+test('public registry matches open the public report route',async()=>{
+ const h=harness(legacy(),async()=>({data:{status:'exact_context',api_origin:'https://proofmesh-2god3tua3a-el.a.run.app',report:{id:'b'.repeat(64),corpus:'public',public_registry:true}}}));await h.flush();
+ const link=h.w.document.querySelector('.proofmesh-context a');assert.equal(new URL(link.href).searchParams.get('public_report'),'b'.repeat(64));h.w.close();
+});
+
+test('new X investigations explicitly request shared publication',async()=>{
+ const calls=[],w=worker(async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({id:'c'.repeat(64),status:'queued'})};});
+ await w.handle({type:'investigate',claim:'A public factual claim',imageUrl:null},{url:'https://x.com/NASA'});
+ assert.equal(JSON.parse(calls[0].options.body).share_publicly,true);
+});
+
+test('X display-size changes preserve the canonical image and post signature',()=>{
+ const medium=modern.replace('name=large','name=medium');const {dom,result}=extraction(medium);
+ const image=dom.window.document.querySelector('img[src^="https://pbs.twimg.com/media/"]');
+ assert.match(result.imageUrl,/name=large/);image.src=image.src.replace('name=medium','name=900x900');
+ const changed=dom.window.ProofMeshCore.extractPost(dom.window.document.querySelector('article'),'https://x.com/Example');
+ assert.equal(result.imageUrl,changed.imageUrl);assert.equal(result.signature,changed.signature);dom.window.close();
 });

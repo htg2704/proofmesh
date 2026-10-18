@@ -170,3 +170,13 @@ test('judge entry is discoverable and info popovers state client limits and judg
  assert.match(d.getElementById('investigate-help').textContent,/10 new investigations/);assert.match(d.getElementById('investigate-help').textContent,/120 API requests/);assert.match(d.getElementById('investigate-help').textContent,/judge\/team tester access is exempt/);
  assert.match(d.getElementById('match-help').textContent,/120 API requests/);h.w.close();
 });
+
+test('extension public job handoff opens a published report without using a different workspace credential',async()=>{
+ const id='a'.repeat(64),dom=new JSDOM(read('web/index.html'),{url:'https://proofmesh.example/?public_job='+id,runScripts:'outside-only'}),w=dom.window,paths=[];
+ w.fetch=async path=>{paths.push(path);if(path==='/api/health')return {ok:true,json:async()=>({authentication_required:true,access:'none',live_enabled:true,client_daily_jobs:10,client_requests_per_minute:120})};if(path==='/api/public-jobs/'+id)return {ok:true,json:async()=>({status:'succeeded',public_report_id:report.id,model_calls:3,reused:false})};if(path==='/api/registry/'+report.id)return {ok:true,json:async()=>({...report,corpus:'public',public_registry:true})};return {ok:true,json:async()=>({reports:[],size:0,capacity:200})};};
+ w.eval(read('web/app.js'));for(let i=0;i<15;i++)await tick();
+ assert.ok(paths.includes('/api/public-jobs/'+id));assert.ok(!paths.some(p=>p.startsWith('/api/jobs/')));
+ assert.equal(new URL(w.location.href).searchParams.get('public_report'),report.id);
+ assert.equal(new URL(w.location.href).searchParams.get('public_job'),null);
+ assert.match(w.document.getElementById('notice').textContent,/Shared investigation complete/);w.close();
+});

@@ -190,7 +190,21 @@ async function pollJob(id, submitted = null) {
   }
   throw new Error('Investigation is taking longer than expected. Reload to check the saved job.');
 }
-async function loadRouteReport() { const publicId=new URLSearchParams(location.search).get('public_report'); if(publicId) renderReport(await api(`/api/registry/${encodeURIComponent(publicId)}`)); const demo = new URLSearchParams(location.search).get('demo_report'); if (demo) renderReport(await api(`/api/demo/reports/${encodeURIComponent(demo)}`)); const id = new URLSearchParams(location.search).get('report'); if (id) renderReport(await api(`/api/investigations/${encodeURIComponent(id)}`)); const job = new URLSearchParams(location.search).get('job') || sessionStorage.getItem('proofmesh-job'); if (job) await pollJob(job); }
+async function pollPublicJob(id) {
+  for(let count=0;count<120;count++) {
+    const job=await api(`/api/public-jobs/${encodeURIComponent(id)}`);
+    if(job.status==='succeeded' && job.public_report_id) {
+      renderReport(await api(`/api/registry/${job.public_report_id}`),job.reused);
+      const route=new URL(location.href);route.searchParams.delete('public_job');route.searchParams.set('public_report',job.public_report_id);history.replaceState(null,'',route);
+      notice(`Shared investigation complete · ${job.model_calls} model calls.`);await refresh();return;
+    }
+    if(['failed','not_published'].includes(job.status))throw new Error(job.error);
+    notice(`Shared investigation ${job.status}. Waiting for its public report…`);
+    await new Promise(resolve=>setTimeout(resolve,3000));
+  }
+  throw new Error('The shared investigation is taking longer than expected. Reload this link to check again.');
+}
+async function loadRouteReport() { const publicJob=new URLSearchParams(location.search).get('public_job');if(publicJob){await pollPublicJob(publicJob);return;} const publicId=new URLSearchParams(location.search).get('public_report'); if(publicId) renderReport(await api(`/api/registry/${encodeURIComponent(publicId)}`)); const demo = new URLSearchParams(location.search).get('demo_report'); if (demo) renderReport(await api(`/api/demo/reports/${encodeURIComponent(demo)}`)); const id = new URLSearchParams(location.search).get('report'); if (id) renderReport(await api(`/api/investigations/${encodeURIComponent(id)}`)); const job = new URLSearchParams(location.search).get('job') || sessionStorage.getItem('proofmesh-job'); if (job) await pollJob(job); }
 async function connectReview(code) {
   await api('/api/access/reviewer', {code});
   sessionStorage.removeItem('proofmesh-token');

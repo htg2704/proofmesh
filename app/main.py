@@ -77,7 +77,7 @@ def create_app(store=None, investigator=None):
             if principal.role == 'none' and len(reviewer_token) >= 32 and (hmac.compare_digest(header, f"Bearer {reviewer_token}") or (not header and valid_cookie(request.cookies.get(COOKIE), reviewer_token))):
                 principal = Principal('review', 'review')
         request.state.principal, request.state.role = principal, principal.role
-        registry_read = request.method == 'GET' and (request.url.path in {'/api/registry', '/api/v1/registry'} or request.url.path.startswith(('/api/registry/', '/api/v1/registry/')))
+        registry_read = request.method == 'GET' and (request.url.path in {'/api/registry', '/api/v1/registry'} or request.url.path.startswith(('/api/registry/', '/api/v1/registry/', '/api/public-jobs/', '/api/v1/public-jobs/')))
         public = registry_read or request.url.path in {"/api/health", "/api/v1/health", "/api/access/guest", "/api/access/register", "/api/v1/access/register", "/api/access/reviewer", "/api/examples", "/api/demo", "/api/demo/matches"} or request.url.path.startswith("/api/demo/reports/")
         if request.url.path.startswith("/api/") and not public and request.state.role == "none":
             return JSONResponse({"detail": "A developer key, team credential or reviewer session is required"}, status_code=401, headers={'Cache-Control': 'no-store'})
@@ -320,7 +320,8 @@ def create_app(store=None, investigator=None):
                 if cached:
                     if submission.share_publicly and cached.get('corpus') not in {'demo', 'public'}:
                         service.share(cached)
-                    return {'id': cached['id'], 'status': 'succeeded', 'report_id': cached['id'], 'reused': True, 'model_calls': 0}
+                    public_id = cached['id'] if cached.get('public_registry') else cached.get('registry_publication', {}).get('id') if cached.get('registry_publication', {}).get('status') == 'published' else None
+                    return {'id': cached['id'], 'status': 'succeeded', 'report_id': cached['id'], 'public_report_id': public_id, 'reused': True, 'model_calls': 0}
             job, created = jobs.reserve(submission, retry_failed=retry_failed, bypass_rate_limits=request.state.principal.exempt, requested_by=request.state.principal.identifier)
             if created:
                 try:
@@ -340,6 +341,29 @@ def create_app(store=None, investigator=None):
             raise HTTPException(503, str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(400, str(exc)) from exc
+
+    @app.get('/api/v1/public-jobs/{job_id}')
+    @app.get('/api/public-jobs/{job_id}')
+    def public_job_status(job_id: str):
+        # Only jobs whose caller explicitly requested public sharing expose this
+        # minimal status. Never return the claim, owner, private report ID or key.
+        if not re.fullmatch(r'[a-f0-9]{64}', job_id):
+            raise HTTPException(404, 'Public investigation not found')
+        job = jobs.get(job_id)
+        if not job or not job.get('share_publicly'):
+            raise HTTPException(404, 'Public investigation not found')
+        result = {'status': job['status'], 'model_calls': job.get('model_calls'), 'reused': job.get('reused', False)}
+        if job['status'] == 'failed':
+            result['error'] = 'The shared investigation failed. No successful public report was published.'
+        if job['status'] == 'succeeded':
+            report = store.get(job.get('report_id')) if job.get('report_id') else None
+            publication = (report or {}).get('registry_publication', {})
+            public = service.registry.get(publication.get('id')) if publication.get('status') == 'published' else None
+            if public:
+                result['public_report_id'] = public['id']
+            else:
+                result.update(status='not_published', error='The investigation finished but no public snapshot is available. Its private report remains restricted to its owner.')
+        return result
 
     @app.get("/api/v1/jobs/{job_id}")
     @app.get("/api/jobs/{job_id}")

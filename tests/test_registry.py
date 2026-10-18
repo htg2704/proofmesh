@@ -135,3 +135,24 @@ def test_legacy_same_caption_explains_policy_blocker_without_assessing_truth(ser
     result=service.match(sub(image=True))
     assert result['status']=='related_media' and not result['report']
     assert result['related'][0]['reuse_blockers']==['assessment_policy_changed']
+
+def test_public_job_handoff_exposes_only_opted_in_status_and_public_snapshot(tmp_path,monkeypatch):
+    monkeypatch.setenv('PROOFMESH_API_TOKEN','owner-abcdefghijklmnopqrstuvwxyz')
+    monkeypatch.setenv('PROOFMESH_ENABLE_LIVE','true')
+    client=TestClient(create_app(SQLiteStore(str(tmp_path/'handoff.db')),Validated()))
+    auth={'Authorization':'Bearer owner-abcdefghijklmnopqrstuvwxyz'}
+    shared=client.post('/api/jobs',json={'claim':'A public handoff fixture','share_publicly':True},headers=auth).json()
+    status=client.get('/api/public-jobs/'+shared['id']);assert status.status_code==200
+    body=status.json();assert body['status']=='succeeded' and body['public_report_id']
+    assert set(body)=={'status','model_calls','reused','public_report_id'}
+    assert shared['id'] not in status.text
+    assert client.get('/api/registry/'+body['public_report_id']).status_code==200
+    assert client.get('/api/jobs/'+shared['id']).status_code==401
+    private=client.post('/api/jobs',json={'claim':'A private handoff fixture'},headers=auth).json()
+    assert client.get('/api/public-jobs/'+private['id']).status_code==404
+    repeat=client.post('/api/jobs',json={'claim':'A public handoff fixture'},headers=auth).json()
+    assert repeat['public_report_id']==body['public_report_id'] and repeat['model_calls']==0
+    assert client.post('/api/registry/'+body['public_report_id']+'/withdraw',json={},headers=auth).status_code==200
+    withdrawn=client.get('/api/public-jobs/'+shared['id']).json()
+    assert withdrawn['status']=='not_published' and 'public_report_id' not in withdrawn
+    assert client.get('/api/registry/'+body['public_report_id']).status_code==404

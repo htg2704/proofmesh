@@ -18,9 +18,9 @@
     if (!response || response.error) throw new Error(response?.error || 'The extension connection was interrupted. Reload this page.');
     return response.data;
   }
-  function portalLink(text, reportId, origin = core.API, demo = false) {
+  function portalLink(text, reportId, origin = core.API, demo = false, shared = false) {
     const link = document.createElement('a'); link.textContent = text;
-    link.href = reportId ? `${origin}/?${demo ? "demo_report" : "report"}=${encodeURIComponent(reportId)}` : origin;
+    link.href = reportId ? `${origin}/?${demo ? "demo_report" : shared ? "public_report" : "report"}=${encodeURIComponent(reportId)}` : origin;
     link.target = '_blank'; link.rel = 'noopener noreferrer'; return link;
   }
   function render(article, state, data) {
@@ -28,16 +28,16 @@
     const el = badge(article); el.replaceChildren();
     const label = document.createElement('span');
     const exact = data.status === 'exact_context' && data.report;
-    label.textContent = exact ? 'ProofMesh · existing investigation available' : data.status === 'related_media' ? 'ProofMesh · related image, different claim — unverified' : 'ProofMesh · no matching investigation — unverified';
+    label.textContent = exact ? 'ProofMesh · existing investigation available' : data.status === 'related_media' ? 'ProofMesh · related report; this context needs investigation' : 'ProofMesh · no stored report for this context; not assessed';
     el.append(label);
-    if (exact) { el.append(portalLink(data.report.corpus === 'demo' ? 'Read synthetic report ↗' : 'Read the evidence ↗', data.report.id, data.api_origin || core.API, data.report.corpus === "demo")); return; }
+    if (exact) { el.append(portalLink(data.report.corpus === 'demo' ? 'Read synthetic report ↗' : 'Read the evidence ↗', data.report.id, data.api_origin || core.API, data.report.corpus === "demo", Boolean(data.report.public_registry))); return; }
     if ([core.API,core.CLOUD].includes(location.origin)) { el.append(portalLink('Review the new caption in the workspace ↗', null, data.api_origin || core.API)); return; }
-    const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Investigate with Google Cloud';
+    const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Investigate and share evidence'; button.title='Run a new investigation if no exact fresh report exists, and publish an eligible completed report to the public registry. Uses the selected server allowance.';
     button.addEventListener('click', async event => {
       event.preventDefault(); event.stopPropagation();
       if (!current(article, state)) return;
       button.disabled = true; button.textContent = 'Investigating…';
-      try { const result = await send('investigate', state.post); if (current(article, state)) { const link = portalLink('Open investigation ↗'); link.href = `${result.api_origin || core.API}/?job=${encodeURIComponent(result.id)}`; button.replaceWith(link); }; }
+      try { const result = await send('investigate', state.post); if (current(article, state)) { const link = portalLink('Open investigation ↗'); link.href = result.public_report_id ? `${result.api_origin || core.API}/?public_report=${encodeURIComponent(result.public_report_id)}` : `${result.api_origin || core.API}/?public_job=${encodeURIComponent(result.id)}`; button.replaceWith(link); }; }
       catch (error) { if (current(article, state)) { button.textContent = 'Retry investigation'; button.title = error.message; button.disabled = false; } }
     }); el.append(button);
   }
@@ -88,7 +88,7 @@
   observer.observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['src','srcset']});
   chrome.storage.local.get('enabled').then(s => { enabled = Boolean(s.enabled); schedule(); });
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && (changes.enabled || changes.apiToken)) { if (changes.enabled) enabled = Boolean(changes.enabled.newValue); clear(); schedule(); }
+    if (area === 'local' && (changes.enabled || changes.apiToken || changes.cloudToken || changes.apiOrigin)) { if (changes.enabled) enabled = Boolean(changes.enabled.newValue); clear(); schedule(); }
   });
   window.addEventListener('popstate', () => schedule(0));
   setInterval(() => schedule(), 10_000);
