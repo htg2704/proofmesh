@@ -37,3 +37,11 @@ No Instagram adapter, video/Reels or gallery analysis, watermark/C2PA validation
 ## v0.6 delivered
 
 The hosted main app supports personal Gemini keys, shows per-client trial limits, and no longer imposes a shared investigation-count cap. Citation failures now retain valid findings and distinguish processing errors from insufficient evidence. A live rerun of the private BRICS selfie completed with source-reported AI generation and a partial image association. All 110 automated checks and GitHub CI pass. The supplied real personal key succeeds for plain Gemini inference, but Search-grounded requests return Google 429 RESOURCE_EXHAUSTED. A full personal-key investigation remains blocked by that provider quota. Hosted quota bypass, failure handling and encrypted-key cleanup are verified. Details and limitations are in VERIFICATION.md. The demo/video remains frozen and no submission was made.
+
+## v0.7 delivered: public MVP registry and judge access
+
+The normal app now has **Start a new investigation** as its primary/default form action; it automatically reuses exact fresh reports before inference. **Find an existing report** is secondary and lookup misses offer a direct investigation CTA with clear reuse blockers. Both info popovers describe client quotas and tester/judge exemptions.
+
+The shared public registry has a hard ceiling of **200 snapshots**, with oldest/expired public entries replaced as needed and private copies preserved. New browser reports have a visible sharing choice; REST calls stay private unless explicitly opted in. Existing private reports were not retroactively published. Public listing/links, cross-client zero-call reuse, withdrawal and private-report isolation are verified on Cloud Run/Firestore. The editable architecture and API/deployment docs are updated.
+
+The separately scoped judge token is active; the owner can retrieve its value and submission instructions from ignored **data/JUDGE_ACCESS.md**. Judges have no application request/daily caps, team-report access or administrative privileges. Google quotas and project-funded spending approval still apply. The token expires November 17, 2026, 23:59:59 IST. No token was added to GitHub or a public URL, and no submission was made. Current suite: **126 checks passed**, with GitHub CI green for source `5eebaf2`.
