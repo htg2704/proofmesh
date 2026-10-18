@@ -11,7 +11,7 @@ from app.investigator import GeminiInvestigator
 from app.models import Submission
 from app.jobs import Jobs
 from app.access import COOKIE, review_cookie, valid_cookie
-from app.clients import ClientAccess, Principal, RateLimited, SpendingLimit, trusted_credentials
+from app.clients import ClientAccess, Principal, RateLimited, SpendingLimit, trusted_credentials, DEFAULT_CLIENT_RPM, DEFAULT_CLIENT_DAILY_JOBS, DEFAULT_REGISTRATIONS_PER_HOUR
 from app.examples import match_examples
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.cors import CORSMiddleware
@@ -35,7 +35,7 @@ def create_app(store=None, investigator=None):
         store = (FirestoreStore(os.environ["GOOGLE_CLOUD_PROJECT"], os.getenv("PROOFMESH_FIRESTORE_COLLECTION", "proofmesh_investigations"))
                  if os.getenv("PROOFMESH_STORE") == "firestore" else SQLiteStore(os.getenv("PROOFMESH_DB", str(ROOT / "data/proofmesh.sqlite3"))))
     service = ProofMesh(store, investigator or GeminiInvestigator())
-    app = FastAPI(title="ProofMesh", version="0.5.0", docs_url=None, redoc_url=None)
+    app = FastAPI(title="ProofMesh", version="0.6.0", docs_url=None, redoc_url=None)
     app.state.service = service
     jobs = Jobs(store, service)
     app.state.jobs = jobs
@@ -66,7 +66,7 @@ def create_app(store=None, investigator=None):
         rate_headers = {}
         if request.url.path.startswith('/api/') and principal.role in {'client', 'review'}:
             try:
-                rate_headers = await run_in_threadpool(clients.take, principal.role + ':' + principal.identifier, int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', '60')))
+                rate_headers = await run_in_threadpool(clients.take, principal.role + ':' + principal.identifier, int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', str(DEFAULT_CLIENT_RPM))))
             except RateLimited as exc:
                 return JSONResponse({'detail': str(exc)}, status_code=429, headers={'Retry-After': str(exc.retry_after), 'Cache-Control': 'no-store'})
         if request.url.path.startswith("/api/"):
@@ -122,7 +122,7 @@ def create_app(store=None, investigator=None):
         if os.getenv('PROOFMESH_SELF_REGISTRATION', 'false').lower() != 'true':
             raise HTTPException(403, 'Self-registration is disabled. Ask the service owner for a developer key, or run your own deployment.')
         try:
-            clients.take('public-registration', int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', '5')), 3600)
+            clients.take('public-registration', int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))), 3600)
         except RateLimited as exc:
             raise HTTPException(429, str(exc), headers={'Retry-After': str(exc.retry_after)}) from exc
         return clients.issue(body.label)
@@ -175,11 +175,12 @@ def create_app(store=None, investigator=None):
     @app.get("/api/health")
     def health(request: Request):
         return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "access": request.state.role,
-                "review_enabled": len(reviewer_token) >= 32, "version": "0.5.0", "release": os.getenv("PROOFMESH_RELEASE", "local"),
+                "review_enabled": len(reviewer_token) >= 32, "version": "0.6.0", "release": os.getenv("PROOFMESH_RELEASE", "local"),
                 "self_registration": os.getenv('PROOFMESH_SELF_REGISTRATION', 'false').lower() == 'true',
                 "rate_limits_exempt": request.state.principal.exempt,
-                "client_requests_per_minute": int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', '60')),
-                "client_daily_jobs": int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', '2')),
+                "client_requests_per_minute": int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', str(DEFAULT_CLIENT_RPM))),
+                "client_daily_jobs": int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))),
+                "registrations_per_hour": int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))),
                 "shared_spending_guard": True}
 
     @app.get("/api/v1/investigations")

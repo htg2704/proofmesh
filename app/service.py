@@ -2,6 +2,8 @@ import copy
 from datetime import datetime, timezone, timedelta
 from app.context import publication_stamp, context_record, require_publication_context, RELATIVE_TIME
 from app.fingerprints import image_identity, context_key, normalize_claim, similar
+from app.fingerprints import EVIDENCE_POLICY
+from app.origin import origin_from_result
 
 
 def now():
@@ -47,4 +49,4 @@ class ProofMesh:
     def make_report(claim, identity, key, corpus, result, stamp):
         return {"id": key, "context_key": key, "claim": normalize_claim(claim), "media": identity, "corpus": corpus,
                 "created_at": stamp.isoformat(), "expires_at": (stamp + timedelta(hours=24)).isoformat(),
-                "origin": {"status": "unknown", "explanation": "No provenance or watermark verification has been performed."}, **copy.deepcopy(result)}
+                "origin": origin_from_result(result), "evidence_policy": EVIDENCE_POLICY, **copy.deepcopy(result)}

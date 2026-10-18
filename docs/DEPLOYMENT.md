@@ -54,8 +54,12 @@ Provider 429 can still exhaust the bounded retry. The service already uses the g
 
 ## v0.5 access policy update
 
-Ordinary visitors no longer need the legacy reviewer code. Set `PROOFMESH_SELF_REGISTRATION=true` for automatic guest sessions and developer-key registration. Client request counters, hashed credentials and per-client daily admission state persist in Firestore. Existing collection namespaces isolate private client reports/jobs from each other and from team data. `PROOFMESH_CLIENT_REQUESTS_PER_MINUTE=60`, `PROOFMESH_CLIENT_DAILY_JOBS=2`, `PROOFMESH_REGISTRATIONS_PER_HOUR=5` are the defaults.
+Ordinary visitors no longer need the legacy reviewer code. Set `PROOFMESH_SELF_REGISTRATION=true` for automatic guest sessions and developer-key registration. Client request counters, hashed credentials and per-client daily admission state persist in Firestore. Existing collection namespaces isolate private client reports/jobs from each other and from team data. `PROOFMESH_CLIENT_REQUESTS_PER_MINUTE=120`, `PROOFMESH_CLIENT_DAILY_JOBS=10`, `PROOFMESH_REGISTRATIONS_PER_HOUR=30` are the defaults.
 
 `PROOFMESH_TRUSTED_TOKENS` is a JSON map injected from `proofmesh-trusted-tokens:1` in Secret Manager; the runtime identity receives access only to that secret. It contains separate credentials for Harshwardhan, Chennika and authorized Codex testing. Application request/daily/reviewer-reservation limits are bypassed for trusted team callers. The existing twelve-admission shared spending guard, live-window expiry and provider limits remain enforced; those financial controls are not application rate limits. The hosted legacy reviewer credential and its reserved allowance are disabled. The former shared four-per-day cap does not apply to ordinary browser/developer clients or the team. Existing owner tokens are also rate-exempt.
 
 The public credential issuance cap is shared. This is not verified individual identity or hardened public abuse prevention. Use owner-issued keys by setting self-registration false when you need a controlled pilot. All fresh local and hosted inference now uses jobs so the synchronous endpoint cannot bypass admission controls.
+
+## v0.6 quota and evidence update
+
+Third-party defaults increase from 60 to 120 requests/minute, from two to ten new investigations/UTC day per credential, and from five to thirty new credentials/hour across the deployment. Existing counters persist; limits are not bypassed by a revision restart. The shared twelve-admission financial guard is preserved under the approved US$5 budget. A citation-repair stage can add one logical model call to a job; it is not a new research loop or automatic whole-job retry.

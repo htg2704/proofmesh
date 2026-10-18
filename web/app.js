@@ -24,18 +24,36 @@ function safeLink(url) { try { const parsed = new URL(url, location.origin); ret
 function renderReport(report, reused = false) {
   currentReport = report;
   const root = $('result'); root.replaceChildren();
+  const legacyCitationFailure = !report.assessment_status && report.events?.some(e => e.stage === 'citation_validation' && /failed/i.test(e.detail));
   root.append(node('span', report.corpus === 'demo' ? 'Synthetic demo · not real-world evidence' : report.recorded_example ? 'Recorded live investigation · inspect the original sources' : 'Live investigation', `tag ${report.corpus === 'demo' ? 'demo' : ''}`));
   if (reused) root.append(node('span', 'Reused · 0 model calls', 'tag'));
-  root.append(node('h3', report.assessment.summary, 'report-summary'));
+  if (report.assessment_status === 'validation_failed' || legacyCitationFailure) root.append(node('p', 'Assessment incomplete: ProofMesh could not validate its generated citations. This is a processing failure, not a finding that the underlying evidence is inconclusive.', 'assessment-warning'));
+  else if (report.assessment_status === 'partial') root.append(node('p', 'Some assessment parts were withheld after citation or review checks. Validated findings remain below.', 'assessment-warning'));
+  else if (report.assessment_status === 'review_rejected') root.append(node('p', 'The review did not accept the generated assessment. Inspect the source material and review notes below.', 'assessment-warning'));
+  root.append(node('h3', legacyCitationFailure ? 'The earlier assessment could not complete citation validation. Its retrieved source material is available below.' : report.assessment.summary, 'report-summary'));
+  if (report.corpus !== 'demo' && report.evidence_policy !== '0.6') root.append(node('p', 'Recorded under an earlier evidence policy. Start a new investigation to use the updated assessment checks.', 'muted'));
+  if (report.assessment.interpreted_claim) root.append(node('p', `Assessed proposition: ${report.assessment.interpreted_claim}`, 'muted'));
   root.append(node('p', `Investigated ${new Date(report.created_at).toLocaleString()} · ${new Date(report.expires_at) <= new Date() ? 'Archived report; check current evidence before reuse.' : 'Assessment belongs to the claim below.'}`, 'muted'));
-  root.append(node('p', `Media origin: ${report.origin.status}. ${report.origin.explanation}`, 'muted'));
+  const reported = report.origin.source_reporting;
+  if (reported) {
+    const names = {reported_ai_generated:'AI-generated', reported_edited:'edited', reported_authentic:'authentic', disputed:'disputed'};
+    const card=node('section', undefined, 'finding');
+    card.append(node('h4', report.origin.image_binding === 'not_established' ? `Related coverage reports: ${names[reported.classification] || reported.classification}` : `Sources report: ${names[reported.classification] || reported.classification}`));
+    card.append(node('p', reported.explanation));
+    if (reported.image_link_explanation) card.append(node('p', reported.image_link_explanation, 'muted'));
+    card.append(node('p', report.origin.image_binding === 'not_established' ? 'The source coverage has not been tied conclusively to the uploaded image.' : `Image association: ${report.origin.image_binding} match lead. This is source-based attribution, not a forensic authenticity test.`, 'muted'));
+    for (const q of reported.evidence_quotes || []) card.append(node('blockquote', `${q.evidence_id}: “${q.quote}”`));
+    root.append(card);
+  }
+  root.append(node('p', 'Independent watermark / provenance verification: not performed.', 'muted'));
   if (report.publication_context?.published_at) root.append(node('p', `Post published: ${new Date(report.publication_context.published_at).toISOString()} · Supplied UTC context, not verified capture time.`, 'muted'));
   for (const check of report.assessment.context_checks || []) {
     const card=node('section', undefined, 'finding'); card.append(node('h4', `${check.dimension.replace('_',' ')} · ${check.status}`), node('p', `Claim: ${check.claimed}`), node('p', `Evidence: ${check.observed}`));
     for (const q of check.evidence_quotes || []) card.append(node('blockquote', `${q.evidence_id}: “${q.quote}”`)); root.append(card);
   }
   for (const finding of report.assessment.findings) {
-    const card = node('section', undefined, 'finding'); card.append(node('span', finding.status, `tag ${finding.status}`), node('h3', finding.claim), node('p', finding.explanation));
+    const label = finding.assessment_issue === 'citation_validation_failed' || legacyCitationFailure ? 'Not assessed · citation error' : finding.assessment_issue === 'review_rejected' ? 'Review not accepted' : finding.status;
+    const card = node('section', undefined, 'finding'); card.append(node('span', label, `tag ${finding.status}`), node('h3', finding.claim), node('p', finding.explanation));
     if (finding.evidence_ids.length) card.append(node('small', `Evidence: ${finding.evidence_ids.join(', ')}`, 'muted'));
     for (const q of finding.evidence_quotes || []) card.append(node('blockquote', `${q.evidence_id}: “${q.quote}”`));
     root.append(card);
@@ -49,7 +67,13 @@ function renderReport(report, reused = false) {
     card.append(title, node('p', evidence.excerpt), node('small', ({demo_fixture:'SYNTHETIC FIXTURE', source_page_excerpt:'FETCHED SOURCE PASSAGE', image_match_lead:'IMAGE MATCH LEAD · CAPTION UNVERIFIED', search_grounded_excerpt:'SEARCH-GROUNDED MODEL SUMMARY · NOT A VERBATIM SOURCE QUOTE'})[evidence.kind] || 'SOURCE LEAD')); if (evidence.retrieved_at) card.append(node('small', `Retrieved ${new Date(evidence.retrieved_at).toLocaleString()}${evidence.page_published_at ? ' · Page date: ' + evidence.page_published_at + ' (not capture date)' : ''}`, 'muted')); root.append(card);
   }
   root.append(node('h4', 'What remains uncertain', 'report-subhead'));
-  const limits = node('ul', undefined, 'limit'); [...(report.qa_notes || []), ...(report.assessment.limitations.length ? report.assessment.limitations : ['Automated assessment; source links and a second model pass do not establish independent verification. Media origin remains unknown.'])].forEach(t => limits.append(node('li', t))); root.append(limits);
+  const limits = node('ul', undefined, 'limit'); [...(report.qa_notes || []), ...(report.assessment.limitations.length ? report.assessment.limitations : ['Automated assessment; source links and a second model pass do not establish independent verification.'])].forEach(t => limits.append(node('li', t))); root.append(limits);
+  if (report.validation?.diagnostics?.length) {
+    root.append(node('h4', 'Assessment validation notes', 'report-subhead'));
+    const list=node('ul', undefined, 'limit');
+    for (const item of report.validation.diagnostics) list.append(node('li', `${item.phase || 'validation'} · ${item.kind} ${item.index + 1}${item.evidence_id ? ' / ' + item.evidence_id : ''}: ${item.message}`));
+    root.append(list);
+  }
   const events = node('ol', undefined, 'timeline'); (report.events || []).forEach(e => events.append(node('li', `${e.stage}: ${e.detail}`))); root.append(events);
   if (report.search_attribution_html) {
     const frame = document.createElement('iframe'); frame.className = 'attribution'; frame.title = 'Google Search attribution'; frame.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');

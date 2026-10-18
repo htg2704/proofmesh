@@ -8,6 +8,10 @@ import secrets
 import time
 from dataclasses import dataclass
 
+DEFAULT_CLIENT_RPM = 120
+DEFAULT_CLIENT_DAILY_JOBS = 10
+DEFAULT_REGISTRATIONS_PER_HOUR = 30
+
 
 class RateLimited(ValueError):
     def __init__(self, message, retry_after=60):

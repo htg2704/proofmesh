@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 from app.context import publication_stamp
 from app.fingerprints import image_identity, normalize_claim, similar
+from app.fingerprints import EVIDENCE_POLICY
 
 
 def match_examples(submission, reports, stamp=None):
@@ -15,7 +16,8 @@ def match_examples(submission, reports, stamp=None):
         same_context = (same_media and normalize_claim(submission.claim) == report['claim']
                         and publication_stamp(submission) == report.get('publication_context', {}).get('published_at'))
         fresh = (datetime.fromisoformat(report['expires_at']) > stamp
-                 and datetime.fromisoformat(report['created_at']).astimezone(timezone.utc).date() == stamp.date())
+                 and datetime.fromisoformat(report['created_at']).astimezone(timezone.utc).date() == stamp.date()
+                 and report.get('evidence_policy') == EVIDENCE_POLICY)
         if same_context and fresh:
             exact = report
         elif identity['sha256'] and similar(identity, report['media']):

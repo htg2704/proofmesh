@@ -45,7 +45,8 @@ class Evidence(BaseModel):
 
 class EvidenceQuote(BaseModel):
     evidence_id: str
-    quote: str = Field(min_length=5, max_length=500)
+    quote: str = Field(default='', max_length=500)
+    passage_id: str | None = Field(default=None, max_length=40)
 
 
 class Finding(BaseModel):
@@ -54,6 +55,7 @@ class Finding(BaseModel):
     explanation: str
     evidence_ids: list[str]
     evidence_quotes: list[EvidenceQuote] = Field(default_factory=list)
+    assessment_issue: str | None = None
 
 
 class ContextCheck(BaseModel):
@@ -63,6 +65,16 @@ class ContextCheck(BaseModel):
     status: Literal["supported", "contradicted", "unresolved"]
     evidence_ids: list[str]
     evidence_quotes: list[EvidenceQuote] = Field(default_factory=list)
+    assessment_issue: str | None = None
+
+
+class SourceReportedOrigin(BaseModel):
+    classification: Literal['reported_ai_generated', 'reported_edited', 'reported_authentic', 'disputed', 'unknown'] = 'unknown'
+    explanation: str = 'No source-based origin assessment is available.'
+    evidence_ids: list[str] = Field(default_factory=list)
+    evidence_quotes: list[EvidenceQuote] = Field(default_factory=list)
+    image_match_evidence_ids: list[str] = Field(default_factory=list)
+    image_link_explanation: str | None = None
 
 
 class Assessment(BaseModel):
@@ -70,8 +82,13 @@ class Assessment(BaseModel):
     findings: list[Finding]
     limitations: list[str]
     context_checks: list[ContextCheck] = Field(default_factory=list)
+    interpreted_claim: str | None = None
+    media_origin: SourceReportedOrigin = Field(default_factory=SourceReportedOrigin)
 
 
 class Review(BaseModel):
     accepted: bool
     issues: list[str]
+    rejected_findings: list[int] = Field(default_factory=list)
+    rejected_context_checks: list[int] = Field(default_factory=list)
+    reject_origin: bool = False

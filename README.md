@@ -131,7 +131,7 @@ The current REST API exposes lookup, queued investigation and report retrieval. 
 
 ## Third-party access and team testing (v0.5)
 
-The normal hosted app works without a reviewer code: limited browser access is created automatically when needed. Examples prefill that same workspace. `/developers` provides scoped keys for REST integrations, with 60 requests/minute and two new investigations/UTC day per credential. Keys and reports are isolated between clients; selected public examples can be reused when the exact context is fresh.
+The normal hosted app works without a reviewer code: limited browser access is created automatically when needed. Examples prefill that same workspace. `/developers` provides scoped keys for REST integrations, with 120 requests/minute and ten new investigations/UTC day per credential. Keys and reports are isolated between clients; selected public examples can be reused when the exact context is fresh.
 
 Harshwardhan, Chennika and authorized Codex tests have distinct trusted credentials. Their application rate limits are removed; the shared trial spending guard and provider limits still apply. Private credentials are in ignored `data/TEAM_ACCESS.md`, never this repository. Existing owner API credentials also receive the exemption.
 

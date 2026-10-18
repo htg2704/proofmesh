@@ -56,3 +56,9 @@ No precision/recall estimate, universal AI-origin detector, C2PA validation, sem
 ## Subsequent v0.5 hosted integration check
 
 The ordinary visitor flow later completed a fresh Canberra claim with three model calls and one provider attempt per stage, persisted it in a private client namespace, and reused it with zero model calls. This verifies the new access/queue/storage path and is not added to the prespecified accuracy outcomes. The earlier v0.4 reviewer capacity failure remains part of the record.
+
+## v0.6 validation-failure regression
+
+A user report contained fetched coverage describing the circulated BRICS selfie as AI-generated, but the entire result was replaced by an unresolved finding after exact-quotation validation failed. The rejected candidate and specific failure code were not saved in that older report, so its exact bad citation cannot be reconstructed. The source set also showed a partial fact-check image match in third position; the earlier retrieval code fetched only the first two Vision leads.
+
+The fix prioritizes full/partial image matches, provides server-resolved passage IDs, attempts one bounded citation repair, preserves unaffected findings, records diagnostic codes and distinguishes an incomplete assessment from genuinely inconclusive evidence. Source-reported AI generation is separate from independent forensic verification, with image association stated explicitly. Tests cover the source-reported AI case, changed negation, wrong-source IDs, generated-summary rejection, exhausted repair, repair request failure, targeted critique and unrelated-article origin attribution. This does not turn quotation presence into a guarantee of factual entailment or establish general detection accuracy.

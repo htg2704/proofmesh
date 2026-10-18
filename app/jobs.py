@@ -8,7 +8,7 @@ from pathlib import Path
 from app.fingerprints import context_key, image_identity
 from app.models import Submission
 from app.context import publication_stamp, require_publication_context
-from app.clients import RateLimited, SpendingLimit
+from app.clients import RateLimited, SpendingLimit, DEFAULT_CLIENT_DAILY_JOBS
 
 
 def utc():
@@ -99,7 +99,7 @@ class Jobs:
                 client_body = client_doc.to_dict() if client_doc and client_doc.exists else {}
                 client_count = client_body.get('count', 0) if client_body.get('day') == day else 0
                 if not bypass_rate_limits:
-                    if client_id and client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', '2')):
+                    if client_id and client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))):
                         raise RateLimited('Client daily investigation limit reached. Cached evidence remains available.', reset)
                     if not client_id and count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
                         raise RateLimited('Daily investigation cap reached', reset)
@@ -130,7 +130,7 @@ class Jobs:
             if not bypass_rate_limits:
                 if client_id:
                     client_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.client_id")=? AND json_extract(body, "$.created_at") LIKE ?', (client_id, day + '%')).fetchone()[0]
-                    if client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', '2')):
+                    if client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))):
                         raise RateLimited('Client daily investigation limit reached. Cached evidence remains available.', reset)
                 elif count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
                     raise RateLimited('Daily investigation cap reached', reset)

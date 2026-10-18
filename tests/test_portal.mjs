@@ -105,3 +105,15 @@ test('a visitor starts work without entering a reviewer code or developer key',a
  assert.match(w.document.getElementById('notice').textContent,/Investigation complete/);
  assert.equal(w.document.getElementById('review-access').hidden,true);assert.equal(w.sessionStorage.getItem('proofmesh-token'),null);w.close();
 });
+
+test('source-reported AI generation and absent forensic testing are displayed separately',async()=>{
+ const h=harness();await h.settle();const r={...report,corpus:'live',evidence_policy:'0.6',origin:{status:'reported_ai_generated',image_binding:'partial',source_reporting:{classification:'reported_ai_generated',explanation:'Published fact-check coverage reports AI generation.',evidence_quotes:[{evidence_id:'E1',quote:'The circulated selfie is AI-generated.'}]}},assessment:{...report.assessment,limitations:[]}};
+ h.w.fetch=async()=>({ok:true,json:async()=>({claim:r.claim,image_base64:'c3ludGhldGlj',report:r,reports:[]})});h.w.document.getElementById('demo-button').click();await h.settle();
+ const text=h.w.document.getElementById('result').textContent;assert.match(text,/Sources report: AI-generated/);assert.match(text,/Independent watermark \/ provenance verification: not performed/);assert.doesNotMatch(text,/Media origin remains unknown/);h.w.close();
+});
+
+test('the pasted legacy validation failure is shown as processing failure, not ambiguous evidence',async()=>{
+ const h=harness();await h.settle();const r={...report,corpus:'live',events:[{stage:'citation_validation',detail:'Assessment downgraded: exact source support failed.'}],assessment:{...report.assessment,summary:'The claim remains unresolved because its source quotations could not be verified.'}};
+ h.w.fetch=async()=>({ok:true,json:async()=>({claim:r.claim,image_base64:'c3ludGhldGlj',report:r,reports:[]})});h.w.document.getElementById('demo-button').click();await h.settle();
+ const text=h.w.document.getElementById('result').textContent;assert.match(text,/processing failure/);assert.match(text,/Not assessed · citation error/);assert.doesNotMatch(h.w.document.querySelector('.report-summary').textContent,/claim remains unresolved/);h.w.close();
+});

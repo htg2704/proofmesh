@@ -7,6 +7,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 MAX_BYTES = 5_000_000
 MAX_PIXELS = 16_000_000
+EVIDENCE_POLICY = '0.6'
 
 
 def normalize_claim(claim: str) -> str:
@@ -46,7 +47,7 @@ def context_key(claim: str, identity: dict, corpus: str, date: str, published_at
     import json
     content = [normalize_claim(claim), identity["sha256"], corpus, date]
     if corpus != "demo":
-        content.append("evidence-policy-0.4")
+        content.append('evidence-policy-' + EVIDENCE_POLICY)
     if published_at:
         content.append(published_at)
     return hashlib.sha256(json.dumps(content, ensure_ascii=False).encode()).hexdigest()

@@ -72,3 +72,12 @@ Demo production is frozen at the user's request. The existing reference video is
 - [x] Put fresh local and hosted inference behind the common durable admission path.
 - [x] Add an editable draw.io architecture with cylinders, embedded service logos and current/future boundaries.
 - [x] Document browser flow, third-party setup, key revocation and remaining production limitations.
+
+## v0.6 conclusion reliability
+
+- [x] Prioritize closer image-linked fact checks over unrelated initial Vision hits.
+- [x] Resolve selected passage IDs to fetched text; preserve exact-source validation.
+- [x] Add one bounded citation repair and retain valid findings after auxiliary failures.
+- [x] Separate processing failure, source-reported origin and independent provenance checks in the report/UI.
+- [x] Version evidence caches and expose diagnostic failure codes.
+- [x] Increase third-party defaults to 120 requests/minute, 10 new checks/UTC day and 30 credential issuances/hour; keep financial guards separate.

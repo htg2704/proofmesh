@@ -137,7 +137,7 @@ def test_published_examples_reuse_only_exact_fresh_context():
     from app.examples import match_examples
     raw=base64.b64encode(demo_image()).decode();stamp=datetime(2026,10,17,12,tzinfo=timezone.utc)
     sub=Submission(claim='A deliberately published fixture',image_base64=raw)
-    report={'id':'a'*64,'claim':sub.claim,'recorded_example':True,'media':image_identity(raw),'created_at':stamp.isoformat(),'expires_at':(stamp+timedelta(hours=1)).isoformat()}
+    report={'id':'a'*64,'claim':sub.claim,'recorded_example':True,'evidence_policy':'0.6','media':image_identity(raw),'created_at':stamp.isoformat(),'expires_at':(stamp+timedelta(hours=1)).isoformat()}
     assert match_examples(sub,[report],stamp)[0]==report
     changed=sub.model_copy(update={'claim':'A different claim on the same image'})
     exact,related=match_examples(changed,[report],stamp);assert exact is None and related[0]['public_example']

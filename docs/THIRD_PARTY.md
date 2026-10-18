@@ -42,9 +42,9 @@ The existing unversioned routes remain aliases. The old synchronous POST `/api/i
 
 | Policy | Ordinary browser / developer | Trusted team testing |
 |---|---|---|
-| API requests | 60 per fixed minute, per credential | Exempt |
-| New investigations | 2 admissions per UTC day, per credential | Exempt |
-| Public credential issuance | 5 per fixed hour across the deployment | Owner-issued keys bypass public issuance |
+| API requests | 120 per fixed minute, per credential | Exempt |
+| New investigations | 10 admissions per UTC day, per credential | Exempt |
+| Public credential issuance | 30 per fixed hour across the deployment | Owner-issued keys bypass public issuance |
 | Shared trial spending guard | Applies | Applies |
 | Live-window expiry / provider capacity | Applies | Applies |
 

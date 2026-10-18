@@ -12,7 +12,7 @@ The former reviewer credential and reserved allowance are disabled on the hosted
 
 Harshwardhan, Chennika and authorized Codex tests have distinct private testing credentials in ignored `data/TEAM_ACCESS.md`. Use the assigned key once in Connection settings; existing owner API credentials also work. Those credentials bypass application request/daily limits. They are team credentials, so never share them with third-party integrations.
 
-Third parties can obtain a limited REST key at `/developers`, or run their own deployment. Defaults: 60 requests/minute and two new investigations per UTC day per credential. Keys expire after 30 days, can be revoked, and cannot access other clients' or team reports. See `THIRD_PARTY.md` for commands, CORS, errors and owner administration.
+Third parties can obtain a limited REST key at `/developers`, or run their own deployment. Defaults: 120 requests/minute and ten new investigations per UTC day per credential. Keys expire after 30 days, can be revoked, and cannot access other clients' or team reports. See `THIRD_PARTY.md` for commands, CORS, errors and owner administration.
 
 The approved US$5 financial guard is preserved: twelve total job admissions across the live window, five consumed and seven remaining at verification. Trusted rate exemptions do not bypass that shared guard, provider capacity or the November 17, 2026, 23:59:59 IST expiry. Recorded results and exact reuse require no extra model calls. Workload controls are not an absolute Google billing cap.
 
