@@ -14,7 +14,7 @@ Harshwardhan, Chennika and authorized Codex tests have distinct private testing 
 
 Third parties can obtain a limited REST key at `/developers`, or run their own deployment. Defaults: 120 requests/minute and ten new investigations per UTC day per credential. Keys expire after 30 days, can be revoked, and cannot access other clients' or team reports. See `THIRD_PARTY.md` for commands, CORS, errors and owner administration.
 
-The approved US$5 financial guard is preserved: twelve total job admissions across the live window, five consumed and seven remaining at verification. Trusted rate exemptions do not bypass that shared guard, provider capacity or the November 17, 2026, 23:59:59 IST expiry. Recorded results and exact reuse require no extra model calls. Workload controls are not an absolute Google billing cap.
+Current v0.6 policy supersedes the earlier count guard: US$10 total project approval, no shared investigation-count cap, 10 trial-funded checks/client/UTC day, 120 API requests/minute. Personal Gemini keys bypass the daily cap and project model-funds circuit; Google bills their owner. Trusted team testing remains application-rate-exempt. See THIRD_PARTY.md for key handling and deployment limits.
 
 ## Code and verification
 

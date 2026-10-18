@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, FileResponse, Response, PlainTextResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from app.demo import seed, demo_image
 from app.investigator import GeminiInvestigator
@@ -42,6 +43,11 @@ def create_app(store=None, investigator=None):
     clients = ClientAccess(store)
     app.state.clients = clients
     demo_service = ProofMesh(SQLiteStore(os.getenv("PROOFMESH_DEMO_DB", str(ROOT / "data/demo.sqlite3"))), service.investigator)
+
+    @app.exception_handler(RequestValidationError)
+    async def safe_validation(request, exc):
+        # Pydantic's default error includes raw input, potentially a provider key.
+        return JSONResponse({'detail': [{'loc': e['loc'], 'type': e['type'], 'msg': e['msg']} for e in exc.errors()]}, status_code=422)
 
     @app.middleware("http")
     async def boundary(request: Request, call_next):
@@ -181,7 +187,9 @@ def create_app(store=None, investigator=None):
                 "client_requests_per_minute": int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', str(DEFAULT_CLIENT_RPM))),
                 "client_daily_jobs": int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))),
                 "registrations_per_hour": int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))),
-                "shared_spending_guard": True}
+                "shared_investigation_cap": False,
+                "personal_gemini_key_enabled": bool(os.getenv("PROOFMESH_CREDENTIAL_ENCRYPTION_KEY")),
+                "personal_key_daily_cap": None}
 
     @app.get("/api/v1/investigations")
     @app.get("/api/investigations")
@@ -258,7 +266,7 @@ def create_app(store=None, investigator=None):
                     else:
                         background.add_task(jobs.run, job['id'])
                 except Exception:
-                    jobs.update(job['id'], status='failed', error='Could not enqueue investigation. No model was invoked.')
+                    jobs.update(job['id'], provider_key_ciphertext=None, status='failed', error='Could not enqueue investigation. No model was invoked.')
                     jobs.image(jobs.get(job['id'])['image_key'], delete=True)
                     raise HTTPException(503, "Could not enqueue investigation")
             return jobs.public(job)

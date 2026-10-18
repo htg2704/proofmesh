@@ -40,17 +40,30 @@ The existing unversioned routes remain aliases. The old synchronous POST `/api/i
 
 ## Limits and errors
 
-| Policy | Ordinary browser / developer | Trusted team testing |
-|---|---|---|
-| API requests | 120 per fixed minute, per credential | Exempt |
-| New investigations | 10 admissions per UTC day, per credential | Exempt |
-| Public credential issuance | 30 per fixed hour across the deployment | Owner-issued keys bypass public issuance |
-| Shared trial spending guard | Applies | Applies |
-| Live-window expiry / provider capacity | Applies | Applies |
+| Policy | Trial-funded browser / developer | Personal Gemini key | Trusted team |
+|---|---|---|---|
+| API requests | 120 per fixed minute per credential | 120 per fixed minute per credential | Exempt |
+| New investigations | 10 admissions per UTC day per credential | No daily ProofMesh check cap | Exempt |
+| Shared investigation count cap | None | None | None |
+| Provider quotas | Apply | Apply to your Google account | Apply |
 
-A new job retry consumes another admission; an exact cached repeat does not. Reads and polling still count toward request limits. 429 responses include `Retry-After`; successful limited responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` (Unix seconds). A shared spending guard or closed live window returns 503. These financial guards are distinct from rate limits.
+Public credential issuance is limited to 30 registrations/hour across the deployment; owner-issued keys bypass this issuance limit. Reads and polling count toward API request limits. A failed trial attempt or explicit retry consumes a daily admission; a fresh cached repeat does not. Responses include rate headers and 429 includes `Retry-After`.
 
-The hosted trial keeps the existing twelve-admission total and November 17 live-window expiry under the approved US$5 budget. Model retries and inference have bounded workload controls; this is not an absolute Google billing cap. Keys do not entitle callers to unlimited paid computation. Provider 429 can still exhaust the bounded retry and fail a job safely. No synthetic result replaces failed inference.
+Project-funded checks use the approved US$10 trial budget and November 17 live window. A conservative monetary reservation circuit can pause trial funding with 503; it is not an investigation-count quota and does not apply to personal-key jobs. It reserves US$0.50 per project-funded attempt over an initial US$4 reserve for earlier usage. Reservations are not billing receipts or an absolute Google spending cap; infrastructure costs and provider billing remain external. Trusted rate exemptions do not remove financial approval limits.
+
+## Use your own Gemini API key
+
+In the main workspace open **Use your own Gemini API key**, paste a key from [Google AI Studio](https://aistudio.google.com/api-keys), then click **Use my Gemini key**. The key stays in page memory, never browser local/session storage; reloading clears it. **Switch to trial allowance** clears it immediately. ProofMesh access tokens under Advanced settings identify your private workspace; they are different credentials.
+
+For integrations, include `provider_api_key` only in the JSON body of `POST /api/v1/jobs`. Continue using your ProofMesh developer token in the Authorization header. Do not put either credential in URLs or public frontend bundles. Pass JSON through a private file/stdin rather than command-line literals. Example body:
+
+```json
+{"claim":"Canberra is the national capital of Australia.","provider_api_key":"YOUR_GEMINI_API_KEY"}
+```
+
+Personal-key jobs use the Gemini Developer API and Google Search with your key, billed to your Google account according to its plan. They never fall back to ProofMesh's Vertex credentials on failure. Dedicated Cloud Vision image lookup is skipped; Gemini still receives the submitted image, but a missing independent image association remains explicit. Google quotas, safety rules, per-request workload bounds and the 120/minute ProofMesh API limit still apply. No daily ProofMesh investigation cap or trial-funds reservation applies to these jobs. This feature currently lives in the web app/REST API; the Chrome extension does not collect personal Gemini keys.
+
+The server temporarily encrypts the key with Fernet for queued delivery, using an encryption key held in Secret Manager. Ciphertexts are excluded from job responses and reports. The worker decrypts only within 15 minutes of admission and clears the ciphertext on success/failure; reads clear stale ciphertext. An abandoned job can retain undecryptable ciphertext until accessed or administratively cleaned up. This is cryptographic expiry, not a promise of scheduled physical deletion. The server and Google process the plaintext key during the request; only use a trusted deployment. Raw request bodies and provider exception strings must not be logged.
 
 Limits persist in Firestore on Cloud Run and SQLite locally. Admission and deduplication are committed together. Request counters use one document per credential/bucket rather than an ever-growing document per minute. Credential renewal or cookie clearing can create a new identity; this prototype does not claim Sybil resistance, production DDoS protection, individual account authentication or billing reconciliation.
 
@@ -66,4 +79,4 @@ Set `PROOFMESH_SELF_REGISTRATION=false` to require owner-issued keys. This also 
 
 ## Run your own instance
 
-Follow the root README's Python or Docker setup. Demo mode needs no Google credentials and makes no new model calls. For live work, configure your own Vertex project/model/ADC and a strong team token, then explicitly enable live mode. Use SQLite locally; use Firestore, Cloud Tasks, private image storage and attached service identities on Cloud Run. Review `.env.example`, configure your own limits and budget, and enable self-registration only when you intend to accept public users.
+Follow the root README's Python or Docker setup. Demo mode needs no Google credentials and makes no new model calls. For live work, configure a strong team token and explicitly enable live mode. Use Vertex project/model/ADC for trial-funded work, or set a Fernet encryption key and `GEMINI_API_MODEL` for personal-key work (no Vertex ADC is required for that path). Use SQLite locally; use Firestore, Cloud Tasks, private image storage and attached service identities on Cloud Run. Review `.env.example`, configure your own limits and budget, and enable self-registration only when you intend to accept public users.

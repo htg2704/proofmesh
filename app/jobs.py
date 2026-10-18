@@ -1,4 +1,5 @@
 """Persistent, deduplicated jobs. Never automatically repeat an uncertain model run."""
+import hashlib
 import base64
 import json
 import os
@@ -7,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from app.fingerprints import context_key, image_identity
 from app.models import Submission
+from app.credentials import seal, open_key, fingerprint, TTL_SECONDS
 from app.context import publication_stamp, require_publication_context
 from app.clients import RateLimited, SpendingLimit, DEFAULT_CLIENT_DAILY_JOBS
 
@@ -33,9 +35,12 @@ class Jobs:
             with self.store.connect() as db:
                 row = db.execute('SELECT body FROM jobs WHERE id=?', (key,)).fetchone()
             job = json.loads(row[0]) if row else None
+        if job and job.get('provider_key_ciphertext') and utc() > datetime.fromisoformat(job['created_at']) + timedelta(seconds=TTL_SECONDS):
+            self.update(key, provider_key_ciphertext=None, status='failed', error='Personal Gemini key expired before completion; start a new investigation.')
+            return self.get(key)
         if job and job['status'] == 'running' and utc() > datetime.fromisoformat(job['started_at']) + timedelta(minutes=6):
             # A killed worker may have consumed tokens; do not automatically reinvoke it.
-            self.update(key, status='failed', error='Worker interrupted. No automatic paid retry was attempted.')
+            self.update(key, provider_key_ciphertext=None, status='failed', error='Worker interrupted. No automatic paid retry was attempted.')
             return self.get(key)
         return job
 
@@ -55,34 +60,46 @@ class Jobs:
         require_publication_context(submission)
         identity = image_identity(submission.image_base64)
         key = context_key(submission.claim, identity, submission.namespace, utc().date().isoformat(), publication_stamp(submission))
+        byok = bool(submission.provider_api_key)
+        if byok:
+            key = hashlib.sha256((key + fingerprint(submission.provider_api_key)).encode()).hexdigest()
         cached = self.service.match(submission)['report']
         if cached:
-            return {'id': key, 'status': 'succeeded', 'report_id': key, 'reused': True, 'model_calls': 0}, False
+            return {'id': key, 'status': 'succeeded', 'report_id': cached['id'], 'reused': True, 'model_calls': 0}, False
         cutoff = os.getenv('PROOFMESH_LIVE_UNTIL')
-        if cutoff and utc() > datetime.fromisoformat(cutoff):
+        if not byok and cutoff and utc() > datetime.fromisoformat(cutoff):
             raise SpendingLimit('Live demo window ended; matching existing evidence remains available.')
         client_id = submission._client_id
         day = utc().date().isoformat()
         reset = int((utc().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1) - utc()).total_seconds())
         job = {'id': key, 'status': 'queued', 'created_at': utc().isoformat(), 'claim': submission.claim, 'corpus': submission.namespace, 'published_at': publication_stamp(submission), 'source_url': submission.source_url,
                'requested_by': requested_by, 'client_id': client_id,
+               'funding': 'personal_gemini_key' if byok else 'project_trial',
+               'provider_key_ciphertext': seal(submission.provider_api_key) if byok else None,
                'attempt': 1, 'image_key': None, 'report_id': None, 'reused': False, 'model_calls': None, 'error': None}
-        review_cap = int(os.getenv('PROOFMESH_REVIEW_JOBS', '6')) if len(os.getenv('PROOFMESH_REVIEW_TOKEN', '')) >= 32 else 0
-        is_review = submission.corpus == 'review'
+        reserve_usd = float(os.getenv('PROOFMESH_JOB_RESERVE_USD', '0.50'))
+        budget_usd = float(os.getenv('PROOFMESH_PROJECT_BUDGET_USD', '0'))
+        baseline_usd = float(os.getenv('PROOFMESH_BUDGET_BASELINE_USD', '0'))
+        reserve_units = round(reserve_usd * 1_000_000) if not byok and budget_usd else 0
+        budget_units = round(budget_usd * 1_000_000)
+        baseline_units = round(baseline_usd * 1_000_000)
+        def check_funds(used):
+            if reserve_units and used + reserve_units > budget_units:
+                raise SpendingLimit('Project trial funds are reserved. Use your own Gemini API key to continue; cached reports remain available.')
         # The quota and deduplication claim are committed together, across instances.
         if self.cloud:
             from google.cloud import firestore
             ref = self.collection.document(key)
             budget = self.store.client.collection('proofmesh_limits').document(utc().date().isoformat())
             total_ref = self.store.client.collection('proofmesh_limits').document('window_total')
-            review_ref = self.store.client.collection('proofmesh_limits').document('review_total')
+            funds_ref = self.store.client.collection('proofmesh_limits').document('project_funds')
             client_ref = self.store.client.collection('proofmesh_client_daily').document(client_id) if client_id else None
             @firestore.transactional
             def take(transaction):
                 old = ref.get(transaction=transaction)
                 limit = budget.get(transaction=transaction)
                 total_doc = total_ref.get(transaction=transaction)
-                review_doc = review_ref.get(transaction=transaction)
+                funds_doc = funds_ref.get(transaction=transaction)
                 client_doc = client_ref.get(transaction=transaction) if client_ref else None
                 if old.exists:
                     previous = old.to_dict()
@@ -91,23 +108,18 @@ class Jobs:
                     job['attempt'] = previous.get('attempt', 1) + 1
                 count = limit.to_dict().get('count', 0) if limit.exists else 0
                 total_count = total_doc.to_dict().get('count', 0) if total_doc.exists else count
-                review_used = review_doc.to_dict().get('count', 0) if review_doc.exists else 0
-                if not bypass_rate_limits:
-                    self.check_review_budget(is_review, review_cap, review_used, total_count)
-                if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
-                    raise SpendingLimit('Live-window investigation cap reached: shared spending guard applies to every caller, including trusted testing.')
+                funds_used = funds_doc.to_dict().get('reserved_microusd', baseline_units) if funds_doc.exists else baseline_units
+                check_funds(funds_used)
                 client_body = client_doc.to_dict() if client_doc and client_doc.exists else {}
                 client_count = client_body.get('count', 0) if client_body.get('day') == day else 0
-                if not bypass_rate_limits:
+                if not bypass_rate_limits and not byok:
                     if client_id and client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))):
                         raise RateLimited('Client daily investigation limit reached. Cached evidence remains available.', reset)
-                    if not client_id and count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
-                        raise RateLimited('Daily investigation cap reached', reset)
                 transaction.set(budget, {'count': count + 1})
                 transaction.set(total_ref, {'count': total_count + 1})
-                if is_review:
-                    transaction.set(review_ref, {'count': review_used + 1})
-                if client_ref:
+                if reserve_units:
+                    transaction.set(funds_ref, {'reserved_microusd': funds_used + reserve_units})
+                if client_ref and not byok:
                     transaction.set(client_ref, {'day': day, 'count': client_count + 1})
                 transaction.set(ref, job)
                 return job, True
@@ -121,29 +133,19 @@ class Jobs:
                     return previous, False
                 job['attempt'] = previous.get('attempt', 1) + 1
             count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs WHERE json_extract(body, "$.created_at") LIKE ?', (utc().date().isoformat() + '%',)).fetchone()[0]
-            total_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"), 1)),0) FROM jobs').fetchone()[0]
-            review_used = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.corpus")="review"').fetchone()[0]
-            if not bypass_rate_limits:
-                self.check_review_budget(is_review, review_cap, review_used, total_count)
-            if total_count >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')):
-                raise SpendingLimit('Live-window investigation cap reached: shared spending guard applies to every caller, including trusted testing.')
-            if not bypass_rate_limits:
+            db.execute('CREATE TABLE IF NOT EXISTS project_funds (id INTEGER PRIMARY KEY, reserved_microusd INTEGER NOT NULL)')
+            funds_row = db.execute('SELECT reserved_microusd FROM project_funds WHERE id=1').fetchone()
+            funds_used = funds_row[0] if funds_row else baseline_units
+            check_funds(funds_used)
+            if not bypass_rate_limits and not byok:
                 if client_id:
-                    client_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.client_id")=? AND json_extract(body, "$.created_at") LIKE ?', (client_id, day + '%')).fetchone()[0]
+                    client_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.client_id")=? AND COALESCE(json_extract(body, "$.funding"), "project_trial")="project_trial" AND json_extract(body, "$.created_at") LIKE ?', (client_id, day + '%')).fetchone()[0]
                     if client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))):
                         raise RateLimited('Client daily investigation limit reached. Cached evidence remains available.', reset)
-                elif count >= int(os.getenv('PROOFMESH_DAILY_JOBS', '4')):
-                    raise RateLimited('Daily investigation cap reached', reset)
+            if reserve_units:
+                db.execute('INSERT OR REPLACE INTO project_funds VALUES (1,?)', (funds_used + reserve_units,))
             db.execute('INSERT OR REPLACE INTO jobs VALUES (?,?)', (key, json.dumps(job)))
         return job, True
-
-    @staticmethod
-    def check_review_budget(is_review, cap, used, total):
-        if is_review and used >= cap:
-            raise RateLimited('Reviewer investigation allowance reached. Existing reports remain readable.', 3600)
-        reserved = max(0, cap - used)
-        if not is_review and reserved and total >= int(os.getenv('PROOFMESH_TOTAL_JOBS', '12')) - reserved:
-            raise SpendingLimit('Remaining investigation allowance is reserved for reviewers.')
 
     def save_image(self, key, encoded):
         if not encoded:
@@ -199,7 +201,9 @@ class Jobs:
             return
         job = self.get(key)
         try:
-            submission = Submission(claim=job['claim'], image_base64=self.image(job['image_key']), corpus='live' if job.get('client_id') else job.get('corpus', 'live'), published_at=job.get('published_at'), source_url=job.get('source_url'))
+            if job.get('funding') == 'personal_gemini_key' and not job.get('provider_key_ciphertext'):
+                raise ValueError('Personal Gemini key expired')
+            submission = Submission(claim=job['claim'], image_base64=self.image(job['image_key']), corpus='live' if job.get('client_id') else job.get('corpus', 'live'), published_at=job.get('published_at'), source_url=job.get('source_url'), provider_api_key=open_key(job.get('provider_key_ciphertext')))
             if job.get('client_id'):
                 submission = submission.for_client(job['client_id'])
             result = self.service.investigate(submission)
@@ -208,9 +212,10 @@ class Jobs:
             import logging
             logging.getLogger('proofmesh').error('Job failed: %s code=%s', type(exc).__name__, getattr(exc, 'code', None))
             code = getattr(exc, 'code', None)
-            message = ('Google Cloud model capacity is temporarily unavailable (429). The bounded stage retry was exhausted. ' if code == 429 else 'Investigation failed. ')
+            message = ('Gemini key rejected or not authorized. Check your key and its Gemini API access. ' if job.get('funding') == 'personal_gemini_key' and code in {400, 401, 403} else 'Google model capacity is temporarily unavailable (429). The bounded stage retry was exhausted. ' if code == 429 else 'Investigation failed. ')
             self.update(key, status='failed', error=message + 'No successful report was published; no automatic whole-investigation retry.', error_code=code, completed_at=utc().isoformat())
         finally:
+            self.update(key, provider_key_ciphertext=None)
             try:
                 self.image(job['image_key'], delete=True)
                 self.update(key, image_key=None)
@@ -231,4 +236,4 @@ class Jobs:
 
     @staticmethod
     def public(job):
-        return {k: v for k, v in job.items() if k not in {'claim', 'image_key'}}
+        return {k: v for k, v in job.items() if k not in {'claim', 'image_key', 'provider_key_ciphertext'}}

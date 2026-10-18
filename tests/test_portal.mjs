@@ -117,3 +117,22 @@ test('the pasted legacy validation failure is shown as processing failure, not a
  h.w.fetch=async()=>({ok:true,json:async()=>({claim:r.claim,image_base64:'c3ludGhldGlj',report:r,reports:[]})});h.w.document.getElementById('demo-button').click();await h.settle();
  const text=h.w.document.getElementById('result').textContent;assert.match(text,/processing failure/);assert.match(text,/Not assessed · citation error/);assert.doesNotMatch(h.w.document.querySelector('.report-summary').textContent,/claim remains unresolved/);h.w.close();
 });
+
+test('personal Gemini key is memory-only, sent only to new jobs and clearable',async()=>{
+ const h=harness();await h.settle();const w=h.w,d=w.document,key='AIza-personal-browser-test-key';
+ w.fetch=async(path,options)=>{h.requests.push({path,options});if(path==='/api/jobs')return {ok:true,json:async()=>({id:'e'.repeat(64)})};if(path.startsWith('/api/jobs/'))return {ok:true,json:async()=>({status:'succeeded',report_id:report.id,model_calls:3})};if(path.startsWith('/api/investigations/'))return {ok:true,json:async()=>report};return {ok:true,json:async()=>({reports:[],report:null,related:[],status:'unknown'})};};
+ d.getElementById('use-gemini-key').disabled=false;
+ d.getElementById('gemini-key').value=key;d.getElementById('use-gemini-key').click();
+ assert.equal(d.getElementById('gemini-key').value,'');assert.equal(w.sessionStorage.length,0);assert.equal(w.localStorage.length,0);
+ d.getElementById('claim').value='A browser personal key claim';
+ d.getElementById('investigation-form').dispatchEvent(new w.Event('submit',{cancelable:true}));await h.settle();
+ const lookup=h.requests.find(r=>r.path==='/api/matches');assert.ok(!lookup.options.body.includes(key));
+ d.getElementById('investigate-button').click();await h.settle();
+ const posted=h.requests.filter(r=>r.path==='/api/jobs');assert.equal(JSON.parse(posted[0].options.body).provider_api_key,key);
+ assert.ok(h.requests.every(r=>!r.path.includes(key)));
+ assert.ok(!JSON.stringify({...w.sessionStorage}).includes(key));
+ d.getElementById('clear-gemini-key').click();d.getElementById('claim').value='Another browser check without key';
+ d.getElementById('investigate-button').click();await h.settle();
+ const last=h.requests.filter(r=>r.path==='/api/jobs').at(-1);assert.equal(JSON.parse(last.options.body).provider_api_key,undefined);
+ assert.match(d.getElementById('gemini-key-status').textContent,/cleared/);w.close();
+});

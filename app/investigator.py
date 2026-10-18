@@ -85,22 +85,29 @@ class GeminiInvestigator:
         self.fetcher, self.media_retriever = fetcher, media_retriever
 
     def investigate(self, submission, reference_date: str) -> dict:
+        byok = bool(submission.provider_api_key)
         project = os.getenv("GOOGLE_CLOUD_PROJECT")
-        model = os.getenv("GEMINI_MODEL")
-        if os.getenv("PROOFMESH_ENABLE_LIVE", "false").lower() != "true" or not project or not model:
-            raise InvestigationUnavailable("Live investigation is disabled. Configure Vertex AI project, model and credentials; demo reports are available separately.")
-        try:
-            media_search = self.media_retriever(submission.image_base64)
-        except Exception:
-            media_search = {"status": "unavailable", "pages": [], "vision_calls": 1}
+        model = os.getenv("GEMINI_API_MODEL", "gemini-3.6-flash") if byok else os.getenv("GEMINI_MODEL")
+        if os.getenv("PROOFMESH_ENABLE_LIVE", "false").lower() != "true" or not model or (not byok and not project):
+            raise InvestigationUnavailable("Live investigation is disabled or the model is not configured.")
+        if byok:
+            media_search = {"status": "skipped_personal_key", "pages": [], "vision_calls": 0,
+                            "limitation": "Personal-key investigations use Gemini and Google Search; the project-funded Cloud Vision image lookup is not run."}
+        else:
+            try:
+                media_search = self.media_retriever(submission.image_base64)
+            except Exception:
+                media_search = {"status": "unavailable", "pages": [], "vision_calls": 1}
         from google import genai
         from google.genai import types
-        import google.auth
-        # Scope quota attribution to ProofMesh without replacing global ADC files.
-        credentials, _ = google.auth.default(quota_project_id=project)
-        with genai.Client(vertexai=True, project=project, location=os.getenv("GOOGLE_CLOUD_LOCATION", "global"),
-                          credentials=credentials,
-                          http_options=types.HttpOptions(timeout=60000, retry_options=types.HttpRetryOptions(attempts=1))) as client:
+        options = {"http_options": types.HttpOptions(timeout=60000, retry_options=types.HttpRetryOptions(attempts=1))}
+        if byok:
+            options.update(vertexai=False, api_key=submission.provider_api_key)
+        else:
+            import google.auth
+            credentials, _ = google.auth.default(quota_project_id=project)
+            options.update(vertexai=True, project=project, location=os.getenv("GOOGLE_CLOUD_LOCATION", "global"), credentials=credentials)
+        with genai.Client(**options) as client:
             provider_attempts = {}
             logical_calls = 0
             def generate(stage, **kwargs):

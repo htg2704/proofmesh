@@ -43,12 +43,12 @@ def test_interrupted_job_does_not_retry_model(tmp_path):
 
 
 def test_durable_daily_quota(tmp_path, monkeypatch):
-    monkeypatch.setenv('PROOFMESH_DAILY_JOBS', '1')
+    monkeypatch.setenv('PROOFMESH_CLIENT_DAILY_JOBS', '1')
     jobs, _ = make(tmp_path)
-    jobs.reserve(Submission(claim='The first distinct claim'))
+    jobs.reserve(Submission(claim='The first distinct claim').for_client('a'*24))
     import pytest
-    with pytest.raises(ValueError, match='cap reached'):
-        jobs.reserve(Submission(claim='The second distinct claim'))
+    with pytest.raises(ValueError, match='limit reached'):
+        jobs.reserve(Submission(claim='The second distinct claim').for_client('a'*24))
 
 
 def test_api_jobs_auth_and_public_demo(tmp_path, monkeypatch):
@@ -80,13 +80,14 @@ def test_explicit_retry_is_bounded_and_counts_against_quota(tmp_path):
     assert jobs.reserve(sub,retry_failed=True)[1] is False
 
 
-def test_window_cap_covers_previous_days(tmp_path,monkeypatch):
-    monkeypatch.setenv('PROOFMESH_TOTAL_JOBS','1')
+def test_trial_funds_reservation_persists_across_days(tmp_path,monkeypatch):
+    monkeypatch.setenv('PROOFMESH_PROJECT_BUDGET_USD','1')
+    monkeypatch.setenv('PROOFMESH_JOB_RESERVE_USD','1')
     jobs,_=make(tmp_path)
     job,_=jobs.reserve(Submission(claim='A claim on an earlier day'))
     jobs.update(job['id'],created_at='2020-01-01T00:00:00+00:00')
     import pytest
-    with pytest.raises(ValueError,match='Live-window'):
+    with pytest.raises(ValueError,match='trial funds'):
         jobs.reserve(Submission(claim='A distinct claim the next day'))
 
 

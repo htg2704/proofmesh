@@ -14,6 +14,7 @@ Development origin: `http://127.0.0.1:8000`. Machine-readable schema: `/openapi.
 }
 ```
 
+- `provider_api_key`: optional Gemini Developer API key, new jobs only. No daily ProofMesh check cap; Google bills the key owner. Encrypted temporarily, never included in responses/reports. Distinct from the ProofMesh bearer token. See [personal-key handling](THIRD_PARTY.md#use-your-own-gemini-api-key).
 - `claim`: 5–3,000 characters. Preserve wording; do not paraphrase it before matching.
 - `image_base64`: optional plain base64, without a data-URL prefix. PNG/JPEG/WebP, maximum 5 MB decoded and 16 megapixels. The API computes canonical pixel SHA-256 and 64-bit dHash.
 - `corpus`: `live` or `demo`. Default `live`. Clients must not mix the collections.
@@ -110,4 +111,4 @@ The assessor may cite a stable `passage_id` from a server-built catalogue. The s
 
 `assessment.media_origin` describes published source reporting, with supporting fetched quotations. `image_match_evidence_ids` can reference actual full/partial image-match leads for association, but those leads cannot substantiate the origin claim by themselves. `origin` distinguishes source reporting, image association and `independent_verification=not_performed`. Where image association is not established, the status is `unconfirmed_media_match`, not a verified AI-origin verdict for the upload. ProofMesh does not run a watermark or provenance detector.
 
-Current third-party defaults: **120 API requests/minute, 10 new investigations per UTC day per credential, 30 new credentials/hour across the service**. Trusted testing exemptions and the shared twelve-admission financial guard remain separate.
+Current third-party defaults: **120 API requests/minute, 10 new investigations per UTC day per credential, 30 new credentials/hour across the service**. Trusted testers are exempt from application rate limits. There is no shared investigation-count cap.

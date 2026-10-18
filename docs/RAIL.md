@@ -8,7 +8,7 @@ ProofMesh provides a shared place to investigate a claim and retrieve the result
 - Create durable work through `POST /api/jobs` and inspect state through `GET /api/jobs/{id}`.
 - Retrieve source-linked findings, quotations, date/location/media checks, limitations and explicit unknown origin through `GET /api/investigations/{id}`.
 - Reuse fresh matching reports without another model invocation. Related images expose leads without transferring verdicts.
-- Keep team reports separate from a bounded shared reviewer collection. Worker secrets and Google service identities remain private.
+- Keep client and team reports separate; the hosted reviewer-code flow is retired. Worker secrets and Google service identities remain private.
 
 The current clients use the same REST endpoints and report schema. This establishes an initial reusable service boundary. It does not establish a production multi-tenant infrastructure product.
 
@@ -18,7 +18,7 @@ A small SDK could wrap lookup, submission and polling. An MCP adapter could expo
 
 ## Pilot requirements
 
-A pilot needs tenant isolation, scoped and revocable credentials, API versioning, per-consumer limits, contribution review, report revisions and expiry, audit records, source/content rights policies, deletion rules, monitoring and capacity planning. Existing shared tokens and small trial quotas are prototype controls. Exact quotation checks and same-model critique do not establish independent factual verification.
+A pilot needs tenant isolation, scoped and revocable credentials, API versioning, per-consumer limits, contribution review, report revisions and expiry, audit records, source/content rights policies, deletion rules, monitoring and capacity planning. Scoped developer credentials, personal Gemini keys and per-client trial quotas are prototype controls. Exact quotation checks and same-model critique do not establish independent factual verification.
 
 ## Possible future applications
 

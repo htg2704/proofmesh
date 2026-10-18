@@ -58,19 +58,15 @@ def test_bad_reviewer_code_does_not_grant_access(client):
     assert client.post('/api/access/reviewer',json={'code':'x'*32}).status_code==401
     assert client.get('/api/investigations').status_code==401
 
-def test_staff_cannot_spend_reserved_review_budget(tmp_path,monkeypatch):
+def test_obsolete_shared_count_and_review_reservation_do_not_limit_jobs(tmp_path,monkeypatch):
     monkeypatch.setenv('PROOFMESH_REVIEW_TOKEN',REVIEW)
-    monkeypatch.setenv('PROOFMESH_TOTAL_JOBS','3')
-    monkeypatch.setenv('PROOFMESH_REVIEW_JOBS','2')
+    monkeypatch.setenv('PROOFMESH_TOTAL_JOBS','1')
+    monkeypatch.setenv('PROOFMESH_REVIEW_JOBS','1')
     monkeypatch.setenv('PROOFMESH_DAILY_JOBS','20')
     store=SQLiteStore(str(tmp_path/'quota.db'));jobs=Jobs(store,ProofMesh(store,Fake()))
-    jobs.reserve(Submission(claim='First team investigation'))
-    with pytest.raises(ValueError,match='reserved'):
-        jobs.reserve(Submission(claim='Second team investigation'))
-    jobs.reserve(Submission(claim='First reviewer investigation',corpus='review'))
-    jobs.reserve(Submission(claim='Second reviewer investigation',corpus='review'))
-    with pytest.raises(ValueError,match='Reviewer'):
-        jobs.reserve(Submission(claim='Third reviewer investigation',corpus='review'))
+    for i in range(5):
+        assert jobs.reserve(Submission(claim=f'Distinct investigation {i}',corpus='review' if i%2 else 'live'))[1]
+
 
 def test_publication_time_changes_context_and_timezone_normalizes(tmp_path):
     fake=Fake(); service=ProofMesh(SQLiteStore(str(tmp_path/'context.db')),fake)

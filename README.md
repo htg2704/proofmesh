@@ -121,9 +121,9 @@ License selection remains with the authors; public visibility alone does not gra
 
 ## v0.4 evidence and reviewer release
 
-Publication timestamps anchor relative dates and participate in cache identity. Conclusive findings require exact quotations from fetched passages; generated summaries alone cannot support a verdict. New reviewer access uses a separate shared collection and reserved allowance without exposing team credentials or reports. The private reviewer link is in ignored `data/reviewer-access.txt`.
+Publication timestamps anchor relative dates and participate in cache identity. Conclusive findings require exact quotations from fetched passages; generated summaries alone cannot support a verdict. The historical reviewer-code flow is now retired on the hosted app; visitors receive scoped guest workspaces automatically.
 
-The twelve-case prespecified development evaluation produced 11 expected outcomes, including nine conclusive findings and three abstentions. Three first-pass provider failures required explicit reruns. All twelve completed repeats used zero model calls. This is not representative accuracy. The latest hosted reviewer investigation also failed with provider 429 after its bounded retry; see the full [evaluation](docs/EVALUATION.md). All 74 regression checks pass.
+The twelve-case prespecified development evaluation produced 11 expected outcomes, including nine conclusive findings and three abstentions. Three first-pass provider failures required explicit reruns. All twelve completed repeats used zero model calls. This is not representative accuracy. The latest hosted reviewer investigation also failed with provider 429 after its bounded retry; see the full [evaluation](docs/EVALUATION.md). That release had 74 regression checks.
 
 ## Evidence rail and future clients
 
@@ -135,4 +135,8 @@ The normal hosted app works without a reviewer code: limited browser access is c
 
 Harshwardhan, Chennika and authorized Codex tests have distinct trusted credentials. Their application rate limits are removed; the shared trial spending guard and provider limits still apply. Private credentials are in ignored `data/TEAM_ACCESS.md`, never this repository. Existing owner API credentials also receive the exemption.
 
-See [third-party setup and limits](docs/THIRD_PARTY.md) and the new [editable architecture](docs/diagrams/proofmesh-architecture.drawio). All new inference uses durable jobs, including local deployments; the legacy synchronous endpoint directs fresh work to `/api/jobs`. Current checks: 61 Python + 28 JavaScript.
+See [third-party setup and limits](docs/THIRD_PARTY.md) and the new [editable architecture](docs/diagrams/proofmesh-architecture.drawio). All new inference uses durable jobs, including local deployments; the legacy synchronous endpoint directs fresh work to `/api/jobs`. Current checks: 79 Python + 31 JavaScript.
+
+## Personal Gemini keys (v0.6)
+
+The main workspace displays the trial allowance: **10 new investigations/client/UTC day, 120 API requests/minute**. There is **no shared investigation-count cap**. Open **Use your own Gemini API key** to run without a daily ProofMesh check cap, billed to your Google account. Keys are held in page memory and encrypted temporarily while queued, then removed after processing. Google quotas and request limits still apply. Personal-key work uses Gemini with Search and skips the project-funded Cloud Vision lookup. The approved US$10 project trial funds remain a separate monetary safeguard for project-funded work. See [integration and key handling](docs/THIRD_PARTY.md) and [deployment settings](docs/DEPLOYMENT.md).

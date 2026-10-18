@@ -87,14 +87,15 @@ def test_client_job_limit_returns_429_but_reuse_is_free(api):
 @pytest.mark.parametrize('name',TRUSTED)
 def test_trusted_testers_bypass_rate_and_daily_caps_but_not_spending_guard(api,monkeypatch,name):
     monkeypatch.setenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE','1')
-    monkeypatch.setenv('PROOFMESH_TOTAL_JOBS','2')
+    monkeypatch.setenv('PROOFMESH_PROJECT_BUDGET_USD','1')
+    monkeypatch.setenv('PROOFMESH_JOB_RESERVE_USD','0.5')
     h=headers(TRUSTED[name])
     for _ in range(4):
         health=api.get('/api/health',headers=h);assert health.status_code==200 and health.json()['rate_limits_exempt']
         assert 'X-RateLimit-Limit' not in health.headers
     for i in range(2):assert api.post('/api/jobs',json={'claim':f'Trusted test {i}'},headers=h).status_code==202
     denied=api.post('/api/jobs',json={'claim':'Third trusted test'},headers=h)
-    assert denied.status_code==503 and 'spending guard' in denied.json()['detail']
+    assert denied.status_code==503 and 'trial funds' in denied.json()['detail']
 
 def test_request_throttle_and_revocation_are_enforced(api,monkeypatch):
     key=enroll(api);h=headers(key['token']);monkeypatch.setenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE','1')

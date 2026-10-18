@@ -9,6 +9,7 @@ class Submission(BaseModel):
     corpus: Literal["live", "demo", "review"] = "live"
     published_at: AwareDatetime | None = None
     source_url: str | None = Field(default=None, max_length=2000)
+    provider_api_key: str | None = Field(default=None, min_length=20, max_length=512, exclude=True, repr=False, json_schema_extra={"writeOnly": True})
     _client_id: str | None = PrivateAttr(default=None)
 
     @property

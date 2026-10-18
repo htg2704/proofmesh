@@ -1,3 +1,5 @@
+let personalGeminiKey = null;
+let personalKeyEnabled = false;
 const $ = id => document.getElementById(id);
 let imageBase64 = null;
 let alternateClaim = '';
@@ -7,7 +9,7 @@ let accessRole = 'none';
 let authenticationRequired = false;
 function node(tag, text, className) { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (className) n.className = className; return n; }
 function notice(text, error = false) { $('notice').hidden = false; $('notice').textContent = text; $('notice').className = error ? 'error' : ''; }
-function busy(value) { document.querySelectorAll('button, #claim, #image, #corpus, #token, #published-at, #review-code').forEach(b => b.disabled = value); document.querySelector('.workspace').setAttribute('aria-busy', String(value)); }
+function busy(value) { document.querySelectorAll('button, #claim, #image, #corpus, #token, #published-at, #review-code, #gemini-key').forEach(b => b.disabled = value); document.querySelector('.workspace').setAttribute('aria-busy', String(value)); $('use-gemini-key').disabled=value || !personalKeyEnabled; }
 async function api(path, body) {
   const headers = { 'Content-Type': 'application/json' };
   const token = sessionStorage.getItem('proofmesh-token'); if (token) headers.Authorization = `Bearer ${token}`;
@@ -103,7 +105,7 @@ async function ensureAccess() {
 }
 async function run(action) { busy(true); try { await action(); } catch (e) { notice(e.message, true); } finally { busy(false); } }
 $('investigation-form').addEventListener('submit', e => { e.preventDefault(); run(async () => { await ensureAccess(); notice('Checking the shared evidence registry…'); renderMatch(await api($('corpus').value === 'demo' ? '/api/demo/matches' : '/api/matches', payload())); }); });
-$('investigate-button').addEventListener('click', () => { if (!$('investigation-form').reportValidity()) return; run(async () => { await ensureAccess(); notice('Researching sources, assessing the claim, and challenging the assessment. This may take a few minutes…'); const submitted = payload(); $('result').replaceChildren(); const job = await api('/api/jobs', submitted); sessionStorage.setItem('proofmesh-job', job.id); await pollJob(job.id, submitted); }); });
+$('investigate-button').addEventListener('click', () => { if (!$('investigation-form').reportValidity()) return; run(async () => { await ensureAccess(); notice('Researching sources, assessing the claim, and challenging the assessment. This may take a few minutes…'); const submitted = { ...payload(), ...(personalGeminiKey ? {provider_api_key:personalGeminiKey} : {}) }; $('result').replaceChildren(); const job = await api('/api/jobs', submitted); delete submitted.provider_api_key; sessionStorage.setItem('proofmesh-job', job.id); await pollJob(job.id, submitted); }); });
 $('demo-button').addEventListener('click', () => run(async () => { const data = await api('/api/demo', {}); $('claim').value = data.claim; $('published-at').value = ''; $('corpus').value = 'demo'; showImage(data.image_base64); alternateClaim = data.alternate_claim; $('alternate-button').hidden = false; renderReport(data.report); notice('Synthetic example loaded. Check shared evidence, then try the alternate caption.'); await refresh(); }));
 $('alternate-button').addEventListener('click', () => run(async () => { $('claim').value = alternateClaim; $('corpus').value = 'demo'; renderMatch(await api($('corpus').value === 'demo' ? '/api/demo/matches' : '/api/matches', payload())); }));
 $('image').addEventListener('change', async e => {
@@ -129,7 +131,7 @@ async function pollJob(id, submitted = null) {
       sessionStorage.removeItem('proofmesh-job');
       if (submitted && (job.attempt || 1) < 2) {
         const retry = node('button', 'Retry once with Google Cloud', 'text-button');
-        retry.addEventListener('click', () => run(async () => { const next = await api('/api/jobs?retry_failed=true', submitted); await pollJob(next.id, submitted); })); $('result').append(retry);
+        retry.addEventListener('click', () => run(async () => { const retryBody={...submitted}; delete retryBody.provider_api_key; if(personalGeminiKey) retryBody.provider_api_key=personalGeminiKey; const next = await api('/api/jobs?retry_failed=true', retryBody); await pollJob(next.id, submitted); })); $('result').append(retry);
       }
       throw new Error(job.error || 'Investigation failed.');
     }
@@ -152,10 +154,28 @@ async function connectReview(code) {
   await refresh(); notice('Reviewer access ready. Enter a claim and optional image to run a real investigation.');
 }
 $('connect-review').addEventListener('click', () => run(() => connectReview($('review-code').value.trim())));
-$('save-token').addEventListener('click', () => { sessionStorage.setItem('proofmesh-token', $('token').value.trim()); $('token').value = ''; run(async () => { const health=await api('/api/health'); accessRole=health.access || 'none'; if (accessRole === 'team') { $('corpus').value='live'; $('connection').textContent='Team workspace · rate limits exempt'; } await refresh(); notice('Connected. The API token is kept only for this browser session.'); await loadRouteReport(); }); });
+$('save-token').addEventListener('click', () => { sessionStorage.setItem('proofmesh-token', $('token').value.trim()); $('token').value = ''; run(async () => { const health=await api('/api/health'); showLimits(health); accessRole=health.access || 'none'; if (accessRole === 'team') { $('corpus').value='live'; $('connection').textContent='Team workspace · rate limits exempt'; } await refresh(); notice('Connected. The API token is kept only for this browser session.'); await loadRouteReport(); }); });
 $('refresh-button').addEventListener('click', () => run(refresh));
 $('corpus').addEventListener('change', () => run(refresh));
-(async () => { try { const review = new URLSearchParams(location.hash.slice(1)).get('review'); if (review) { history.replaceState(null, '', location.pathname + location.search); await connectReview(review); } const health = await api('/api/health'); accessRole=health.access || 'none'; authenticationRequired=health.authentication_required; if (accessRole === 'review') { $('review-option').hidden=false; $('corpus').value='review'; $('connection').textContent='Review workspace connected'; } $('connection').textContent = accessRole === 'review' ? 'Review workspace connected' : accessRole === 'team' ? 'Team workspace · rate limits exempt' : accessRole === 'client' ? 'Your workspace' : health.live_enabled ? 'Ready to investigate' : 'Local · demo ready'; if (health.authentication_required && accessRole !== 'review' && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'live'; notice('Ready. Enter a claim or try an example. Your limited workspace opens automatically when you check it.'); await refresh(); await loadRouteReport(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
+$('use-gemini-key').addEventListener('click', () => {
+  const value=$('gemini-key').value.trim();
+  if (value.length < 20 || value.length > 512) { $('gemini-key-status').textContent='Paste a complete Gemini API key (20–512 characters).'; return; }
+  personalGeminiKey=value; $('gemini-key').value=''; $('clear-gemini-key').hidden=false;
+  $('gemini-key-status').textContent='Your Gemini key is active for new investigations. No daily ProofMesh check cap; usage is billed to your Google account. Reloading clears the key.';
+});
+$('clear-gemini-key').addEventListener('click', () => {
+  personalGeminiKey=null; $('gemini-key').value=''; $('clear-gemini-key').hidden=true;
+  $('gemini-key-status').textContent='Using the trial allowance. Your personal Gemini key has been cleared from page memory.';
+});
+function showLimits(health) {
+  $('trial-limits').textContent=health.rate_limits_exempt ? 'Team access: application request and daily trial limits are waived.' : `Trial: ${health.client_daily_jobs} new investigations per client per UTC day · ${health.client_requests_per_minute} API requests/minute. Daily allowance resets at 00:00 UTC.`;
+  personalKeyEnabled=Boolean(health.personal_gemini_key_enabled);
+  if (!personalKeyEnabled) {
+    $('use-gemini-key').disabled=true;
+    $('gemini-key-status').textContent='Personal Gemini keys are not configured on this deployment. See the deployment guide to enable encryption.';
+  }
+}
+(async () => { try { const review = new URLSearchParams(location.hash.slice(1)).get('review'); if (review) { history.replaceState(null, '', location.pathname + location.search); await connectReview(review); } const health = await api('/api/health'); showLimits(health); accessRole=health.access || 'none'; authenticationRequired=health.authentication_required; if (accessRole === 'review') { $('review-option').hidden=false; $('corpus').value='review'; $('connection').textContent='Review workspace connected'; } $('connection').textContent = accessRole === 'review' ? 'Review workspace connected' : accessRole === 'team' ? 'Team workspace · rate limits exempt' : accessRole === 'client' ? 'Your workspace' : health.live_enabled ? 'Ready to investigate' : 'Local · demo ready'; if (health.authentication_required && accessRole !== 'review' && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'live'; notice('Ready. Enter a claim or try an example. Your limited workspace opens automatically when you check it.'); await refresh(); await loadRouteReport(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
 
 async function loadExamples() {
   const {reports} = await api('/api/examples');
