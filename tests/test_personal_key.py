@@ -14,6 +14,7 @@ KEY='AIza-personal-test-key-never-a-real-key'
 
 @pytest.fixture
 def jobs(tmp_path,monkeypatch):
+    monkeypatch.setenv('PROOFMESH_CLIENT_LIMITS_ENABLED','true')
     monkeypatch.setenv('PROOFMESH_CREDENTIAL_ENCRYPTION_KEY',Fernet.generate_key().decode())
     monkeypatch.setenv('PROOFMESH_CLIENT_DAILY_JOBS','1')
     monkeypatch.setenv('PROOFMESH_PROJECT_BUDGET_USD','0.5')

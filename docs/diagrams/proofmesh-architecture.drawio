@@ -92,7 +92,7 @@
         <mxCell id="policy-name" value="&lt;div style=&quot;line-height:1.45&quot;&gt;Access &amp;amp; policy&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=16;fontColor=#172b4d;" vertex="1" parent="policy-group">
           <mxGeometry x="18" y="15.0" width="284" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="policy-detail" value="&lt;div style=&quot;line-height:1.45&quot;&gt;Per-client request limits&lt;br&gt;Trusted testers: rate exempt&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=12;fontColor=#4b6078;" vertex="1" parent="policy-group">
+        <mxCell id="policy-detail" value="&lt;div style=&quot;line-height:1.45&quot;&gt;Scoped credentials / isolation&lt;br&gt;Public usage caps disabled&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=0;fontFamily=Arial;fontSize=12;fontColor=#4b6078;" vertex="1" parent="policy-group">
           <mxGeometry x="18" y="42.0" width="284" height="40" as="geometry" />
         </mxCell>
         <mxCell id="api-group" value="" style="group;" vertex="1" parent="1">

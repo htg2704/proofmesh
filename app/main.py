@@ -14,7 +14,7 @@ from app.investigator import GeminiInvestigator
 from app.models import Submission
 from app.jobs import Jobs
 from app.access import COOKIE, review_cookie, valid_cookie
-from app.clients import ClientAccess, Principal, RateLimited, SpendingLimit, trusted_credentials, DEFAULT_CLIENT_RPM, DEFAULT_CLIENT_DAILY_JOBS, DEFAULT_REGISTRATIONS_PER_HOUR
+from app.clients import ClientAccess, Principal, RateLimited, SpendingLimit, trusted_credentials, DEFAULT_CLIENT_RPM, DEFAULT_CLIENT_DAILY_JOBS, DEFAULT_REGISTRATIONS_PER_HOUR, client_limits_enabled
 from app.examples import match_examples
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.cors import CORSMiddleware
@@ -82,7 +82,7 @@ def create_app(store=None, investigator=None):
         if request.url.path.startswith("/api/") and not public and request.state.role == "none":
             return JSONResponse({"detail": "A developer key, team credential or reviewer session is required"}, status_code=401, headers={'Cache-Control': 'no-store'})
         rate_headers = {}
-        if request.url.path.startswith('/api/') and principal.role in {'client', 'review'}:
+        if client_limits_enabled() and request.url.path.startswith('/api/') and principal.role in {'client', 'review'}:
             try:
                 rate_headers = await run_in_threadpool(clients.take, principal.role + ':' + principal.identifier, int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', str(DEFAULT_CLIENT_RPM))))
             except RateLimited as exc:
@@ -140,7 +140,8 @@ def create_app(store=None, investigator=None):
         if os.getenv('PROOFMESH_SELF_REGISTRATION', 'false').lower() != 'true':
             raise HTTPException(403, 'Self-registration is disabled. Ask the service owner for a developer key, or run your own deployment.')
         try:
-            clients.take('public-registration', int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))), 3600)
+            if client_limits_enabled():
+                clients.take('public-registration', int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))) if client_limits_enabled() else None, 3600)
         except RateLimited as exc:
             raise HTTPException(429, str(exc), headers={'Retry-After': str(exc.retry_after)}) from exc
         return clients.issue(body.label)
@@ -150,7 +151,7 @@ def create_app(store=None, investigator=None):
         if request.state.role in {'team', 'client', 'judge'}:
             return {'access': request.state.role}
         issued = register_client(ClientLabel(label='Browser workspace'))
-        response = JSONResponse({'access': 'client', 'message': 'Your limited workspace is ready'})
+        response = JSONResponse({'access': 'client', 'message': 'Your workspace is ready'})
         response.delete_cookie(COOKIE)
         response.set_cookie('proofmesh_client', issued['token'], httponly=True, secure=bool(os.getenv('K_SERVICE')), samesite='strict', max_age=30*86400)
         return response
@@ -195,10 +196,11 @@ def create_app(store=None, investigator=None):
         return {"status": "ok", "live_enabled": live, "authentication_required": bool(token), "access": request.state.role,
                 "review_enabled": len(reviewer_token) >= 32, "judge_enabled": len(judge_token) >= 32 and (not judge_until or datetime.now(timezone.utc) < judge_until), "version": "0.7.0", "release": os.getenv("PROOFMESH_RELEASE", "local"),
                 "self_registration": os.getenv('PROOFMESH_SELF_REGISTRATION', 'false').lower() == 'true',
-                "rate_limits_exempt": request.state.principal.exempt,
-                "client_requests_per_minute": int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', str(DEFAULT_CLIENT_RPM))),
-                "client_daily_jobs": int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))),
-                "registrations_per_hour": int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))),
+                "client_limits_enabled": client_limits_enabled(),
+                "rate_limits_exempt": not client_limits_enabled() or request.state.principal.exempt,
+                "client_requests_per_minute": int(os.getenv('PROOFMESH_CLIENT_REQUESTS_PER_MINUTE', str(DEFAULT_CLIENT_RPM))) if client_limits_enabled() else None,
+                "client_daily_jobs": int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))) if client_limits_enabled() else None,
+                "registrations_per_hour": int(os.getenv('PROOFMESH_REGISTRATIONS_PER_HOUR', str(DEFAULT_REGISTRATIONS_PER_HOUR))) if client_limits_enabled() else None,
                 "public_registry_cap": service.registry.capacity, "shared_investigation_cap": False,
                 "personal_gemini_key_enabled": bool(os.getenv("PROOFMESH_CREDENTIAL_ENCRYPTION_KEY")),
                 "personal_key_daily_cap": None}

@@ -43,6 +43,7 @@ def test_interrupted_job_does_not_retry_model(tmp_path):
 
 
 def test_durable_daily_quota(tmp_path, monkeypatch):
+    monkeypatch.setenv('PROOFMESH_CLIENT_LIMITS_ENABLED','true')
     monkeypatch.setenv('PROOFMESH_CLIENT_DAILY_JOBS', '1')
     jobs, _ = make(tmp_path)
     jobs.reserve(Submission(claim='The first distinct claim').for_client('a'*24))

@@ -154,3 +154,7 @@ Judges can use a separate scoped token through **Use a judge token** on the norm
 v0.7 verification: **92 Python + 34 JavaScript checks pass**. Cloud Run/Firestore testing confirmed judge isolation, one new published factual investigation, zero-call reuse by two independent clients, protected private reports and authorized withdrawal/republication. The isolated Firestore retention test and full results are recorded in [verification](docs/VERIFICATION.md).
 
 Extension 0.4.1 stabilizes X CDN image sizes before fingerprinting, refreshes lookups after server/token changes, and opens shared results through public report/status routes. Select **Google Cloud demo** in the popup and reload the unpacked extension after updating. Actual real-X positive-match coverage is recorded separately from synthetic fixtures in PRODUCT_QA.md.
+
+## Current submission access policy — October 18
+
+**No client application usage caps are active.** The ordinary app works for judges through automatic guest access; no special judge token is required. Request, daily-investigation and registration/hour quotas default off under `PROOFMESH_CLIENT_LIMITS_ENABLED=false`. Public registry retention remains capped at 200 snapshots, and private workspaces remain isolated. Google provider quotas and the owner's separately approved **US$50 total project allowance** still apply. This supersedes the earlier 10-check/120-request policy descriptions above.

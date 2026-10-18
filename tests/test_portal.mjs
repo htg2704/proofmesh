@@ -180,3 +180,13 @@ test('extension public job handoff opens a published report without using a diff
  assert.equal(new URL(w.location.href).searchParams.get('public_job'),null);
  assert.match(w.document.getElementById('notice').textContent,/Shared investigation complete/);w.close();
 });
+
+test('uncapped public access removes quota copy and the judge-token shortcut',async()=>{
+ const dom=new JSDOM(read('web/index.html'),{url:'https://proofmesh.example/',runScripts:'outside-only'}),w=dom.window;
+ w.fetch=async path=>({ok:true,json:async()=>path==='/api/health'?{authentication_required:true,access:'none',live_enabled:true,client_limits_enabled:false,rate_limits_exempt:true,client_daily_jobs:null,client_requests_per_minute:null,personal_gemini_key_enabled:true,judge_enabled:true}:{reports:[],size:0,capacity:200}});
+ w.eval(read('web/app.js'));for(let i=0;i<10;i++)await tick();
+ const d=w.document;assert.match(d.getElementById('trial-limits').textContent,/no application request or daily investigation caps/);
+ assert.doesNotMatch(d.getElementById('trial-limits').textContent,/10 new|120 API|Team tester access/);
+ assert.equal(d.getElementById('open-judge-access').hidden,true);
+ assert.match(d.getElementById('investigate-help').textContent,/no per-client/);assert.match(d.getElementById('investigate-help').textContent,/normal app without a special token/);w.close();
+});

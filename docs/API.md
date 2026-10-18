@@ -123,3 +123,7 @@ Judge bearer credentials receive `access=judge` and `rate_limits_exempt=true` fr
 ### Public investigation handoff
 
 `GET /api/v1/public-jobs/{id}` exposes only `status`, `model_calls`, `reused`, an eventual `public_report_id`, and a generic failure/publication message for a job that explicitly requested `share_publicly=true`. Private jobs return 404. It never returns the original claim, owner, provider key or private report ID. A successful private job whose snapshot was withheld/withdrawn returns `not_published`; it does not make that private report public. The web app's `?public_job=...` route polls this endpoint and redirects to `?public_report=...` after publication. No team credential is copied into URLs or web storage by the extension.
+
+## Current public usage policy
+
+`client_limits_enabled=false` in health means per-client request/daily-check and registration quotas are disabled. Their reported numerical policy values are null, and application rate-limit headers are omitted. All ordinary clients and judges use this policy without needing an exemption token. Authentication still protects private data. The project's separate US$50 funding approval and provider quotas remain applicable; exact reuse invokes no model. Optional quota code is retained only for operator opt-in deployments.

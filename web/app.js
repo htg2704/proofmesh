@@ -222,26 +222,34 @@ $('use-gemini-key').addEventListener('click', () => {
   const value=$('gemini-key').value.trim();
   if (value.length < 20 || value.length > 512) { $('gemini-key-status').textContent='Paste a complete Gemini API key (20–512 characters).'; return; }
   personalGeminiKey=value; $('gemini-key').value=''; $('clear-gemini-key').hidden=false;
-  $('gemini-key-status').textContent='Your Gemini key is active for new investigations. No daily ProofMesh check cap; usage is billed to your Google account. Reloading clears the key.';
+  $('gemini-key-status').textContent='Your Gemini key is active for new investigations. Model usage is billed to your Google account. Reloading clears the key.';
 });
 $('clear-gemini-key').addEventListener('click', () => {
   personalGeminiKey=null; $('gemini-key').value=''; $('clear-gemini-key').hidden=true;
   $('gemini-key-status').textContent='Using the trial allowance. Your personal Gemini key has been cleared from page memory.';
 });
 function showLimits(health) {
-  const rpm=health.client_requests_per_minute || 120, daily=health.client_daily_jobs || 10;
-  const access=health.rate_limits_exempt ? 'Your current judge/team tester access is exempt from application request and daily-check caps.' : `Your current trial access permits ${daily} new checks per UTC day and ${rpm} API requests per minute.`;
-  $('investigate-help').textContent=`Research this claim with AI; an exact fresh report is reused first with zero model calls. Trial clients get ${daily} new investigations per UTC day (reset 00:00 UTC) and ${rpm} API requests/minute, including polling. ${access} Personal Gemini keys remove the daily check cap. Google quotas and approved project-funded usage limits still apply.`;
-  $('match-help').textContent=`Search saved private and shared public reports only. This does not investigate a new claim or consume a new-check admission. Trial clients have ${rpm} API requests/minute. Authorized team testers and judges are exempt from application rate limits. Related images do not transfer verdicts to a different context.`;
+  const enabled=health.client_limits_enabled !== false;
+  $('open-judge-access').hidden=!enabled || health.judge_enabled===false;
+  if (!enabled) {
+    $('trial-limits').textContent='Public access: no application request or daily investigation caps. No judge token needed. Google quotas and hosted funding availability still apply.';
+    $('investigate-help').textContent='Research this claim with AI; an exact fresh report is reused first with zero model calls. There are no per-client application request, daily investigation or registration caps. Judges can use the normal app without a special token. Google provider quotas, per-investigation workload bounds and the approved project-funded usage budget still apply.';
+    $('match-help').textContent='Search your private reports and the shared public registry. This runs no new investigation and makes zero model calls. There is no application request cap. Related images never transfer a verdict to a different context.';
+  } else {
+    const rpm=health.client_requests_per_minute || 120, daily=health.client_daily_jobs || 10;
+    const access=health.rate_limits_exempt ? 'Your current judge/team tester access is exempt from application request and daily-check caps.' : `Your current trial access permits ${daily} new checks per UTC day and ${rpm} API requests per minute.`;
+    $('investigate-help').textContent=`Research this claim with AI; an exact fresh report is reused first with zero model calls. Trial clients get ${daily} new investigations per UTC day (reset 00:00 UTC) and ${rpm} API requests/minute, including polling. ${access} Personal Gemini keys remove the daily check cap. Google quotas and approved project-funded usage limits still apply.`;
+    $('match-help').textContent=`Search saved private and shared public reports only. This does not investigate a new claim or consume a new-check admission. Trial clients have ${rpm} API requests/minute. Authorized team testers and judges are exempt from application rate limits. Related images do not transfer verdicts to a different context.`;
 
-  $('trial-limits').textContent=health.rate_limits_exempt ? `${health.access === 'judge' ? 'Judge' : 'Team tester'} access: application request and daily trial limits are waived.` : `Trial: ${health.client_daily_jobs} new investigations per client per UTC day · ${health.client_requests_per_minute} API requests/minute. Daily allowance resets at 00:00 UTC.`;
+    $('trial-limits').textContent=health.rate_limits_exempt ? `${health.access === 'judge' ? 'Judge' : 'Team tester'} access: application request and daily trial limits are waived.` : `Trial: ${health.client_daily_jobs} new investigations per client per UTC day · ${health.client_requests_per_minute} API requests/minute. Daily allowance resets at 00:00 UTC.`;
+  }
   personalKeyEnabled=Boolean(health.personal_gemini_key_enabled);
   if (!personalKeyEnabled) {
     $('use-gemini-key').disabled=true;
     $('gemini-key-status').textContent='Personal Gemini keys are not configured on this deployment. See the deployment guide to enable encryption.';
   }
 }
-(async () => { try { const review = new URLSearchParams(location.hash.slice(1)).get('review'); if (review) { history.replaceState(null, '', location.pathname + location.search); await connectReview(review); } const health = await api('/api/health'); showLimits(health); accessRole=health.access || 'none'; authenticationRequired=health.authentication_required; if (accessRole === 'review') { $('review-option').hidden=false; $('corpus').value='review'; $('connection').textContent='Review workspace connected'; } $('connection').textContent = accessRole === 'review' ? 'Review workspace connected' : accessRole === 'team' ? 'Team workspace · rate limits exempt' : accessRole === 'judge' ? 'Judge workspace · application limits waived' : accessRole === 'client' ? 'Your workspace' : health.live_enabled ? 'Ready to investigate' : 'Local · demo ready'; if (health.authentication_required && accessRole !== 'review' && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'live'; notice('Ready. Enter a claim or try an example. Your limited workspace opens automatically when you check it.'); await refresh(); await loadRouteReport(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
+(async () => { try { const review = new URLSearchParams(location.hash.slice(1)).get('review'); if (review) { history.replaceState(null, '', location.pathname + location.search); await connectReview(review); } const health = await api('/api/health'); showLimits(health); accessRole=health.access || 'none'; authenticationRequired=health.authentication_required; if (accessRole === 'review') { $('review-option').hidden=false; $('corpus').value='review'; $('connection').textContent='Review workspace connected'; } $('connection').textContent = accessRole === 'review' ? 'Review workspace connected' : accessRole === 'team' ? 'Team workspace · rate limits exempt' : accessRole === 'judge' ? 'Judge workspace · application limits waived' : accessRole === 'client' ? 'Your workspace' : health.live_enabled ? 'Ready to investigate' : 'Local · demo ready'; if (health.authentication_required && accessRole !== 'review' && !sessionStorage.getItem('proofmesh-token')) { $('corpus').value = 'live'; notice('Ready. Enter a claim or try an example. Your workspace opens automatically when needed.'); await refresh(); await loadRouteReport(); return; } await refresh(); await loadRouteReport(); } catch (e) { notice(e.message, true); $('connection').textContent = 'Connection unavailable'; } })();
 
 async function loadExamples() {
   const {reports} = await api('/api/examples');

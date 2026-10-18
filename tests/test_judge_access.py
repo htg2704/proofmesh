@@ -12,6 +12,7 @@ JUDGE='pm_judge_fixture_abcdefghijklmnopqrstuvwxyz0123456789'
 
 @pytest.fixture
 def api(tmp_path,monkeypatch):
+    monkeypatch.setenv('PROOFMESH_CLIENT_LIMITS_ENABLED','true')
     monkeypatch.setenv('PROOFMESH_API_TOKEN',OWNER)
     monkeypatch.setenv('PROOFMESH_JUDGE_TOKEN',JUDGE)
     monkeypatch.setenv('PROOFMESH_JUDGE_UNTIL',(now()+timedelta(days=1)).isoformat())

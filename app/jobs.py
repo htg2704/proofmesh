@@ -10,7 +10,7 @@ from app.fingerprints import context_key, image_identity
 from app.models import Submission
 from app.credentials import seal, open_key, fingerprint, TTL_SECONDS
 from app.context import publication_stamp, require_publication_context
-from app.clients import RateLimited, SpendingLimit, DEFAULT_CLIENT_DAILY_JOBS
+from app.clients import RateLimited, SpendingLimit, DEFAULT_CLIENT_DAILY_JOBS, client_limits_enabled
 
 
 def utc():
@@ -112,7 +112,7 @@ class Jobs:
                 check_funds(funds_used)
                 client_body = client_doc.to_dict() if client_doc and client_doc.exists else {}
                 client_count = client_body.get('count', 0) if client_body.get('day') == day else 0
-                if not bypass_rate_limits and not byok:
+                if client_limits_enabled() and not bypass_rate_limits and not byok:
                     if client_id and client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))):
                         raise RateLimited('Client daily investigation limit reached. Cached evidence remains available.', reset)
                 transaction.set(budget, {'count': count + 1})
@@ -137,7 +137,7 @@ class Jobs:
             funds_row = db.execute('SELECT reserved_microusd FROM project_funds WHERE id=1').fetchone()
             funds_used = funds_row[0] if funds_row else baseline_units
             check_funds(funds_used)
-            if not bypass_rate_limits and not byok:
+            if client_limits_enabled() and not bypass_rate_limits and not byok:
                 if client_id:
                     client_count = db.execute('SELECT COALESCE(SUM(COALESCE(json_extract(body, "$.attempt"),1)),0) FROM jobs WHERE json_extract(body, "$.client_id")=? AND COALESCE(json_extract(body, "$.funding"), "project_trial")="project_trial" AND json_extract(body, "$.created_at") LIKE ?', (client_id, day + '%')).fetchone()[0]
                     if client_count >= int(os.getenv('PROOFMESH_CLIENT_DAILY_JOBS', str(DEFAULT_CLIENT_DAILY_JOBS))):

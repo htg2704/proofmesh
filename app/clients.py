@@ -13,6 +13,12 @@ DEFAULT_CLIENT_DAILY_JOBS = 10
 DEFAULT_REGISTRATIONS_PER_HOUR = 30
 
 
+def client_limits_enabled():
+    """Operator opt-in only. Public MVP access has no application usage caps."""
+    return os.getenv('PROOFMESH_CLIENT_LIMITS_ENABLED', 'false').lower() == 'true'
+
+
+
 class RateLimited(ValueError):
     def __init__(self, message, retry_after=60):
         super().__init__(message)

@@ -17,6 +17,7 @@ class Fake:
 
 @pytest.fixture
 def api(tmp_path,monkeypatch):
+    monkeypatch.setenv('PROOFMESH_CLIENT_LIMITS_ENABLED','true')
     monkeypatch.setenv('PROOFMESH_API_TOKEN',TEAM)
     monkeypatch.setenv('PROOFMESH_TRUSTED_TOKENS',json.dumps(TRUSTED))
     monkeypatch.setenv('PROOFMESH_ENABLE_LIVE','true')
@@ -151,3 +152,35 @@ def test_browser_integrations_allow_bearer_preflight_without_cross_origin_cookie
     assert 'access-control-allow-credentials' not in response.headers
     blocked=api.options('/internal/jobs/'+'a'*64,headers={'Origin':'https://third-party.example','Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'x-proofmesh-worker-token'})
     assert blocked.status_code==400
+
+def test_public_mvp_has_no_client_request_daily_or_registration_caps(tmp_path,monkeypatch):
+    monkeypatch.delenv('PROOFMESH_CLIENT_LIMITS_ENABLED',raising=False)
+    monkeypatch.setenv('PROOFMESH_API_TOKEN',TEAM)
+    monkeypatch.setenv('PROOFMESH_ENABLE_LIVE','true')
+    monkeypatch.setenv('PROOFMESH_SELF_REGISTRATION','true')
+    for variable in ['PROOFMESH_CLIENT_REQUESTS_PER_MINUTE','PROOFMESH_CLIENT_DAILY_JOBS','PROOFMESH_REGISTRATIONS_PER_HOUR']:monkeypatch.setenv(variable,'1')
+    client=TestClient(create_app(SQLiteStore(str(tmp_path/'uncapped.sqlite')),Fake()))
+    keys=[client.post('/api/access/register',json={'label':f'Client {i}'}) for i in range(3)]
+    assert all(r.status_code==201 for r in keys)
+    h=headers(keys[0].json()['token'])
+    for _ in range(3):
+        response=client.get('/api/health',headers=h);assert response.status_code==200
+        body=response.json();assert not body['client_limits_enabled'] and body['rate_limits_exempt']
+        assert body['client_daily_jobs'] is None and body['client_requests_per_minute'] is None and body['registrations_per_hour'] is None
+        assert 'X-RateLimit-Limit' not in response.headers
+    for i in range(3):assert client.post('/api/jobs',json={'claim':f'A separate uncapped client check {i}'},headers=h).status_code==202
+    assert client.get('/api/clients',headers=h).status_code==403
+    assert client.post('/api/jobs',json={'claim':'Cannot change server policy','client_limits_enabled':False},headers=h).status_code==422
+
+
+def test_disabling_client_caps_ignores_existing_counters_but_preserves_funding_guard(api,monkeypatch):
+    key=enroll(api);h=headers(key['token'])
+    assert api.post('/api/jobs',json={'claim':'One bounded old-policy check'},headers=h).status_code==202
+    assert api.post('/api/jobs',json={'claim':'Blocked old-policy check'},headers=h).status_code==429
+    monkeypatch.setenv('PROOFMESH_CLIENT_LIMITS_ENABLED','false')
+    assert api.post('/api/jobs',json={'claim':'Allowed after policy removal'},headers=h).status_code==202
+    monkeypatch.setenv('PROOFMESH_PROJECT_BUDGET_USD','0.5')
+    monkeypatch.setenv('PROOFMESH_JOB_RESERVE_USD','0.5')
+    assert api.post('/api/jobs',json={'claim':'One project funded new check'},headers=h).status_code==202
+    denied=api.post('/api/jobs',json={'claim':'Funding approval still applies'},headers=h)
+    assert denied.status_code==503 and 'trial funds' in denied.json()['detail']

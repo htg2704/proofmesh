@@ -38,18 +38,13 @@ Requests accept `claim`, optional `image_base64`, `published_at` with an explici
 
 The existing unversioned routes remain aliases. The old synchronous POST `/api/investigations` serves existing matches only; fresh work returns 409 directing clients to jobs. This keeps all new inference behind the same admission checks on local and hosted deployments.
 
-## Limits and errors
+## Limits and errors — current public MVP policy
 
-| Policy | Trial-funded browser / developer | Personal Gemini key | Trusted team |
-|---|---|---|---|
-| API requests | 120 per fixed minute per credential | 120 per fixed minute per credential | Exempt |
-| New investigations | 10 admissions per UTC day per credential | No daily ProofMesh check cap | Exempt |
-| Shared investigation count cap | None | None | None |
-| Provider quotas | Apply | Apply to your Google account | Apply |
+Application usage caps are **disabled for everyone**: no per-client API requests/minute, daily investigation allowance, or public-registration/hour cap. Judges use the normal app without a special token or sign-in. Scoped guest/developer credentials still isolate private reports and are not administrative credentials. The public judge-token shortcut is hidden; the separately scoped token remains optional through Advanced workspace access.
 
-Public credential issuance is limited to 30 registrations/hour across the deployment; owner-issued keys bypass this issuance limit. Reads and polling count toward API request limits. A failed trial attempt or explicit retry consumes a daily admission; a fresh cached repeat does not. Responses include rate headers and 429 includes `Retry-After`.
+The operator switch `PROOFMESH_CLIENT_LIMITS_ENABLED=false` is the default. If an independent operator explicitly enables it, the optional defaults are 120 API requests/minute, 10 project-funded investigations/UTC day per credential and 30 public registrations/hour. They are not active on the hosted submission. Existing counters are retained for accounting, but no longer block access while the switch is false. Health returns `client_limits_enabled=false` and null policy values; no application rate-limit headers are emitted.
 
-Project-funded checks use the approved US$10 trial budget and November 17 live window. A conservative monetary reservation circuit can pause trial funding with 503; it is not an investigation-count quota and does not apply to personal-key jobs. It reserves US$0.50 per project-funded attempt over an initial US$4 reserve for earlier usage. Reservations are not billing receipts or an absolute Google spending cap; infrastructure costs and provider billing remain external. Trusted rate exemptions do not remove financial approval limits.
+Google/provider quotas and per-request workload bounds still apply. Project-funded checks remain subject to the separate **US$50 total approval**, raised explicitly by the owner from US$10 on October 18. A conservative monetary reservation circuit reserves US$0.50 per new project-funded attempt over an initial US$4 reserve for earlier usage. At the policy change US$7.50 was reserved, leaving 85 fresh attempt reservations. This is neither an invoice nor an absolute Google spending cap; infrastructure costs and provider billing remain external. Personal Gemini-key model work uses the caller's Google account and does not consume this model-funds reservation. Trial funding remains configured through November 17; exact cached reuse makes no model calls.
 
 ## Use your own Gemini API key
 
@@ -61,7 +56,7 @@ For integrations, include `provider_api_key` only in the JSON body of `POST /api
 {"claim":"Canberra is the national capital of Australia.","provider_api_key":"YOUR_GEMINI_API_KEY"}
 ```
 
-Personal-key jobs use the Gemini Developer API and Google Search with your key, billed to your Google account according to its plan. They never fall back to ProofMesh's Vertex credentials on failure. Dedicated Cloud Vision image lookup is skipped; Gemini still receives the submitted image, but a missing independent image association remains explicit. Google quotas, safety rules, per-request workload bounds and the 120/minute ProofMesh API limit still apply. No daily ProofMesh investigation cap or trial-funds reservation applies to these jobs. This feature currently lives in the web app/REST API; the Chrome extension does not collect personal Gemini keys.
+Personal-key jobs use the Gemini Developer API and Google Search with your key, billed to your Google account according to its plan. They never fall back to ProofMesh's Vertex credentials on failure. Dedicated Cloud Vision image lookup is skipped; Gemini still receives the submitted image, but a missing independent image association remains explicit. Google quotas, safety rules, per-request workload bounds still apply. Application request limits are disabled on the hosted MVP. No daily ProofMesh investigation cap applies to any public user. Personal-key jobs also bypass the project model-funds reservation. This feature currently lives in the web app/REST API; the Chrome extension does not collect personal Gemini keys.
 
 The server temporarily encrypts the key with Fernet for queued delivery, using an encryption key held in Secret Manager. Ciphertexts are excluded from job responses and reports. The worker decrypts only within 15 minutes of admission and clears the ciphertext on success/failure; reads clear stale ciphertext. An abandoned job can retain undecryptable ciphertext until accessed or administratively cleaned up. This is cryptographic expiry, not a promise of scheduled physical deletion. The server and Google process the plaintext key during the request; only use a trusted deployment. Raw request bodies and provider exception strings must not be logged.
 
@@ -83,6 +78,6 @@ Follow the root README's Python or Docker setup. Demo mode needs no Google crede
 
 ## Judge access
 
-A separately issued judge token is available through **Use a judge token** in the normal app. Paste it into the ProofMesh access-token field and connect for the browser session; do not paste it into the Gemini provider-key field. The judge role bypasses application request and daily-check caps, while keeping an isolated judge namespace. It cannot read team/client private reports, issue/revoke keys or perform admin operations. It can read public registry snapshots and publish/withdraw its own eligible reports. Google quotas, project-funded usage approval and configured expiry still apply. Trusted team testers also retain their application-limit exemptions.
+A separately issued judge token is available through **Advanced: workspace access** in the normal app, if an isolated judge workspace is desired. No special token is required for ordinary judging. Paste it into the ProofMesh access-token field and connect for the browser session; do not paste it into the Gemini provider-key field. The judge role bypasses application request and daily-check caps, while keeping an isolated judge namespace. It cannot read team/client private reports, issue/revoke keys or perform admin operations. It can read public registry snapshots and publish/withdraw its own eligible reports. Google quotas, project-funded usage approval and configured expiry still apply. Trusted team testers also retain their application-limit exemptions.
 
 The owner keeps the actual token and submission instructions in ignored `data/JUDGE_ACCESS.md`; no credential is published in this repository or placed in URLs. The application's info buttons display the ordinary trial limits (10 new checks/UTC day and 120 API requests/minute by default), cached-reuse behavior and the current judge/tester exemption.
