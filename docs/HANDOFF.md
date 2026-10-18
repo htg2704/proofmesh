@@ -33,3 +33,7 @@ Application image: `3d62817`. Editable diagram correction: `66e7b74`. All 61 Pyt
 ## Remaining product limits
 
 No Instagram adapter, video/Reels or gallery analysis, watermark/C2PA validation, universal AI-origin detector, semantic claim reuse, MCP server or SDK is implemented. Platform/Android/Gemini integrations are proposals. Same-model critique can miss errors. Guest/key isolation is not verified human identity, account recovery, Sybil resistance or production DDoS protection. Broader logged-in X and accessibility coverage remains deferred.
+
+## v0.6 delivered
+
+The hosted main app supports personal Gemini keys, shows per-client trial limits, and no longer imposes a shared investigation-count cap. Citation failures now retain valid findings and distinguish processing errors from insufficient evidence. A live rerun of the private BRICS selfie completed with source-reported AI generation and a partial image association. All 110 automated checks and GitHub CI pass. A successful real-key personal Gemini inference still needs a user-supplied valid key; deployed invalid-key handling and quota bypass are verified. Details and limitations are in VERIFICATION.md. The demo/video remains frozen and no submission was made.
